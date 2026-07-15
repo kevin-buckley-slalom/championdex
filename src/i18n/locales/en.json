@@ -1,0 +1,94 @@
+{
+  "tabs": {
+    "pokedex": "Pokédex",
+    "teams": "Teams",
+    "settings": "Settings"
+  },
+  "pokedex": {
+    "title": "Pokédex",
+    "searchPlaceholder": "Search Pokémon, moves, items...",
+    "filterBy": "Filter by",
+    "sortBy": "Sort by",
+    "noResults": "No results found",
+    "generation": "Generation",
+    "type": "Type"
+  },
+  "pokemon": {
+    "stats": "Base Stats",
+    "abilities": "Abilities",
+    "moves": "Moves",
+    "hiddenAbility": "Hidden Ability",
+    "forms": "Forms",
+    "shiny": "Shiny",
+    "hp": "HP",
+    "attack": "Attack",
+    "defense": "Defense",
+    "specialAttack": "Sp. Atk",
+    "specialDefense": "Sp. Def",
+    "speed": "Speed",
+    "total": "Total",
+    "height": "Height",
+    "weight": "Weight"
+  },
+  "team": {
+    "title": "My Teams",
+    "newTeam": "New Team",
+    "emptySlot": "Add Pokémon",
+    "editMember": "Edit Member",
+    "ability": "Ability",
+    "heldItem": "Held Item",
+    "moveset": "Moveset",
+    "evs": "EVs",
+    "ivs": "IVs",
+    "level": "Level",
+    "nature": "Nature",
+    "deleteTeam": "Delete Team",
+    "rename": "Rename"
+  },
+  "settings": {
+    "title": "Settings",
+    "dataManagement": "Data Management",
+    "syncData": "Sync Data",
+    "lastSynced": "Last synced",
+    "about": "About",
+    "version": "Version",
+    "statLevel": "Default Stat Level",
+    "statLevelDesc": "Default level used for stat calculations in Team Builder"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "back": "Back",
+    "done": "Done"
+  },
+  "moves": {
+    "title": "Moves",
+    "power": "Power",
+    "accuracy": "Accuracy",
+    "pp": "PP",
+    "category": "Category",
+    "physical": "Physical",
+    "special": "Special",
+    "status": "Status",
+    "learnMethod": "Learn Method",
+    "levelUp": "Level {{level}}",
+    "tm": "TM",
+    "egg": "Egg Move",
+    "tutor": "Move Tutor"
+  },
+  "abilities": {
+    "title": "Abilities",
+    "hidden": "Hidden"
+  },
+  "items": {
+    "title": "Items",
+    "category": "Category"
+  }
+}

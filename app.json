@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "ChampionDex",
+    "slug": "championdex",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "championdex",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.championdex.app"
+    },
+    "android": {
+      "package": "com.championdex.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#111010",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      [
+        "expo-sqlite",
+        {
+          "enableFTS": true
+        }
+      ],
+      "expo-image",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
