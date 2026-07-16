@@ -596,6 +596,7 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
         backdropKey={backdropKey}
         heroHeight={heroHeight}
         enabled={particlesEnabled}
+        artworkUrl={currentArtworkUrl}
       />
 
       {/* Layer 4: Artwork Container (0.5x parallax, fades as user scrolls) */}
