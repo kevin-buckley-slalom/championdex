@@ -7,6 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "scheme": "championdex",
+    "assetBundlePatterns": ["assets/**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.championdex.app"
@@ -31,7 +32,8 @@
       [
         "expo-sqlite",
         {
-          "enableFTS": true
+          "enableFTS": true,
+          "useSQLCipher": false
         }
       ],
       "expo-image",

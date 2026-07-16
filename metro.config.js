@@ -12,4 +12,7 @@ config.transformer = {
   }),
 };
 
+// Register .db extension for bundled database assets
+config.resolver.assetExts.push('db');
+
 module.exports = config;

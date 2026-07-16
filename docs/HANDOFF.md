@@ -1,5 +1,5 @@
 # ChampionDex — Session Handoff Notes
-**Updated:** 2026-07-15 | TypeEffectivenessTable complete (W-005). Next work: REQ-032 visual quality (final Phase 3 item).
+**Updated:** 2026-07-16 | Mega + fairy backdrop particles complete. Fresh-install DB crash fixed. Next work: remaining backdrop particles (psychic, ghost, dark, dragon, steel, poison, normal, ground).
 
 ---
 
@@ -292,7 +292,8 @@ No batch logs, no network activity. Species counts confirmed: 1025 enriched, 2 n
     - **Flying ✅ COMPLETE** — 4 wind streaks, two-layer SVG (8px halo σ=6 + 2px core σ=3), sine-wave path (60 pts, amplitude 7/10/13/16px, frequency 1.5), right-to-left travel via `strokeDashoffset` animation, `AnimatedPath` + `useAnimatedProps`
     - **Bug ✅ COMPLETE** — 6 spores, `rgba(168,140,100,0.72)`, 8×8dp circles, large-amplitude incommensurate x/y oscillation (swayHalfPeriod 5500–8800ms, ratio 1.47), dark gap `duration×0.9` gives teleport appearance, distinct starting origins spread across hero
     - **Mega ✅ COMPLETE** — SVG `<Mask>` + `<Image href>` silhouette masking; 6 static ROYGBIV `LinearGradient` layers at 0°/60°/120°/180°/240°/300° angles, each masked to Pokémon silhouette (1.08× scale); `FeGaussianBlur stdDeviation=64` inside `<Mask>` for diffuse feathered edges; per-layer `useAnimatedStyle` opacity cycling at incommensurate durations (4200–7300ms), staggered delays; peak opacity 0.92, fade-out 25% of cycle (fast), loop gap-free; dark navy base shadow (tintColor `#1a1a2e`, 1.01× scale); tight black contrast mask above aura (tintColor `rgba(0,0,0,0.85)`, 1.015× scale); whole container fades in on mount over 800ms via `megaGradRot` shared value (repurposed as fade-in driver); SVG canvas 2.0× artwork size (560dp) for blur room. Spec: `docs/MEGA_AURA_GRADIENT_SPEC.md`
-    - **Pending**: psychic, ghost, dark, dragon, fairy, steel, poison, normal, ground (rock/fighting skipped)
+    - **Fairy ✅ COMPLETE** — 5 radial-gradient soft-glow circles (pure white center → transparent pink edge); dedicated early-return render with `startX`/`startY` as base position; teleport to random hero position on each cycle via `useAnimatedReaction` + `runOnJS` (`fairyTeleport0–4` callbacks, fire when `op` crosses below 0.02); clean 600ms fade-in / 600ms fade-out, no pulse; incommensurate cycle durations 2200–3400ms, stagger 450ms; peak opacity 1.0; 13dp SVG canvas with `RadialGradient`
+    - **Pending**: psychic, ghost, dark, dragon, steel, poison, normal, ground (rock/fighting skipped)
     - Design spec (UI designer) in `docs/CUSTOM_BACKDROPS.md` § Backdrop Particle Effects
     - To disable during development: `particlesEnabled={false}` on `<PokemonHero>` in `app/(main)/(pokedex)/[id].tsx`
     - **Critical implementation rules** (learned from crashes):
@@ -426,6 +427,14 @@ docs/
   INFO_SECTION_DESIGN_SPEC.md         — InfoStrip production reference
   forms_audit.txt                     — full enumeration of all non-default forms from @pkmn/dex (generated)
 ```
+
+---
+
+## ✅ RESOLVED — Fresh-install DB crash (2026-07-16)
+
+`pokemon_flavor_text` and `pokemon_evolutions` were only created in `runMigrations`, not in the main schema block. On a fresh device, `runMigrations` ran a backfill that queried `pokemon_flavor_text` before the table existed, crashing with `no such table`. Fixed by adding both tables (with `CREATE TABLE IF NOT EXISTS`) to the main `_initializeDatabase` schema block. Existing installs unaffected — `runMigrations` versions are still `IF NOT EXISTS`.
+
+**Rule:** Any table that can be queried during `runMigrations` must also exist in the main schema block.
 
 ---
 

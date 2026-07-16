@@ -311,7 +311,6 @@ Ambient looping particles layered behind Pokémon artwork. Always behind the art
 | ghost | Wispy motes / fog fragments | Slow horizontal drift, fade in/out |
 | dark | Shadow wisps | Slow horizontal drift, very low opacity |
 | dragon | Swirling energy orbs | Slow upward spiral |
-| fairy | Tiny sparkle motes | Float upward, twinkle opacity |
 | steel | Metallic glint flecks | Slow fall, brief flash opacity |
 | poison | Spore motes / small bubbles | Upward drift, very subtle |
 | normal | Faint dust motes | Very slow fall, barely visible |

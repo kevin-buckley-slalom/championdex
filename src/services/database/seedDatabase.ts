@@ -86,7 +86,7 @@ export async function seedDatabase(db: SQLite.SQLiteDatabase): Promise<void> {
 
 /**
  * Fire-and-forget wrapper for PokeAPI enrichment (Phase 2).
- * Starts all three enrichment streams concurrently without blocking the caller.
+ * Starts all enrichment streams concurrently without blocking the caller.
  * Uses a shared semaphore to limit concurrent PokeAPI requests to 10.
  */
 function startPokeApiEnrichment(db: SQLite.SQLiteDatabase, dex: any): void {
@@ -97,8 +97,8 @@ function startPokeApiEnrichment(db: SQLite.SQLiteDatabase, dex: any): void {
   runClassificationBackfill(db, dex).catch(err => {
     console.warn('[Database] Classification backfill stream failed:', err);
   });
-  runMovesBackfill(db, dex).catch(err => {
-    console.warn('[Database] Moves backfill stream failed:', err);
+  seedPokemonMovesets(db, dex).catch(err => {
+    console.warn('[Database] Moves seeding stream failed:', err);
   });
   runEncountersBackfill(db).catch(err => {
     console.warn('[Database] Encounters backfill stream failed:', err);
@@ -108,188 +108,6 @@ function startPokeApiEnrichment(db: SQLite.SQLiteDatabase, dex: any): void {
   });
 }
 
-/**
- * Fetch pokemon movesets from PokeAPI and build a cache map.
- * Returns a map of pokemon DB ID -> array of move data.
- * All network fetches happen before returning — never fetch inside a transaction.
- */
-async function prefetchPokemonMoveset(
-  db: SQLite.SQLiteDatabase,
-  dex: any,
-  pokeApiIdCache: Map<string, number>
-): Promise<Map<number, Array<{ moveId: number; learnMethod: string; learnLevel: number | null }>>> {
-  console.log('[Database] Fetching pokemon movesets from PokeAPI...');
-
-  const movesetCache = new Map<number, Array<{ moveId: number; learnMethod: string; learnLevel: number | null }>>();
-
-  const speciesData = dex.species.all();
-  const processedSpecies = new Set<string>();
-  const defaultFormSpecies = [];
-
-  for (const species of speciesData) {
-    const excluded = (species.isNonstandard === 'CAP' || species.isNonstandard === 'Future' || species.isNonstandard === 'Custom')
-      && !FUTURE_FORM_ALLOWLIST.has(species.name);
-    if (!species.exists || excluded || processedSpecies.has(species.name)) {
-      continue;
-    }
-    processedSpecies.add(species.name);
-
-    if (species.num > 0 && !species.forme) {
-      defaultFormSpecies.push(species);
-    }
-  }
-
-  const total = defaultFormSpecies.length;
-  let networkFetches = 0;
-  let cacheHits = 0;
-
-  // Build a map of species name -> DB ID for quick lookup
-  const nameToIdMap = new Map<string, number>();
-  try {
-    const existingRows = await db.getAllAsync<{ name: string; id: number }>(
-      'SELECT name, id FROM pokemon'
-    );
-    for (const row of existingRows) {
-      nameToIdMap.set(row.name, row.id);
-    }
-  } catch (error) {
-    console.warn('[Database] Could not load pokemon ID map for moveset prefetch:', error);
-    // Bug 2 fix: Return early with empty map if pokemon table load fails
-    console.log('[Database] Prefetched 0 pokemon movesets (pokemon table unavailable)');
-    return movesetCache;
-  }
-
-  const BATCH_SIZE = 10;
-  for (let i = 0; i < defaultFormSpecies.length; i += BATCH_SIZE) {
-    const batch = defaultFormSpecies.slice(i, i + BATCH_SIZE);
-    let batchHadNetworkFetch = false;
-
-    await Promise.all(batch.map(async (species) => {
-      // Get the DB ID for this pokemon
-      const pokemonDbId = nameToIdMap.get(species.id);
-      if (!pokemonDbId) {
-        console.warn(`[Database] Could not find DB ID for pokemon ${species.id}`);
-        return;
-      }
-
-      // Check if movesets already exist in the database for this pokemon
-      try {
-        const existingMovesets = await db.getFirstAsync<{ count: number }>(
-          `SELECT COUNT(*) as count FROM pokemon_moves WHERE pokemon_id = ?`,
-          [pokemonDbId]
-        );
-
-        if (existingMovesets && existingMovesets.count > 0) {
-          // Load existing movesets from DB into the cache
-          const movesetRows = await db.getAllAsync<{ move_id: number; learn_method: string; learn_level: number | null }>(
-            `SELECT move_id, learn_method, learn_level FROM pokemon_moves WHERE pokemon_id = ?`,
-            [pokemonDbId]
-          );
-
-          if (movesetRows && movesetRows.length > 0) {
-            movesetCache.set(pokemonDbId, movesetRows.map(r => ({
-              moveId: r.move_id,
-              learnMethod: r.learn_method,
-              learnLevel: r.learn_level
-            })));
-            cacheHits++;
-            return;
-          }
-        }
-      } catch (error) {
-        // Table may not exist yet on first run, continue with network fetch
-      }
-
-      // Fetch from PokeAPI using pokeapi_id
-      let pokeApiId = species.num;
-      try {
-        const pokemonRow = await db.getFirstAsync<{ pokeapi_id: number }>(
-          `SELECT pokeapi_id FROM pokemon WHERE id = ?`,
-          [pokemonDbId]
-        );
-        if (pokemonRow && pokemonRow.pokeapi_id > 0) {
-          pokeApiId = pokemonRow.pokeapi_id;
-        }
-      } catch (error) {
-        // Fall back to national dex
-      }
-
-      try {
-        const response = await withSemaphore(() => fetch(`https://pokeapi.co/api/v2/pokemon/${pokeApiId}/`));
-        if (!response.ok) {
-          console.warn(`[Database] Failed to fetch pokemon ${species.id} (PokeAPI ID ${pokeApiId}): ${response.status}`);
-          return;
-        }
-
-        const data = await response.json();
-
-        const moveset = [];
-        const seenMoves = new Set<string>();
-
-        if (data.moves && Array.isArray(data.moves)) {
-          for (const moveEntry of data.moves) {
-            if (!moveEntry.move?.url) continue;
-
-            // Extract move ID from URL (e.g., /move/84/ → 84)
-            const moveIdMatch = moveEntry.move.url.match(/\/move\/(\d+)\//);
-            if (!moveIdMatch) continue;
-
-            const moveId = parseInt(moveIdMatch[1], 10);
-
-            if (!moveEntry.version_group_details || moveEntry.version_group_details.length === 0) {
-              continue;
-            }
-
-            // Process first version group detail to get learn method and level
-            const detail = moveEntry.version_group_details[0];
-            const learnMethod = detail.move_learn_method?.name ?? 'other';
-
-            // Skip duplicates: only one row per (pokemon_id, move_id, learn_method)
-            const key = `${moveId}:${learnMethod}`;
-            if (seenMoves.has(key)) {
-              continue;
-            }
-            seenMoves.add(key);
-
-            const learnLevel = (learnMethod === 'level-up' && detail.level_learned_at > 0)
-              ? detail.level_learned_at
-              : null;
-
-            moveset.push({
-              moveId,
-              learnMethod,
-              learnLevel
-            });
-          }
-        }
-
-        if (moveset.length > 0) {
-          movesetCache.set(pokemonDbId, moveset);
-        }
-
-        networkFetches++;
-        batchHadNetworkFetch = true;
-      } catch (error) {
-        console.warn(`[Database] Error fetching moveset for ${species.id}:`, error);
-      }
-    }));
-
-    // Rate limit: only sleep if this batch made at least one network request
-    if (batchHadNetworkFetch) {
-      await new Promise(resolve => setTimeout(resolve, 50));
-    }
-
-    // Progress log every 10 batches
-    const batchNum = Math.floor(i / BATCH_SIZE) + 1;
-    const totalBatches = Math.ceil(defaultFormSpecies.length / BATCH_SIZE);
-    if (batchNum % 10 === 0 || batchNum === totalBatches) {
-      console.log(`[Database] prefetchPokemonMoveset batch ${batchNum}/${totalBatches} (${cacheHits} cached, ${networkFetches} fetched)`);
-    }
-  }
-
-  console.log(`[Database] Prefetched ${movesetCache.size} pokemon movesets (${cacheHits} from DB, ${networkFetches} from network)`);
-  return movesetCache;
-}
 
 /**
  * Phase 2: PokeAPI enrichment (async, not awaited by caller).
@@ -317,16 +135,13 @@ async function enrichDatabaseAsync(db: SQLite.SQLiteDatabase, dex: any): Promise
     // Fetch all species data (flavor text + evolution chains + classifications) with DB caching
     const speciesDataCache = await prefetchPokeApiSpeciesData(db, dex);
 
-    // Fetch all pokemon movesets with DB caching (before transaction)
-    const movesetCache = await prefetchPokemonMoveset(db, dex, pokeApiIdCache);
-
     // Prepare all statements OUTSIDE the transaction (Bug 1 fix)
     const stmts = await prepareEnrichmentStatements(db);
 
     try {
       // Open a separate transaction for writing enrichment data
       await db.withTransactionAsync(async () => {
-        await writePokeApiEnrichment(db, dex, speciesDataCache, movesetCache, stmts);
+        await writePokeApiEnrichment(db, dex, speciesDataCache, stmts);
 
         // Update sync metadata: enrichment complete
         await db.runAsync(
@@ -354,7 +169,6 @@ async function enrichDatabaseAsync(db: SQLite.SQLiteDatabase, dex: any): Promise
 async function prepareEnrichmentStatements(db: SQLite.SQLiteDatabase): Promise<{
   flavorTextStmt: SQLite.SQLiteStatement;
   evolutionStmt: SQLite.SQLiteStatement;
-  movesetStmt: SQLite.SQLiteStatement;
 }> {
   const flavorTextStmt = await db.prepareAsync(
     `INSERT OR IGNORE INTO pokemon_flavor_text (pokemon_id, game_version, flavor_text)
@@ -366,12 +180,7 @@ async function prepareEnrichmentStatements(db: SQLite.SQLiteDatabase): Promise<{
      VALUES (?, ?, ?, ?)`
   );
 
-  const movesetStmt = await db.prepareAsync(
-    `INSERT OR IGNORE INTO pokemon_moves (pokemon_id, move_id, learn_method, learn_level)
-     VALUES (?, ?, ?, ?)`
-  );
-
-  return { flavorTextStmt, evolutionStmt, movesetStmt };
+  return { flavorTextStmt, evolutionStmt };
 }
 
 /**
@@ -381,11 +190,9 @@ async function prepareEnrichmentStatements(db: SQLite.SQLiteDatabase): Promise<{
 async function finalizeEnrichmentStatements(stmts: {
   flavorTextStmt: SQLite.SQLiteStatement;
   evolutionStmt: SQLite.SQLiteStatement;
-  movesetStmt: SQLite.SQLiteStatement;
 }): Promise<void> {
   await stmts.flavorTextStmt.finalizeAsync();
   await stmts.evolutionStmt.finalizeAsync();
-  await stmts.movesetStmt.finalizeAsync();
 }
 
 /**
@@ -397,11 +204,9 @@ async function writePokeApiEnrichment(
   db: SQLite.SQLiteDatabase,
   dex: any,
   speciesDataCache: { flavorTexts: Map<number, Array<{ gameVersion: string; flavorText: string }>>; evolutions: Map<number, Array<{ evolvesToNum: number; method: string; conditionValue: string | null }>> },
-  movesetCache?: Map<number, Array<{ moveId: number; learnMethod: string; learnLevel: number | null }>>,
   stmts?: {
     flavorTextStmt: SQLite.SQLiteStatement;
     evolutionStmt: SQLite.SQLiteStatement;
-    movesetStmt: SQLite.SQLiteStatement;
   }
 ): Promise<void> {
   if (!stmts) {
@@ -424,7 +229,6 @@ async function writePokeApiEnrichment(
 
   const flavorTextStmt = stmts.flavorTextStmt;
   const evolutionStmt = stmts.evolutionStmt;
-  const movesetStmt = stmts.movesetStmt;
 
   // Build a map of species ID -> pokemon DB ID for evolution linking
   const speciesNumToDefaultDbId = new Map<number, number>();
@@ -504,34 +308,6 @@ async function writePokeApiEnrichment(
           if (evolvedDbId) {
             await evolutionStmt.executeAsync([pokemonId, evolvedDbId, 'other', null]);
           }
-        }
-      }
-    }
-  }
-
-  // Write movesets if provided
-  if (movesetCache) {
-    // Build a set of valid move IDs for FK validation
-    const validMoveIds = new Set<number>();
-    try {
-      const moveRows = await db.getAllAsync<{ id: number }>(`SELECT id FROM moves`);
-      for (const row of moveRows) {
-        validMoveIds.add(row.id);
-      }
-    } catch (error) {
-      console.warn('[Database] Could not validate move IDs:', error);
-    }
-
-    for (const [pokemonId, moveset] of movesetCache) {
-      for (const move of moveset) {
-        // Only insert if move exists in the moves table
-        if (validMoveIds.has(move.moveId)) {
-          await movesetStmt.executeAsync([
-            pokemonId,
-            move.moveId,
-            move.learnMethod,
-            move.learnLevel
-          ]);
         }
       }
     }
@@ -1054,33 +830,28 @@ async function runClassificationBackfill(db: SQLite.SQLiteDatabase, dex: any): P
   }
 }
 
+
 /**
- * Backfill moves for pokemon with missing movesets.
- * Runs as fire-and-forget after enrichDatabaseAsync completes.
+ * Seed pokemon movesets from @pkmn/dex learnsets.
+ * Populates pokemon_moves table with moves from dex.learnsets.
+ * No network calls — all data comes from the bundled dex.
  */
-async function runMovesBackfill(db: SQLite.SQLiteDatabase, dex: any): Promise<void> {
+async function seedPokemonMovesets(db: SQLite.SQLiteDatabase, dex: any): Promise<void> {
   try {
-    // Check if backfill is already complete
-    const backfillResult = await db.getFirstAsync<{ value: string }>(
+    // Check if seeding is already complete
+    const seedResult = await db.getFirstAsync<{ value: string }>(
       'SELECT value FROM sync_metadata WHERE key = ?',
-      ['moves_backfill_v1']
+      ['moves_dex_v1']
     );
 
-    if (backfillResult?.value === 'done') {
-      console.log('[Database] Moves backfill already complete');
+    if (seedResult?.value === 'done') {
+      console.log('[Database] Pokemon movesets already seeded from dex');
       return;
     }
 
-    console.log('[Database] Starting moves backfill...');
+    console.log('[Database] Starting pokemon movesets seeding from @pkmn/dex...');
 
-    // Find all default-form pokemon with missing movesets
-    const pokemonToUpdate = await db.getAllAsync<{ id: number; pokeapi_id: number }>(
-      `SELECT p.id, p.pokeapi_id FROM pokemon p WHERE p.form_type = 'default' AND NOT EXISTS (SELECT 1 FROM pokemon_moves pm WHERE pm.pokemon_id = p.id)`
-    );
-
-    console.log(`[Database] Found ${pokemonToUpdate.length} pokemon needing moves backfill`);
-
-    // Build a map of move name -> move id
+    // Build map of move name -> move ID
     const moveNameToId = new Map<string, number>();
     try {
       const moveRows = await db.getAllAsync<{ name: string; id: number }>(`SELECT name, id FROM moves`);
@@ -1088,103 +859,177 @@ async function runMovesBackfill(db: SQLite.SQLiteDatabase, dex: any): Promise<vo
         moveNameToId.set(row.name, row.id);
       }
     } catch (error) {
-      console.warn('[Database] Could not load move name map:', error);
+      console.warn('[Database] Could not load move name map for moveset seeding:', error);
       return;
     }
 
-    let updated = 0;
-
-    const BATCH_SIZE = 10;
-    for (let i = 0; i < pokemonToUpdate.length; i += BATCH_SIZE) {
-      const batch = pokemonToUpdate.slice(i, i + BATCH_SIZE);
-      let batchHadNetworkFetch = false;
-
-      await Promise.all(batch.map(async (item) => {
-        const { id, pokeapi_id } = item;
-
-        try {
-          const response = await withSemaphore(() => fetch(`https://pokeapi.co/api/v2/pokemon/${pokeapi_id}/`));
-          if (!response.ok) {
-            console.warn(`[Database] Failed to fetch pokemon ${pokeapi_id}: ${response.status}`);
-            return;
-          }
-
-          const data = await response.json();
-          const seenMoves = new Set<string>();
-          let moveCount = 0;
-
-          if (data.moves && Array.isArray(data.moves)) {
-            for (const moveEntry of data.moves) {
-              if (!moveEntry.move?.name) continue;
-
-              const moveName = moveEntry.move.name;
-              const moveId = moveNameToId.get(moveName);
-
-              if (!moveId) {
-                // Move not found in DB
-                continue;
-              }
-
-              if (!moveEntry.version_group_details || moveEntry.version_group_details.length === 0) {
-                continue;
-              }
-
-              const detail = moveEntry.version_group_details[0];
-              const learnMethod = detail.move_learn_method?.name ?? 'other';
-
-              // Skip duplicates
-              const key = `${moveId}:${learnMethod}`;
-              if (seenMoves.has(key)) {
-                continue;
-              }
-              seenMoves.add(key);
-
-              const learnLevel = (learnMethod === 'level-up' && detail.level_learned_at > 0)
-                ? detail.level_learned_at
-                : null;
-
-              await db.runAsync(
-                `INSERT OR IGNORE INTO pokemon_moves (pokemon_id, move_id, learn_method, learn_level)
-                 VALUES (?, ?, ?, ?)`,
-                [id, moveId, learnMethod, learnLevel]
-              );
-              moveCount++;
-            }
-          }
-
-          if (moveCount > 0) {
-            updated++;
-          }
-
-          batchHadNetworkFetch = true;
-        } catch (error) {
-          console.warn(`[Database] Error fetching moves for pokemon ${pokeapi_id}:`, error);
-        }
-      }));
-
-      // Rate limit: only sleep if this batch made at least one network request
-      if (batchHadNetworkFetch) {
-        await new Promise(resolve => setTimeout(resolve, 50));
+    // Build map of pokemon name -> pokemon DB ID
+    const nameToIdMap = new Map<string, number>();
+    try {
+      const pokemonRows = await db.getAllAsync<{ name: string; id: number }>(
+        'SELECT name, id FROM pokemon'
+      );
+      for (const row of pokemonRows) {
+        nameToIdMap.set(row.name, row.id);
       }
+    } catch (error) {
+      console.warn('[Database] Could not load pokemon ID map for moveset seeding:', error);
+      return;
+    }
 
-      // Progress log every 10 batches
-      const batchNum = Math.floor(i / BATCH_SIZE) + 1;
-      const totalBatches = Math.ceil(pokemonToUpdate.length / BATCH_SIZE);
-      if (batchNum % 10 === 0 || batchNum === totalBatches) {
-        console.log(`[Database] runMovesBackfill batch ${batchNum}/${totalBatches} (${updated} updated)`);
+    // Get all default-form species
+    const speciesData = dex.species.all();
+    const processedSpecies = new Set<string>();
+    const defaultFormSpecies = [];
+
+    for (const species of speciesData) {
+      const excluded = (species.isNonstandard === 'CAP' || species.isNonstandard === 'Future' || species.isNonstandard === 'Custom')
+        && !FUTURE_FORM_ALLOWLIST.has(species.name);
+      if (!species.exists || excluded || processedSpecies.has(species.name)) {
+        continue;
+      }
+      processedSpecies.add(species.name);
+
+      if (species.num > 0 && !species.forme) {
+        defaultFormSpecies.push(species);
       }
     }
 
-    // Mark backfill as complete
+    let seeded = 0;
+    let skipped = 0;
+    const BATCH_SIZE = 50;
+
+    for (let i = 0; i < defaultFormSpecies.length; i += BATCH_SIZE) {
+      const batch = defaultFormSpecies.slice(i, i + BATCH_SIZE);
+
+      await Promise.all(batch.map(async (species) => {
+        try {
+          const pokemonDbId = nameToIdMap.get(species.id);
+          if (!pokemonDbId) {
+            return;
+          }
+
+          // Check if this pokemon already has moves
+          const existingMoves = await db.getFirstAsync<{ count: number }>(
+            `SELECT COUNT(*) as count FROM pokemon_moves WHERE pokemon_id = ?`,
+            [pokemonDbId]
+          );
+
+          if (existingMoves && existingMoves.count > 0) {
+            skipped++;
+            return;
+          }
+
+          // Fetch learnset from dex
+          const learnsetData = await dex.learnsets.get(species.id);
+          if (!learnsetData?.learnset) {
+            return;
+          }
+
+          // Process each move in the learnset
+          const moveMethodMap = new Map<string, { moveId: number; learnMethod: string; learnLevel: number | null }>();
+
+          for (const [moveName, methodStrings] of Object.entries(learnsetData.learnset)) {
+            const moveId = moveNameToId.get(moveName);
+            if (!moveId) continue;
+
+            if (!Array.isArray(methodStrings)) continue;
+
+            // Parse all method codes and use the highest generation entry
+            let bestGen = 0;
+            let bestMethod: string | null = null;
+            let bestLevel: number | null = null;
+
+            for (const methodCode of methodStrings) {
+              if (typeof methodCode !== 'string') continue;
+
+              // Parse generation and method: e.g. '9L6' = gen 9 level-up level 6
+              const genMatch = methodCode.match(/^(\d+)(.*)$/);
+              if (!genMatch) continue;
+
+              const gen = parseInt(genMatch[1], 10);
+              const methodPart = genMatch[2];
+
+              if (gen <= bestGen && bestMethod !== null) continue;
+
+              const methodLetter = methodPart.charAt(0);
+              let learnMethod = 'other';
+              let learnLevel: number | null = null;
+
+              switch (methodLetter) {
+                case 'L':
+                  learnMethod = 'level-up';
+                  const levelMatch = methodPart.match(/^L(\d+)$/);
+                  learnLevel = levelMatch ? parseInt(levelMatch[1], 10) : null;
+                  break;
+                case 'M':
+                  learnMethod = 'machine';
+                  break;
+                case 'E':
+                  learnMethod = 'egg';
+                  break;
+                case 'T':
+                  learnMethod = 'tutor';
+                  break;
+                case 'V':
+                  learnMethod = 'transfer';
+                  break;
+                case 'S':
+                  learnMethod = 'event';
+                  break;
+                case 'D':
+                  learnMethod = 'dream-world';
+                  break;
+              }
+
+              bestGen = gen;
+              bestMethod = learnMethod;
+              bestLevel = learnLevel;
+            }
+
+            if (bestMethod) {
+              const key = `${moveId}:${bestMethod}`;
+              moveMethodMap.set(key, { moveId, learnMethod: bestMethod, learnLevel: bestLevel });
+            }
+          }
+
+          // Insert all moves for this pokemon
+          for (const { moveId, learnMethod, learnLevel } of moveMethodMap.values()) {
+            try {
+              await db.runAsync(
+                `INSERT OR IGNORE INTO pokemon_moves (pokemon_id, move_id, learn_method, learn_level)
+                 VALUES (?, ?, ?, ?)`,
+                [pokemonDbId, moveId, learnMethod, learnLevel]
+              );
+            } catch (e) {
+              // Silently skip FK violations
+            }
+          }
+
+          if (moveMethodMap.size > 0) {
+            seeded++;
+          }
+        } catch (error) {
+          console.debug(`[Database] Error seeding moves for ${species.id}:`, error);
+        }
+      }));
+
+      // Progress log every 100 pokemon
+      if ((i + BATCH_SIZE) % 100 === 0 || i + BATCH_SIZE >= defaultFormSpecies.length) {
+        console.log(`[Database] seedPokemonMovesets: ${Math.min(i + BATCH_SIZE, defaultFormSpecies.length)}/${defaultFormSpecies.length} pokemon (${seeded} seeded, ${skipped} skipped)`);
+      }
+    }
+
+    // Mark seeding as complete
     await db.runAsync(
       `INSERT OR REPLACE INTO sync_metadata (key, value, updated_at)
        VALUES (?, ?, datetime('now'))`,
-      ['moves_backfill_v1', 'done']
+      ['moves_dex_v1', 'done']
     );
 
-    console.log(`[Database] Moves backfill complete (updated ${updated} pokemon)`);
+    console.log(`[Database] Pokemon movesets seeding complete (${seeded} pokemon seeded, ${skipped} already had moves)`);
   } catch (error) {
-    console.warn('[Database] Error during moves backfill:', error);
+    console.warn('[Database] Error during pokemon movesets seeding:', error);
   }
 }
 

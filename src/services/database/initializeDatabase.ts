@@ -1,5 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import { seedDatabase } from './seedDatabase';
+import { copyBundledDbIfNeeded } from './bundledDbService';
 
 async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
   // Each migration uses ALTER TABLE ... ADD COLUMN IF NOT EXISTS pattern.
@@ -48,6 +49,22 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
     `);
     await db.runAsync(
       `INSERT OR REPLACE INTO sync_metadata (key, value, updated_at) VALUES ('species_enriched_backfill_v1', 'done', datetime('now'))`
+    );
+  }
+
+  // Migration: Switch from PokeAPI movesets to @pkmn/dex learnsets (runs once)
+  // Wipes old PokeAPI-sourced moves and re-populates from dex in the seeding phase
+  const movesDexMigrationDone = await db.getFirstAsync<{ value: string }>(
+    `SELECT value FROM sync_metadata WHERE key = 'moves_dex_migration_v1'`
+  );
+  if (!movesDexMigrationDone) {
+    // Remove the old network-based backfill key
+    await db.runAsync(`DELETE FROM sync_metadata WHERE key = 'moves_backfill_v1'`);
+    // Wipe stale PokeAPI-sourced move data
+    await db.runAsync(`DELETE FROM pokemon_moves`);
+    // Mark this migration as complete
+    await db.runAsync(
+      `INSERT OR REPLACE INTO sync_metadata (key, value, updated_at) VALUES ('moves_dex_migration_v1', 'done', datetime('now'))`
     );
   }
 
@@ -205,6 +222,7 @@ export async function initializeDatabase(): Promise<void> {
 }
 
 async function _initializeDatabase(): Promise<void> {
+  await copyBundledDbIfNeeded();
   const database = await getDatabase();
 
   await database.execAsync(`
