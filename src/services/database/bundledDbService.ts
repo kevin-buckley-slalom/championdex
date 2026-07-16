@@ -42,7 +42,7 @@ export async function copyBundledDbIfNeeded(): Promise<boolean> {
     await FileSystem.makeDirectoryAsync(dbDir, { intermediates: true });
 
     // Load and copy bundled DB
-    const asset = Asset.fromModule(require('@assets/db/championdex.db'));
+    const asset = Asset.fromModule(require('../../../assets/db/championdex.db'));
     await asset.downloadAsync();
 
     if (!asset.localUri) {
@@ -53,7 +53,7 @@ export async function copyBundledDbIfNeeded(): Promise<boolean> {
     console.log('[Database] Copied bundled DB to', dbPath);
     return true;
   } catch (error) {
-    console.warn('[Database] Failed to copy bundled DB, continuing with normal initialization:', error);
+    console.error('[Database] Failed to copy bundled DB, continuing with normal initialization:', error);
     return false;
   }
 }
