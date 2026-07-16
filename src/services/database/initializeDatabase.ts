@@ -231,7 +231,21 @@ async function _initializeDatabasePhase1(): Promise<void> {
   await copyBundledDbIfNeeded();
   const database = await getDatabase();
 
-  // Create all tables using CREATE TABLE IF NOT EXISTS
+  // Fast path: if data_version is already current, all tables and data exist — nothing to do.
+  try {
+    const result = await database.getFirstAsync<{ value: string }>(
+      'SELECT value FROM sync_metadata WHERE key = ?',
+      ['data_version']
+    );
+    if (result?.value) {
+      console.log('[Database] Base data already seeded, skipping schema creation');
+      return;
+    }
+  } catch (error) {
+    // sync_metadata doesn't exist yet — first run, fall through to schema creation
+  }
+
+  // First run only: create all tables
   await database.execAsync(`
     CREATE TABLE IF NOT EXISTS pokemon (
       id                INTEGER PRIMARY KEY,
@@ -401,22 +415,7 @@ async function _initializeDatabasePhase1(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_encounter_pokemon_game ON pokemon_encounter_locations(pokemon_id, game_version);
   `);
 
-  // Check if Phase 1 (base data) is already seeded — if so, Phase 1 is done
-  try {
-    const result = await database.getFirstAsync<{ value: string }>(
-      'SELECT value FROM sync_metadata WHERE key = ?',
-      ['data_version']
-    );
-
-    if (result?.value) {
-      console.log('[Database] Base data already seeded');
-      return;
-    }
-  } catch (error) {
-    // Table may not exist on first run
-  }
-
-  // First run: seed base data (blocking) — use seedDatabase for consistency
+  // First run: seed base data (blocking)
   console.log('[Database] Seeding base data...');
   const { seedDatabase } = require('./seedDatabase');
   await seedDatabase(database);
