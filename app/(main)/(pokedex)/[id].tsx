@@ -129,6 +129,14 @@ export default function PokemonDetailScreen() {
   // Shiny artwork prefetch state
   const [shinyReady, setShinyReady] = useState(false);
 
+  // Below-fold content deferral state
+  const [belowFoldReady, setBelowFoldReady] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setBelowFoldReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   // Lazy prefetch shiny artwork on detail screen mount
   useEffect(() => {
     if (!pokemon?.pokeApiId) return;
@@ -276,96 +284,98 @@ export default function PokemonDetailScreen() {
             accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
           />
 
-          {/* Abilities */}
-          {abilities.length > 0 && (
-            <View style={styles.section}>
-              <AbilitiesSection
-                abilities={abilities}
-                accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
-                onAbilityPress={(id) => router.push(`/abilities/${id}`)}
-              />
-            </View>
-          )}
+          {belowFoldReady ? (
+            <>
+              {/* Abilities */}
+              {abilities.length > 0 && (
+                <View style={styles.section}>
+                  <AbilitiesSection
+                    abilities={abilities}
+                    accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
+                    onAbilityPress={(id) => router.push(`/abilities/${id}`)}
+                  />
+                </View>
+              )}
 
-          {/* Base Stats */}
-          <View style={styles.section}>
-            <StatChart
-              stats={{
-                hp: pokemon.baseStats.hp,
-                attack: pokemon.baseStats.attack,
-                defense: pokemon.baseStats.defense,
-                spAttack: pokemon.baseStats.specialAttack,
-                spDefense: pokemon.baseStats.specialDefense,
-                speed: pokemon.baseStats.speed,
-              }}
-              accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
-              animated
-              showValues
-            />
-          </View>
+              {/* Base Stats */}
+              <View style={styles.section}>
+                <StatChart
+                  stats={{
+                    hp: pokemon.baseStats.hp,
+                    attack: pokemon.baseStats.attack,
+                    defense: pokemon.baseStats.defense,
+                    spAttack: pokemon.baseStats.specialAttack,
+                    spDefense: pokemon.baseStats.specialDefense,
+                    speed: pokemon.baseStats.speed,
+                  }}
+                  accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
+                  animated
+                  showValues
+                />
+              </View>
 
-          {/* Type Effectiveness */}
-          <View style={styles.section}>
-            <TypeEffectivenessTable
-              primaryType={pokemon.primaryType.toLowerCase()}
-              secondaryType={pokemon.secondaryType ? pokemon.secondaryType.toLowerCase() : null}
-            />
-          </View>
+              {/* Type Effectiveness */}
+              <View style={styles.section}>
+                <TypeEffectivenessTable
+                  primaryType={pokemon.primaryType.toLowerCase()}
+                  secondaryType={pokemon.secondaryType ? pokemon.secondaryType.toLowerCase() : null}
+                />
+              </View>
 
-          {/* Evolution */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Evolution</Text>
-            <EvolutionChain
-              pokemonId={pokemonId}
-              accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
-              onPokemonPress={(formId) => router.push(`/${formId}`)}
-            />
-          </View>
+              {/* Evolution */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Evolution</Text>
+                <EvolutionChain
+                  pokemonId={pokemonId}
+                  accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
+                  onPokemonPress={(formId) => router.push(`/${formId}`)}
+                />
+              </View>
 
-          {/* Cosmetic Alternates Section */}
-          {cosmeticAlternates.length > 0 && (
-            <View style={styles.section}>
-              <CosmeticAlternatesSection alternates={cosmeticAlternates} />
-            </View>
-          )}
+              {/* Cosmetic Alternates Section */}
+              {cosmeticAlternates.length > 0 && (
+                <View style={styles.section}>
+                  <CosmeticAlternatesSection alternates={cosmeticAlternates} />
+                </View>
+              )}
 
-          {/* Type Variants Section */}
-          {typeVariants.length > 0 && (
-            <View style={styles.section}>
-              <TypeVariantsSection variants={typeVariants} />
-            </View>
-          )}
+              {/* Type Variants Section */}
+              {typeVariants.length > 0 && (
+                <View style={styles.section}>
+                  <TypeVariantsSection variants={typeVariants} />
+                </View>
+              )}
 
-          {/* Related Forms */}
-          {relatedForms && relatedForms.length > 1 && (
-            <RelatedFormsSection
-              forms={relatedForms}
-              onFormPress={(formId) => router.push(`/${formId}`)}
-              currentPokemonName={pokemon.displayName}
-              activeFormId={pokemonId}
-            />
-          )}
+              {/* Related Forms */}
+              {relatedForms && relatedForms.length > 1 && (
+                <RelatedFormsSection
+                  forms={relatedForms}
+                  onFormPress={(formId) => router.push(`/${formId}`)}
+                  currentPokemonName={pokemon.displayName}
+                  activeFormId={pokemonId}
+                />
+              )}
 
-          {/* Flavor Text */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Pokédex Entries</Text>
-            <FlavorTextSection
-              flavorTexts={speciesData?.flavorTexts ?? []}
-              accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
-            />
-          </View>
+              {/* Flavor Text */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Pokédex Entries</Text>
+                <FlavorTextSection
+                  flavorTexts={speciesData?.flavorTexts ?? []}
+                  accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
+                />
+              </View>
 
-          {/* Location Encounters */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Location Encounters</Text>
-            <EncounterLocationsSection
-              pokemonId={pokemonId}
-              pokemonName={pokemon.displayName}
-            />
-          </View>
+              {/* Location Encounters */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Location Encounters</Text>
+                <EncounterLocationsSection
+                  pokemonId={pokemonId}
+                  pokemonName={pokemon.displayName}
+                />
+              </View>
 
-          {/* Moveset Section */}
-          <View style={styles.section}>
+              {/* Moveset Section */}
+              <View style={styles.section}>
             <View style={styles.movesetHeader}>
               <Text style={styles.sectionTitle}>
                 Moveset <Text style={styles.moveCount}>({moves.length})</Text>
@@ -453,6 +463,10 @@ export default function PokemonDetailScreen() {
               />
             )}
           </View>
+            </>
+          ) : (
+            <View style={{ height: 800 }} />
+          )}
         </View>
       </Animated.ScrollView>
       </LinearGradient>
