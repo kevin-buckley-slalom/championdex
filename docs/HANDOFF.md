@@ -1,5 +1,5 @@
 # ChampionDex — Session Handoff Notes
-**Updated:** 2026-07-16 | Mega + fairy backdrop particles complete. Fresh-install DB crash fixed. Next work: remaining backdrop particles (psychic, ghost, dark, dragon, steel, poison, normal, ground).
+**Updated:** 2026-07-16 | Bundled pre-built SQLite DB shipped; list pagination with useInfiniteQuery; two-phase DB init (blocking Phase 1 / fire-and-forget Phase 2). Next work: remaining backdrop particles (psychic, ghost, dark, dragon, steel, poison, normal, ground).
 
 ---
 
@@ -25,28 +25,31 @@ Fixed — warm launches are clean. See Known Issues section at bottom for resolu
 
 ---
 
-## Architecture: Seed Flow (DATA_VERSION: '1.9.0')
+## Architecture: Data Loading (DATA_VERSION: '1.10.0')
+
+### Bundled DB Strategy (implemented 2026-07-16)
+- `assets/db/championdex.db` (~9.8 MB) — pre-built SQLite DB committed to git, contains all Pokémon, moves, flavor text, evolutions
+- Fresh install: `importDatabaseFromAssetAsync` (expo-sqlite) copies DB on first launch (~2.8s one-time copy); no PokeAPI fetches on first run
+- Warm launch: single `SELECT` on `sync_metadata` version key → returns immediately (~50ms)
+- Artwork/encounters enrichment runs fire-and-forget in Phase 2 (background, non-blocking)
+- List uses `useInfiniteQuery` with page size 50 — first 50 rows render immediately
+- Phase 1 (`initializeDatabasePhase1`) blocks render; Phase 2 (`initializeDatabase`) is fire-and-forget after setIsReady
+- **To rebuild bundled DB:** `node scripts/generateBundledDb.js` → commit `assets/db/championdex.db` → bump `DATA_VERSION`
+
+### Seed Flow (legacy warm-launch path — only runs when `data_version` is missing)
 
 ```
-app/_layout.tsx → initializeDatabase()
-  → runMigrations() — schema + one-time pruning migration (FK checks disabled during prune)
-  → seedDatabase(db)
-      Phase 1 (blocking, ~1-2s):
-        prefetchPokeApiIds(db, dex)     ← uses DB cache; ~0 network after first run
-        withTransactionAsync:
-          seedAbilities / seedItems / seedMoves  ← ON CONFLICT(id) DO UPDATE
-          seedPokemonBaseData(db, dex, cache)    ← ON CONFLICT(id) DO UPDATE ← BUG HERE
-          write data_version = '1.9.0'
-        return  ← app renders
-        startPokeApiEnrichment(db, dex)  ← fire-and-forget
+app/_layout.tsx → initializeDatabasePhase1()  [blocks render]
+  → copyBundledDbIfNeeded()              ← importDatabaseFromAssetAsync; skips if DB exists
+  → getDatabase()                        ← openDatabaseAsync('championdex.db')
+  → SELECT data_version FROM sync_metadata
+      if present → return immediately    ← warm launch fast path (~50ms)
+      if missing → CREATE TABLE IF NOT EXISTS × 12 + seedDatabase(db)  ← fresh install only
+→ setIsReady(true) → app renders
 
-      Phase 2 (background, fire-and-forget):
-        enrichDatabaseAsync(db, dex)
-          checks pokeapi_enrich_version = '1.0.0' → skip if done
-          prefetchPokeApiSpeciesData(db, dex)  ← DB-cached; only fetches missing species
-          withTransactionAsync:
-            writePokeApiEnrichment()  ← flavor text + evolutions, INSERT OR IGNORE
-            write pokeapi_enrich_version = '1.0.0'
+app/_layout.tsx → initializeDatabase()  [fire-and-forget after render]
+  → runMigrations()                      ← schema migrations + one-time pruning
+  → startPokeApiEnrichment(db, dex)      ← fire-and-forget enrichment streams
 ```
 
 **Version constants:**

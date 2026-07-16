@@ -572,6 +572,7 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
           style={styles.backdropImage}
           contentFit="cover"
           cachePolicy="memory-disk"
+          priority="high"
           accessibilityLabel={`${pokemonName} type environment backdrop`}
         />
       </Animated.View>
@@ -616,6 +617,7 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
           style={styles.artwork}
           contentFit="contain"
           cachePolicy="memory-disk"
+          priority="high"
         />
         {/* White silhouette overlay — tintColor preserves alpha, only colours non-transparent pixels */}
         <Animated.View
@@ -628,6 +630,7 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
             contentFit="contain"
             tintColor="white"
             cachePolicy="memory-disk"
+            priority="high"
           />
         </Animated.View>
       </Animated.View>

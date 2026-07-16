@@ -228,24 +228,16 @@ export async function initializeDatabasePhase1(): Promise<void> {
 }
 
 async function _initializeDatabasePhase1(): Promise<void> {
-  const t0 = Date.now();
   await copyBundledDbIfNeeded();
-  console.log(`[Database] [timing] copyBundledDbIfNeeded: ${Date.now() - t0}ms`);
-
-  const t1 = Date.now();
   const database = await getDatabase();
-  console.log(`[Database] [timing] getDatabase: ${Date.now() - t1}ms`);
 
   // Fast path: if data_version is already current, all tables and data exist — nothing to do.
-  const t2 = Date.now();
   try {
     const result = await database.getFirstAsync<{ value: string }>(
       'SELECT value FROM sync_metadata WHERE key = ?',
       ['data_version']
     );
-    console.log(`[Database] [timing] version check: ${Date.now() - t2}ms`);
     if (result?.value) {
-      console.log(`[Database] [timing] Phase 1 total (fast path): ${Date.now() - t0}ms`);
       console.log('[Database] Base data already seeded, skipping schema creation');
       return;
     }

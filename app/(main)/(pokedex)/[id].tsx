@@ -15,7 +15,6 @@ import { useMovesetForPokemon } from '@/hooks/queries/useMovesetForPokemon';
 import { useFormVariants } from '@/hooks/queries/useFormVariants';
 import { useDebounce } from '@/hooks/ui/useDebounce';
 import { prefetchShinyArtwork, isImageCached, getShinyHomeRenderUrl } from '@/services/prefetch/artworkPrefetchService';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
 import { TypeBadge } from '@/components/common/TypeBadge';
 import { PokemonHero } from '@/components/pokemon/PokemonHero';
@@ -134,22 +133,6 @@ export default function PokemonDetailScreen() {
   useEffect(() => {
     if (!pokemon?.pokeApiId) return;
 
-    const artworkUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pokemon.pokeApiId}.png`;
-
-    // Debug log to verify correct PokeAPI ID for alternate forms and cache availability
-    console.log('[PokemonDetail] Loading artwork for:', {
-      displayName: pokemon.displayName,
-      formType: pokemon.formType,
-      nationalDex: pokemon.nationalDex,
-      pokeApiId: pokemon.pokeApiId,
-      artworkUrl,
-    });
-
-    // Check if normal artwork is cached (for alternate forms, this indicates prefetch success)
-    isImageCached(artworkUrl).then((isCached) => {
-      console.log(`[PokemonDetail] Normal artwork cache check for ${pokemon.displayName} (${pokemon.pokeApiId}): ${isCached ? 'CACHED' : 'NOT CACHED - will fetch live'}`);
-    });
-
     const shinyUrl = getShinyHomeRenderUrl(pokemon.pokeApiId);
 
     // Check if already cached, otherwise start prefetch
@@ -198,15 +181,6 @@ export default function PokemonDetailScreen() {
           message="Failed to load Pokémon"
           subMessage={error?.message}
         />
-      </SafeAreaView>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container} edges={['left', 'right']}>
-        <Stack.Screen options={{ title: 'Pokémon' }} />
-        <LoadingSpinner message="Loading Pokémon..." />
       </SafeAreaView>
     );
   }
