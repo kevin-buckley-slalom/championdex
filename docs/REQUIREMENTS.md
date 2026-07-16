@@ -56,6 +56,7 @@ This document specifies all functional and non-functional requirements for Champ
 | REQ-023 | Display item detail: name, description, effect | Item page shows name, type icon, full description of effect/use | P1 |
 | REQ-024 | Navigate between related details (Pokemon ↔ Move ↔ Ability ↔ Item) | Each detail page has deep links to related entities; navigation is frictionless | P1 |
 | REQ-025 | Back navigation to previous screen | Tap back button or swipe gesture; returns to previous page and position | P0 |
+| REQ-025a | Ambient backdrop particle effects on hero | Subtle looping particle animations layered behind Pokémon artwork; backdrop-specific per type (leaves/grass, embers/fire, sparks/electric, etc.); always behind artwork; user-disableable via `particlesEnabled` prop | P1 |
 
 ### 2.3 Team Builder
 

@@ -11,7 +11,7 @@
  * File: src/components/pokemon/BackdropParticleLayer.tsx
  */
 
-import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -32,15 +32,6 @@ import Svg, { Circle, Defs, RadialGradient, Stop, Line, Path, Filter, FeGaussian
 // Create animated Path component at module level for strokeDashoffset animation
 const AnimatedPath = createAnimatedComponent(Path);
 
-// Bug spore position pool (extracted for reuse by position-advance logic and jitter animations)
-const BUG_SPORE_POOL = [
-  { x: 0.10, y: 0.08 }, { x: 0.72, y: 0.15 }, { x: 0.35, y: 0.28 }, { x: 0.88, y: 0.32 },
-  { x: 0.22, y: 0.45 }, { x: 0.60, y: 0.38 }, { x: 0.48, y: 0.18 }, { x: 0.82, y: 0.55 },
-  { x: 0.15, y: 0.62 }, { x: 0.55, y: 0.72 }, { x: 0.78, y: 0.22 }, { x: 0.30, y: 0.52 },
-  { x: 0.92, y: 0.42 }, { x: 0.42, y: 0.80 }, { x: 0.68, y: 0.60 }, { x: 0.08, y: 0.35 },
-  { x: 0.58, y: 0.12 }, { x: 0.25, y: 0.72 }, { x: 0.85, y: 0.68 }, { x: 0.45, y: 0.48 },
-];
-const BUG_POOL_SIZE = BUG_SPORE_POOL.length; // 20
 
 interface BackdropParticleLayerProps {
   backdropKey: string;
@@ -263,22 +254,18 @@ export const BackdropParticleLayer: React.FC<BackdropParticleLayerProps> = ({
     ];
   }, [backdropKey, heroHeight]);
 
-  // Bug particle data (spore particles cycling through positions with per-spore position indices)
-  const bugParticleData = useMemo<(ParticleData & { driftAmp: number; driftDir: number; swayHalfPeriod: number })[]>(() => {
+  // Bug particle data (6 spores at fixed positions, each with unique duration and stagger)
+  const bugParticleData = useMemo<ParticleData[]>(() => {
     if (backdropKey !== 'bug') return [];
-    return [0, 1, 2, 3, 4].map(i => ({
-      startX: screenWidth * BUG_SPORE_POOL[0].x,
-      startY: heroHeight * BUG_SPORE_POOL[0].y,
-      duration: 5000 + i * 600,
-      staggerDelay: i * 1600,
-      driftAmp: 8 + i * 2,
-      driftDir: i % 2 === 0 ? 1 : -1,
-      swayHalfPeriod: 1800 + i * 300,
-    }));
+    return [
+      { startX: screenWidth * 0.20, startY: heroHeight * 0.15, duration: 4800, staggerDelay: 0,    driftAmp: screenWidth * 0.42, driftDir:  1, swayHalfPeriod: 5500 },
+      { startX: screenWidth * 0.78, startY: heroHeight * 0.55, duration: 6200, staggerDelay: 1100, driftAmp: screenWidth * 0.38, driftDir: -1, swayHalfPeriod: 7200 },
+      { startX: screenWidth * 0.45, startY: heroHeight * 0.72, duration: 5500, staggerDelay: 2800, driftAmp: screenWidth * 0.44, driftDir:  1, swayHalfPeriod: 6300 },
+      { startX: screenWidth * 0.85, startY: heroHeight * 0.28, duration: 7800, staggerDelay: 700,  driftAmp: screenWidth * 0.40, driftDir: -1, swayHalfPeriod: 8800 },
+      { startX: screenWidth * 0.12, startY: heroHeight * 0.60, duration: 5000, staggerDelay: 3500, driftAmp: screenWidth * 0.36, driftDir:  1, swayHalfPeriod: 6900 },
+      { startX: screenWidth * 0.60, startY: heroHeight * 0.40, duration: 6800, staggerDelay: 1900, driftAmp: screenWidth * 0.46, driftDir: -1, swayHalfPeriod: 8100 },
+    ];
   }, [screenWidth, backdropKey, heroHeight]);
-
-  // State for bug spore position indices: one per spore, initialized with staggered offsets
-  const [sporePositionIndices, setSporePositionIndices] = useState<number[]>([0, 1, 2, 3, 4]);
 
   // Helper to generate a single random zigzag path for a lightning bolt
   const generateRandomLightningPath = useCallback((w: number, boltHeight: number): string => {
@@ -355,7 +342,7 @@ export const BackdropParticleLayer: React.FC<BackdropParticleLayerProps> = ({
         paths: Array.from({ length: PATHS_PER_BOLT }, () => generateRandomLightningPath(w, boltHeight)),
       },
     ];
-  }, [backdropKey, heroHeight, generateRandomLightningPath]);
+  }, [backdropKey, heroHeight]);
 
   // Particle appearance (static styling)
   const particleAppearance = useMemo<ParticleAppearance[]>(() => {
@@ -425,7 +412,7 @@ export const BackdropParticleLayer: React.FC<BackdropParticleLayerProps> = ({
       });
     }
     if (backdropKey === 'bug') {
-      return Array(5).fill({
+      return Array(6).fill({
         width: 8,
         height: 8,
         borderRadius: 4,
@@ -452,35 +439,23 @@ export const BackdropParticleLayer: React.FC<BackdropParticleLayerProps> = ({
 
   const isActive = enabled && !!PARTICLE_CONFIGS[backdropKey];
 
+  // Debounce refs to ensure we only increment once per flash (lightning bolts: indices 0–2)
+
   // Path indices for lightning bolts: one per bolt
-  const [pathIndices, setPathIndices] = useState<number[]>([0, 0, 0]);
+  const pathIndices = useRef<number[]>([0, 0, 0]);
 
-  // Stable callback to increment path index for a given bolt
+  // Stable callback to increment path index — must be wrapped in runOnJS when called from UI thread
   const incrementPathIndex = useCallback((boltIdx: number) => {
-    setPathIndices((prev) => {
-      const next = [...prev];
-      next[boltIdx] = (next[boltIdx] + 1) % 12;
-      return next;
-    });
+    pathIndices.current[boltIdx] = (pathIndices.current[boltIdx] + 1) % 12;
   }, []);
-
-  // Stable callback to advance spore position index (wraps at BUG_POOL_SIZE)
-  const advanceSporePosition = useCallback((sporeIdx: number) => {
-    setSporePositionIndices((prev) => {
-      const next = [...prev];
-      next[sporeIdx] = (next[sporeIdx] + 1) % BUG_POOL_SIZE;
-      return next;
-    });
-  }, []);
-
-  // Debounce refs to ensure we only increment once per flash/teleport
-  // Lightning bolts use [0, 1, 2]; bug spores use [0, 1, 2, 3, 4]
-  const debounceRefs = useRef<boolean[]>([false, false, false, false, false, false, false, false]);
 
   useEffect(() => {
     if (!isActive) return;
-    // Reset debounce refs when restarting (lightning: 0–2, bug spores: 3–7)
-    debounceRefs.current = [false, false, false, false, false, false, false, false];
+    // Reset debounce refs when restarting (lightning bolts: 0–2)
+    boltDebounce0.value = false;
+    boltDebounce1.value = false;
+    boltDebounce2.value = false;
+    pathIndices.current = [0, 0, 0];
   }, [isActive]);
 
   useEffect(() => {
@@ -801,23 +776,34 @@ export const BackdropParticleLayer: React.FC<BackdropParticleLayerProps> = ({
         sv.sc.value = 1;
       });
     } else if (backdropKey === 'bug') {
-      // Bug: 5 spore particles with opacity-only animation in this effect
-      // Position and jitter are animated separately in the position-dependent useEffect below
+      // Bug: 6 spores at fixed positions, each with independent fade cycle
       bugParticleData.forEach((d, i) => {
         const sv = sharedValues[i];
-        const { duration, staggerDelay } = d;
-        const FADE_IN = 1200;
-        const FADE_OUT = 1200;
-        const holdDuration = duration - FADE_IN - FADE_OUT;
-        const GAP = 300;  // brief dark gap after fade-out so reaction can fire
+        const { startX, startY, duration, staggerDelay, driftAmp, driftDir, swayHalfPeriod } = d;
+        const startYVal = startY ?? heroHeight * 0.35;
+        // Y period is intentionally incommensurate with X period so position when visible varies
+        const tyPeriod = Math.round(swayHalfPeriod * 1.47);
+        const tyAmp = heroHeight * 0.30 * (driftDir === 1 ? 1 : -1);
 
-        // Opacity only: fade in → hold → fade out → dark gap (repeating)
+        sv.tx.value = startX - driftAmp * driftDir;
+        sv.tx.value = withRepeat(
+          withTiming(startX + driftAmp * driftDir, { duration: swayHalfPeriod, easing: Easing.inOut(Easing.sin) }),
+          -1, true,
+        );
+
+        sv.ty.value = startYVal;
+        sv.ty.value = withRepeat(
+          withTiming(startYVal + tyAmp, { duration: tyPeriod, easing: Easing.inOut(Easing.sin) }),
+          -1, true,
+        );
+
+        sv.op.value = 0;
         sv.op.value = withDelay(staggerDelay, withRepeat(
           withSequence(
-            withTiming(0.72, { duration: FADE_IN, easing: Easing.out(Easing.quad) }),
-            withTiming(0.72, { duration: holdDuration }),
-            withTiming(0, { duration: FADE_OUT, easing: Easing.in(Easing.quad) }),
-            withTiming(0, { duration: GAP }),
+            withTiming(0.72, { duration: 1200, easing: Easing.out(Easing.quad) }),
+            withTiming(0.72, { duration: duration - 2400 }),
+            withTiming(0, { duration: 1200, easing: Easing.in(Easing.quad) }),
+            withTiming(0, { duration: duration * 0.9 }), // dark gap — ~0.9× visible time
           ),
           -1, false,
         ));
@@ -835,18 +821,26 @@ export const BackdropParticleLayer: React.FC<BackdropParticleLayerProps> = ({
         cancelAnimation(sv.sc);
       });
     };
-  }, [isActive, backdropKey, heroHeight, particleData, fireParticleData, underwaterParticleData, waterParticleData, iceParticleData, lightningBoltData, flyingParticleData, bugParticleData, sharedValues, screenWidth, sporePositionIndices]);
+  }, [isActive, backdropKey, heroHeight, particleData, fireParticleData, underwaterParticleData, waterParticleData, iceParticleData, lightningBoltData, flyingParticleData, bugParticleData, sharedValues, screenWidth]);
+
+  // Shared value debounce flags for lightning bolt path cycling (UI-thread safe)
+  const boltDebounce0 = useSharedValue(false);
+  const boltDebounce1 = useSharedValue(false);
+  const boltDebounce2 = useSharedValue(false);
+
+  const incrementPathIndex0 = useCallback(() => incrementPathIndex(0), [incrementPathIndex]);
+  const incrementPathIndex1 = useCallback(() => incrementPathIndex(1), [incrementPathIndex]);
+  const incrementPathIndex2 = useCallback(() => incrementPathIndex(2), [incrementPathIndex]);
 
   // useAnimatedReaction for each lightning bolt (unconditional at top level)
-  // Watch opacity and increment path index when flash starts (opacity rises above 0.05)
   useAnimatedReaction(
     () => op0.value,
     (opValue) => {
-      if (opValue > 0.05 && !debounceRefs.current[0]) {
-        debounceRefs.current[0] = true;
-        runOnJS(incrementPathIndex)(0);
+      if (opValue > 0.05 && !boltDebounce0.value) {
+        boltDebounce0.value = true;
+        runOnJS(incrementPathIndex0)();
       } else if (opValue < 0.02) {
-        debounceRefs.current[0] = false;
+        boltDebounce0.value = false;
       }
     },
     [],
@@ -855,11 +849,11 @@ export const BackdropParticleLayer: React.FC<BackdropParticleLayerProps> = ({
   useAnimatedReaction(
     () => op1.value,
     (opValue) => {
-      if (opValue > 0.05 && !debounceRefs.current[1]) {
-        debounceRefs.current[1] = true;
-        runOnJS(incrementPathIndex)(1);
+      if (opValue > 0.05 && !boltDebounce1.value) {
+        boltDebounce1.value = true;
+        runOnJS(incrementPathIndex1)();
       } else if (opValue < 0.02) {
-        debounceRefs.current[1] = false;
+        boltDebounce1.value = false;
       }
     },
     [],
@@ -868,123 +862,16 @@ export const BackdropParticleLayer: React.FC<BackdropParticleLayerProps> = ({
   useAnimatedReaction(
     () => op2.value,
     (opValue) => {
-      if (opValue > 0.05 && !debounceRefs.current[2]) {
-        debounceRefs.current[2] = true;
-        runOnJS(incrementPathIndex)(2);
+      if (opValue > 0.05 && !boltDebounce2.value) {
+        boltDebounce2.value = true;
+        runOnJS(incrementPathIndex2)();
       } else if (opValue < 0.02) {
-        debounceRefs.current[2] = false;
+        boltDebounce2.value = false;
       }
     },
     [],
   );
 
-  // Separate useEffect for bug spore position and jitter animation
-  // Runs whenever position indices change, decoupled from opacity
-  useEffect(() => {
-    if (!isActive || backdropKey !== 'bug') return;
-
-    bugParticleData.forEach((d, i) => {
-      const sv = sharedValues[i];
-      const { duration, driftAmp, driftDir, swayHalfPeriod } = d;
-      const posIdx = sporePositionIndices[i];
-      const pos = BUG_SPORE_POOL[posIdx];
-      const px = screenWidth * pos.x;
-      const py = heroHeight * pos.y;
-      const txJitter = driftAmp * driftDir;
-      const tyJitter = driftAmp * 0.6 * driftDir;
-      const tyPeriod = Math.round(swayHalfPeriod * 1.3);
-
-      // Cancel existing position animations
-      cancelAnimation(sv.tx);
-      cancelAnimation(sv.ty);
-
-      // Initialize position
-      sv.tx.value = px - txJitter;
-      sv.ty.value = py;
-
-      // Animate tx with continuous jitter (ping-pong) at current position
-      sv.tx.value = withRepeat(
-        withTiming(px + txJitter, { duration: swayHalfPeriod, easing: Easing.inOut(Easing.sin) }),
-        -1, true,
-      );
-
-      // Animate ty with continuous jitter (ping-pong) at current position
-      sv.ty.value = withRepeat(
-        withTiming(py + tyJitter, { duration: tyPeriod, easing: Easing.inOut(Easing.sin) }),
-        -1, true,
-      );
-    });
-  }, [isActive, backdropKey, sporePositionIndices, bugParticleData, sharedValues, screenWidth, heroHeight]);
-
-  // useAnimatedReaction for bug spores (spore 0)
-  useAnimatedReaction(
-    () => op0.value,
-    (opValue) => {
-      if (opValue < 0.02 && !debounceRefs.current[3]) {
-        debounceRefs.current[3] = true;
-        runOnJS(advanceSporePosition)(0);
-      } else if (opValue > 0.1) {
-        debounceRefs.current[3] = false;
-      }
-    },
-    [],
-  );
-
-  // useAnimatedReaction for bug spores (spore 1)
-  useAnimatedReaction(
-    () => op1.value,
-    (opValue) => {
-      if (opValue < 0.02 && !debounceRefs.current[4]) {
-        debounceRefs.current[4] = true;
-        runOnJS(advanceSporePosition)(1);
-      } else if (opValue > 0.1) {
-        debounceRefs.current[4] = false;
-      }
-    },
-    [],
-  );
-
-  // useAnimatedReaction for bug spores (spore 2)
-  useAnimatedReaction(
-    () => op2.value,
-    (opValue) => {
-      if (opValue < 0.02 && !debounceRefs.current[5]) {
-        debounceRefs.current[5] = true;
-        runOnJS(advanceSporePosition)(2);
-      } else if (opValue > 0.1) {
-        debounceRefs.current[5] = false;
-      }
-    },
-    [],
-  );
-
-  // useAnimatedReaction for bug spores (spore 3)
-  useAnimatedReaction(
-    () => op3.value,
-    (opValue) => {
-      if (opValue < 0.02 && !debounceRefs.current[6]) {
-        debounceRefs.current[6] = true;
-        runOnJS(advanceSporePosition)(3);
-      } else if (opValue > 0.1) {
-        debounceRefs.current[6] = false;
-      }
-    },
-    [],
-  );
-
-  // useAnimatedReaction for bug spores (spore 4)
-  useAnimatedReaction(
-    () => op4.value,
-    (opValue) => {
-      if (opValue < 0.02 && !debounceRefs.current[7]) {
-        debounceRefs.current[7] = true;
-        runOnJS(advanceSporePosition)(4);
-      } else if (opValue > 0.1) {
-        debounceRefs.current[7] = false;
-      }
-    },
-    [],
-  );
 
   // Animated styles declared unconditionally — only transform + opacity, position is static
   const style0 = useAnimatedStyle(() => ({
@@ -1134,7 +1021,7 @@ export const BackdropParticleLayer: React.FC<BackdropParticleLayerProps> = ({
           const boltConfig = lightningBoltData[idx];
 
           // Get current path for this bolt from the path pool
-          const currentPath = boltConfig?.paths?.[pathIndices[idx] % (boltConfig?.paths?.length || 1)] || '';
+          const currentPath = boltConfig?.paths?.[pathIndices.current[idx] % (boltConfig?.paths?.length || 1)] || '';
 
           return (
             <Animated.View

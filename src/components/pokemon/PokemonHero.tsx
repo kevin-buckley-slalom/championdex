@@ -37,10 +37,11 @@ import Animated, {
 
 import { colors } from '@/constants/colors';
 import { spacing, fontSize, borderRadius } from '@/constants/spacing';
-import { getBackdropAsset } from '@/constants/typeBackdrops';
+import { getBackdropAsset, getBackdropKey } from '@/constants/typeBackdrops';
 import { getHeroGradient } from '@/constants/heroGradients';
 import { VitalInfoOverlay } from './VitalInfoOverlay';
 import { VitalInfoBorder } from './VitalInfoBorder';
+import { BackdropParticleLayer } from './BackdropParticleLayer';
 
 // Placeholder artwork used while real URLs load or are unavailable.
 // Replace with real PokeAPI artwork URLs once data seeding is complete.
@@ -147,6 +148,7 @@ interface ParticleAnimatedValue {
   translateX: SharedValue<number>;
   translateY: SharedValue<number>;
   opacity: SharedValue<number>;
+  rotate: SharedValue<number>;
 }
 
 export interface PokemonHeroProps {
@@ -278,6 +280,18 @@ export interface PokemonHeroProps {
    * Used to determine backdrop selection for special forms
    */
   formType?: string;
+
+  /**
+   * Database name field, lowercase slug (e.g. 'sneasel-hisui')
+   * Used for Pokemon-specific backdrop overrides
+   */
+  pokemonSlug?: string;
+
+  /**
+   * If false, disable all ambient particles instantly
+   * Default: true
+   */
+  particlesEnabled?: boolean;
 }
 
 /**
@@ -307,6 +321,8 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
   accentColor,
   cardSurfaceColor = '#111010',
   formType = undefined,
+  pokemonSlug = undefined,
+  particlesEnabled = true,
 }) => {
   const { width: screenWidth } = useWindowDimensions();
   const [isShiny, setIsShiny] = useState(initiallyShiny);
@@ -318,11 +334,12 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
   // Star button animation
   const starScale = useSharedValue(1);
 
-  // 6 particles — each has translateX, translateY, opacity
+  // 6 particles — each has translateX, translateY, opacity, rotate
   const particles: ParticleAnimatedValue[] = PARTICLE_ANGLES.map(() => ({
     translateX: useSharedValue(0),
     translateY: useSharedValue(0),
     opacity: useSharedValue(0),
+    rotate: useSharedValue(0),
   }));
 
   // Current artwork URL based on shiny state
@@ -333,8 +350,13 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
 
   // Get type-based backdrop and gradient
   const backdropSource = useMemo(
-    () => getBackdropAsset(primaryType, pokemonId, formType),
-    [primaryType, pokemonId, formType],
+    () => getBackdropAsset(primaryType, pokemonId, formType, pokemonSlug, secondaryType),
+    [primaryType, pokemonId, formType, pokemonSlug, secondaryType],
+  );
+
+  const backdropKey = useMemo(
+    () => getBackdropKey(primaryType, pokemonId, formType, pokemonSlug, secondaryType),
+    [primaryType, pokemonId, formType, pokemonSlug, secondaryType],
   );
 
   const heroGradient = useMemo(() => getHeroGradient(primaryType), [primaryType]);
@@ -382,11 +404,16 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
 
         particles[i].translateX.value = 0;
         particles[i].translateY.value = 0;
-        particles[i].opacity.value = 1;
+        particles[i].opacity.value = 0;
+        particles[i].rotate.value = 0;
 
-        particles[i].translateX.value = withDelay(delay, withTiming(dx, { duration: PARTICLE_BURST_DURATION }));
-        particles[i].translateY.value = withDelay(delay, withTiming(dy, { duration: PARTICLE_BURST_DURATION }));
-        particles[i].opacity.value = withDelay(delay, withTiming(0, { duration: PARTICLE_BURST_DURATION }));
+        particles[i].translateX.value = withDelay(delay, withTiming(dx, { duration: PARTICLE_BURST_DURATION, easing: Easing.out(Easing.poly(6)) }));
+        particles[i].translateY.value = withDelay(delay, withTiming(dy, { duration: PARTICLE_BURST_DURATION, easing: Easing.out(Easing.poly(6)) }));
+        particles[i].opacity.value = withDelay(delay, withSequence(
+          withTiming(1, { duration: PARTICLE_BURST_DURATION * 0.2 }),
+          withTiming(0, { duration: PARTICLE_BURST_DURATION * 0.6 }),
+        ));
+        particles[i].rotate.value = withDelay(delay, withTiming(450, { duration: PARTICLE_BURST_DURATION, easing: Easing.out(Easing.poly(6)) }));
       });
     }
 
@@ -506,6 +533,7 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
       transform: [
         { translateX: p.translateX.value },
         { translateY: p.translateY.value },
+        { rotate: `${p.rotate.value}deg` },
       ],
       opacity: p.opacity.value,
     }))
@@ -562,6 +590,13 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
 
       {/* Layer 3: Vignette Scrim (subtle radial darkness behind artwork) */}
       <View style={styles.vignetteScrim} />
+
+      {/* Layer 3b: Environmental Particle Layer (behind artwork, above backdrop) */}
+      <BackdropParticleLayer
+        backdropKey={backdropKey}
+        heroHeight={heroHeight}
+        enabled={particlesEnabled}
+      />
 
       {/* Layer 4: Artwork Container (0.5x parallax, fades as user scrolls) */}
       <Animated.View

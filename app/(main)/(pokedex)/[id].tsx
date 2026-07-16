@@ -264,6 +264,7 @@ export default function PokemonDetailScreen() {
           shinyReady={shinyReady}
           cardSurfaceColor={cardSurfaceColor}
           formType={pokemon.formType}
+          pokemonSlug={pokemon.name}
         />
 
         {/* Left accent bar wrapper — contains all info sections below hero */}

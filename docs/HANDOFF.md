@@ -15,47 +15,13 @@ Cross-platform Pokémon companion app (Expo SDK 57 / React Native, iOS + Android
 ### Phase 0 — Scaffolding ✅
 ### Phase 1 — Data Layer ✅ COMPLETE (seed stable, enrichment working, diagnostic logs removed)
 ### Phase 2 — Reference List Screens ✅ COMPLETE AND LOCKED — do not modify
-### Phase 3 — Detail Views 🔄 ACTIVE (~90% complete — see detail below)
+### Phase 3 — Detail Views 🔄 ACTIVE (~95% complete — see detail below)
 
 ---
 
 ## ✅ Resolved: Seed UNIQUE constraint bug
 
-**Error observed (latest run):**
-```
-ERROR  [Database] Error during seeding: [Error: Call to function 'NativeStatement.runAsync' has been rejected.
-→ Caused by: Error code : UNIQUE constraint failed: pokemon.name]
-```
-
-**What's working:**
-- App starts and renders (Phase 1 split is working — UI unblocks quickly)
-- Form pruning migration works correctly (Pikachu hats, Vivillon wings, etc. are gone)
-- `prefetchPokeApiIds` runs and returns 224 from DB cache (0 network calls) ✅
-
-**Root cause hypothesis:**
-The `pokemon` table has `name TEXT NOT NULL UNIQUE`. The seed uses:
-```sql
-INSERT INTO pokemon (...) ON CONFLICT(id) DO UPDATE SET ...
-```
-This conflicts on `id` (primary key), but if a previously seeded row with the same `name` exists with a *different* `id`, the INSERT still violates the `UNIQUE(name)` constraint before the `ON CONFLICT(id)` clause fires.
-
-This can happen when:
-1. Prior seed runs inserted rows with auto-incremented `pokemonId` counter
-2. A version bump + exclusion list change means the counter now assigns different IDs to the same species
-3. The old row (different id, same name) blocks the new insert
-
-**Files to investigate:**
-- `src/services/database/seedDatabase.ts` — `seedPokemonBaseData` function, the `ON CONFLICT(id) DO UPDATE` pokemon insert
-- The `pokemonId` counter is a simple increment over `dex.species.all()` — if the FORM_EXCLUSION_SET skips entries mid-loop, IDs shift for all subsequent species
-
-**Fix direction:**
-Option A (preferred): Change `ON CONFLICT(id)` to `ON CONFLICT(name)` since `name` is the stable natural key from `@pkmn/dex`. The `id` column should then be derived from or matched to the existing row's id rather than being an auto-incrementing counter. This requires reading the existing pokemon row by `name` to get its `id` before inserting.
-
-Option B (simpler but less correct): Use `INSERT OR IGNORE` for pokemon (skip if name already exists) — acceptable since the only thing that changes between versions is base stats, and we could do a follow-up UPDATE.
-
-Option C: Before the seed transaction, build a map of `name -> existing_id` from the DB, then use those IDs in the insert so there's never an id/name mismatch.
-
-**Do NOT declare this fixed until the app runs without the UNIQUE constraint error in the console.**
+Fixed — warm launches are clean. See Known Issues section at bottom for resolution details.
 
 ---
 
@@ -257,7 +223,7 @@ No batch logs, no network activity. Species counts confirmed: 1025 enriched, 2 n
 - **Ability Detail** `app/(main)/(pokedex)/abilities/[id].tsx` — name, generation badge, hidden ability indicator, description
 - **Item Detail** `app/(main)/(pokedex)/items/[id].tsx` — name, sprite, category, cost, description (**complete**)
 - Hooks: `usePokemonDetail`, `useMoveDetail`, `useAbilityDetail`, `useItemDetail`, `usePokemonAbilities`, `usePokemonSpeciesData`, `useRelatedForms`, `useEvolutionChain`
-- Components: `PokemonHero`, `ShinyToggle`, `StatChart`, `TypeEffectivenessTable`, `RelatedFormsSection`, `FlavorTextSection`, `EvolutionChain`
+- Components: `PokemonHero`, `ShinyToggle`, `StatChart`, `TypeEffectivenessTable`, `RelatedFormsSection`, `FlavorTextSection`, `EvolutionChain`, `BackdropParticleLayer`
 
 ### STILL TODO ❌ (in priority order)
 1. **Info Section Design** (Height, Weight, Generation, Gender Ratio, Legendary/Mythical status) ✅ COMPLETE
@@ -310,6 +276,29 @@ No batch logs, no network activity. Species counts confirmed: 1025 enriched, 2 n
    - `DATA_VERSION` bumped `'1.9.0'` → `'1.10.0'`; triggers re-seed on existing devices
    - `runZAFormsEnrichmentBackfill` added as 5th concurrent stream in `startPokeApiEnrichment`, gated by `za_forms_enrichment_v1` sync_metadata key
    - Device confirmed: Hawlucha-Mega in Pokémon list, in RelatedFormsSection on Hawlucha, detail screen correct; warm launch shows `[Database] Z-A forms enrichment already complete`
+
+10. **Backdrop Particle System** (REQ-025a) 🔄 IN PROGRESS
+    - `src/components/pokemon/BackdropParticleLayer.tsx` — ambient looping particle layer; sits between vignette scrim and artwork (Layer 3b)
+    - `src/constants/typeBackdrops.ts` — exports `getBackdropKey()` (same priority logic as `getBackdropAsset` but returns string key); lookup tables hoisted to module-level constants
+    - `PokemonHero` accepts `particlesEnabled?: boolean` (default `true`) — set `false` to disable all particles instantly
+    - `PARTICLE_CONFIGS` map in `BackdropParticleLayer.tsx` gates which backdrop keys have particles — add a key to enable a new type
+    - All animations use Reanimated 3 (`useSharedValue`/`useAnimatedStyle`/`useAnimatedProps`). All shared values declared unconditionally at top level (fixed pool of 6 slots). `AnimatedPath = createAnimatedComponent(Path)` declared at module level.
+    - **Grass ✅ COMPLETE** — 5 leaves, 5–7.4s fall, sinusoidal sway ±20–40px, fade in/out 800ms, peak opacity 0.65, evenly spread across full hero width
+    - **Fire ✅ COMPLETE** — 6 ember sparks, `rgba(255,140,20,0.65)`, upward drift with sinusoidal sway, fade in/out 800ms
+    - **Water ✅ COMPLETE** — 6 rising bubbles, `rgba(80,160,220,0.60)`, upward drift, gentle sway
+    - **Underwater ✅ COMPLETE** — variant of water with slower, larger bubbles
+    - **Ice ✅ COMPLETE** — 5 snowflakes, downward drift, slow rotation, fade in/out
+    - **Electric ✅ COMPLETE** — 3 randomised lightning bolts, 4-layer volumetric render (atmospheric glow + outer shell + mid-band + hot core), per-bolt `useAnimatedReaction` + `runOnJS` path cycling, `boltDebounce0/1/2` shared values, `FLASH_IN=40ms, FLASH_DROP=240ms, DECAY=1400ms, PEAK_OP=0.65, DIM_OP=0.20`, gaps 3200/5500/4200ms, bolt height 0.8× heroHeight
+    - **Flying ✅ COMPLETE** — 4 wind streaks, two-layer SVG (8px halo σ=6 + 2px core σ=3), sine-wave path (60 pts, amplitude 7/10/13/16px, frequency 1.5), right-to-left travel via `strokeDashoffset` animation, `AnimatedPath` + `useAnimatedProps`
+    - **Bug ✅ COMPLETE** — 6 spores, `rgba(168,140,100,0.72)`, 8×8dp circles, large-amplitude incommensurate x/y oscillation (swayHalfPeriod 5500–8800ms, ratio 1.47), dark gap `duration×0.9` gives teleport appearance, distinct starting origins spread across hero
+    - **Pending**: psychic, ghost, dark, dragon, fairy, steel, poison, normal, ground (rock/fighting skipped)
+    - Design spec (UI designer) in `docs/CUSTOM_BACKDROPS.md` § Backdrop Particle Effects
+    - To disable during development: `particlesEnabled={false}` on `<PokemonHero>` in `app/(main)/(pokedex)/[id].tsx`
+    - **Critical implementation rules** (learned from crashes):
+      - `generateRandomLightningPath` must stay as `useCallback(..., [])` — plain function causes infinite re-render
+      - Debounce flags must be `useSharedValue(false)`, not JS refs — JS refs can't be read on UI thread
+      - Callbacks called via `runOnJS` from reactions must be stable `useCallback` wrappers
+      - `runOnJS` must always wrap JS function calls inside `useAnimatedReaction`
 
 9. **Visual quality, responsiveness & validation** (REQ-032, spec 2.14)
    - Form-switch animation (fade + scale on artwork/stats/badges); type badge contrast audit; layout at 320–430px; full functional + accessibility checklist
@@ -403,20 +392,37 @@ app/
 src/
   services/database/
     initializeDatabase.ts             — schema + migrations + one-time pruning migration
-    seedDatabase.ts                   — DATA_VERSION 1.9.0 / ENRICH_VERSION 1.0.0; 2-phase seed
+    seedDatabase.ts                   — DATA_VERSION 1.10.0 / ENRICH_VERSION 1.2.0; 2-phase seed
   components/pokemon/
+    PokemonHero.tsx                   — parallax hero, shiny toggle, VitalInfoBorder, particle burst
+    InfoStrip.tsx                     — 4-column info row (height/weight/gen/gender), legendary/mythical badge
+    AbilitiesSection.tsx              — two-column abilities/hidden, onLayout chevron alignment
+    StatChart.tsx                     — animated gradient bar chart, DEFENSE-anchored labels
+    TypeEffectivenessTable.tsx        — tabbed defense/offense chart, 4-tier severity colors, stagger animation
     EvolutionChain.tsx                — evolution chain renderer; formatMethod handles all 16 triggers
     FlavorTextSection.tsx             — game version chip selector + flavor text card
     EncounterLocationsSection.tsx     — game version chips (newest-first) + location list; GAME_VERSION_ORDER covers all PokeAPI slugs
-    StatChart.tsx / RelatedFormsSection.tsx / PokemonHero.tsx
+    RelatedFormsSection.tsx / CosmeticAlternatesSection.tsx / TypeVariantsSection.tsx
+  components/pokemon/
+    BackdropParticleLayer.tsx         — ambient particle layer; PARTICLE_CONFIGS map gates per-backdrop; grass complete, others pending
+  constants/
+    typeBackdrops.ts                  — backdrop asset map + getBackdropKey(); SPECIFIC_ASSIGNMENTS, UNDERWATER_SET, SECONDARY_TYPE_SET at module level
+    typeEffectiveness.ts              — Gen 9 offensive matrix (18×18), calcDefenseEffectiveness, calcOffenseEffectiveness
   hooks/queries/
     useEncounterLocations.ts          — useEncounterLocations(pokemonId, gameVersion) + useEncounterGameVersions(pokemonId)
   services/prefetch/
     artworkPrefetchService.ts         — bulk artwork prefetch; fire-and-forget; checkpoint resume
 
+assets/
+  images/backdrops/                   — 25 type + special backdrop PNGs (moved from existing-assets/ 2026-07-15)
+  icons/types/                        — 18 type icon PNGs
+
 docs/
   HANDOFF.md                          — this file
-  DETAIL_VIEWS_SPEC.md                — Phase 3 spec incl. new CosmeticAlternatesSection + TypeVariantsSection (section 2.10)
+  DETAIL_VIEWS_REDESIGN_SPEC.md       — authoritative Phase 3 spec (W-001 through W-019, TypeEffectivenessTable final spec in Section 3)
+  DETAIL_VIEWS_SPEC.md                — earlier Phase 3 spec incl. CosmeticAlternatesSection + TypeVariantsSection (section 2.10)
+  DETAIL_SCREEN_QA_SPEC.md            — QA checklist for detail screen
+  INFO_SECTION_DESIGN_SPEC.md         — InfoStrip production reference
   forms_audit.txt                     — full enumeration of all non-default forms from @pkmn/dex (generated)
 ```
 
@@ -443,7 +449,7 @@ docs/
 background:      #111010    surface:         #1E1A1A    surfaceElevated: #2A2323
 border:          #3A2E2E    borderLight:     #4A3E3E
 text:            #F5EEEE    textSecondary:   #B89E9E    textMuted:       #9A7A7A
-primary:         #CC0000    accent:          #FFD700
+primary:         #DD3311    accent:          #FFD700
 ```
 
 ## React Query Config
