@@ -336,6 +336,26 @@ async function _initializeDatabase(): Promise<void> {
       updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS pokemon_flavor_text (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      pokemon_id INTEGER NOT NULL,
+      game_version TEXT NOT NULL,
+      flavor_text TEXT NOT NULL,
+      FOREIGN KEY (pokemon_id) REFERENCES pokemon(id),
+      UNIQUE(pokemon_id, game_version)
+    );
+
+    CREATE TABLE IF NOT EXISTS pokemon_evolutions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      pokemon_id INTEGER NOT NULL,
+      evolves_to_id INTEGER NOT NULL,
+      method TEXT NOT NULL,
+      condition_value TEXT,
+      FOREIGN KEY (pokemon_id) REFERENCES pokemon(id),
+      FOREIGN KEY (evolves_to_id) REFERENCES pokemon(id),
+      UNIQUE(pokemon_id, evolves_to_id)
+    );
+
     CREATE TABLE IF NOT EXISTS pokemon_encounter_locations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       pokemon_id INTEGER NOT NULL REFERENCES pokemon(id),
