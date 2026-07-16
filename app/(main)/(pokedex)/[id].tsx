@@ -185,6 +185,11 @@ export default function PokemonDetailScreen() {
     );
   }
 
+  // Still loading — render nothing rather than a flash of "not found"
+  if (!pokemon && !error) {
+    return null;
+  }
+
   if (!pokemon) {
     return (
       <SafeAreaView style={styles.container} edges={['left', 'right']}>
