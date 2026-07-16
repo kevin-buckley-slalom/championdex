@@ -30,13 +30,14 @@ export default function PokedexScreen() {
   // This was causing constant query key changes and refetches
   // Users expect filter state to persist when returning to the screen
 
-  const { data, isLoading, error } = usePokemonList({
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = usePokemonList({
     search: debouncedSearch,
     types: selectedTypes as PokemonType[],
     sortBy,
     sortDirection,
     generation: selectedGeneration,
     typeFilterMode,
+    pageSize: 50,
   });
 
   const handleSearchChange = useCallback((text: string) => {
@@ -56,6 +57,12 @@ export default function PokedexScreen() {
   const renderPokemonCard = useCallback(({ item }: any) => (
     <PokemonCard pokemon={item} onPress={() => handlePokemonPress(item.id)} sortBy={sortBy} />
   ), [handlePokemonPress, sortBy]);
+
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleTabPress = useCallback((tab: string) => {
     if (tab === 'moves') {
@@ -134,6 +141,8 @@ export default function PokedexScreen() {
           keyExtractor={(item: any) => String(item.id)}
           {...{ estimatedItemSize: 84 } as any}
           keyboardDismissMode="interactive"
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.5}
           ListEmptyComponent={
             isLoading
               ? <LoadingSpinner message="Loading Pokédex..." />
@@ -141,6 +150,13 @@ export default function PokedexScreen() {
                   message="No Pokémon found"
                   subMessage="Try adjusting your search or filters"
                 />
+          }
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View style={{ paddingVertical: spacing.lg, alignItems: 'center' }}>
+                <LoadingSpinner message="Loading more..." />
+              </View>
+            ) : null
           }
         />
       )}

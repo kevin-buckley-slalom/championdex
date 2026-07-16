@@ -11,6 +11,93 @@ export async function getAllPokemon(): Promise<Pokemon[]> {
   return results.map(dbRowToPokemon);
 }
 
+export interface PaginationOptions {
+  limit: number;
+  offset: number;
+  search?: string;
+  types?: PokemonType[];
+  generation?: number;
+  sortBy?: 'dex' | 'name' | 'total' | 'hp' | 'attack' | 'defense' | 'specialAttack' | 'specialDefense' | 'speed';
+  sortDirection?: 'asc' | 'desc';
+  typeFilterMode?: 'or' | 'and';
+}
+
+export async function getPokemonPage(options: PaginationOptions): Promise<PokemonListItem[]> {
+  const db = await getDatabase();
+  const {
+    limit,
+    offset,
+    search,
+    types,
+    generation,
+    sortBy = 'dex',
+    sortDirection = 'asc',
+    typeFilterMode = 'or',
+  } = options;
+
+  // Build WHERE clause based on filters
+  const whereClauses: string[] = [];
+  const params: any[] = [];
+
+  if (generation !== undefined) {
+    whereClauses.push('generation = ?');
+    params.push(generation);
+  }
+
+  if (types && types.length > 0) {
+    const normalizedTypes = types.map(t => t.toLowerCase());
+    if (typeFilterMode === 'and' && normalizedTypes.length === 2) {
+      whereClauses.push('(LOWER(primary_type) = ? AND LOWER(secondary_type) = ?) OR (LOWER(primary_type) = ? AND LOWER(secondary_type) = ?)');
+      params.push(normalizedTypes[0], normalizedTypes[1], normalizedTypes[1], normalizedTypes[0]);
+    } else {
+      const typePlaceholders = normalizedTypes.map(() => '?').join(',');
+      whereClauses.push(`(LOWER(primary_type) IN (${typePlaceholders}) OR LOWER(secondary_type) IN (${typePlaceholders}))`);
+      params.push(...normalizedTypes, ...normalizedTypes);
+    }
+  }
+
+  if (search && search.trim()) {
+    const searchPattern = `%${search.toLowerCase()}%`;
+    whereClauses.push('(LOWER(name) LIKE ? OR LOWER(display_name) LIKE ?)');
+    params.push(searchPattern, searchPattern);
+  }
+
+  const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
+  // Build ORDER BY clause
+  let orderByClause = 'ORDER BY national_dex ASC';
+  if (sortBy === 'name') {
+    orderByClause = 'ORDER BY display_name ASC';
+  } else if (sortBy === 'total') {
+    orderByClause = `ORDER BY (hp + attack + defense + special_attack + special_defense + speed) ${sortDirection === 'desc' ? 'DESC' : 'ASC'}`;
+  } else if (['hp', 'attack', 'defense', 'specialAttack', 'specialDefense', 'speed'].includes(sortBy)) {
+    const columnMap: Record<string, string> = {
+      hp: 'hp',
+      attack: 'attack',
+      defense: 'defense',
+      specialAttack: 'special_attack',
+      specialDefense: 'special_defense',
+      speed: 'speed',
+    };
+    orderByClause = `ORDER BY ${columnMap[sortBy]} ${sortDirection === 'desc' ? 'DESC' : 'ASC'}`;
+  } else if (sortDirection === 'desc') {
+    orderByClause = 'ORDER BY national_dex DESC';
+  }
+
+  params.push(limit, offset);
+
+  const results = await db.getAllAsync<any>(
+    `SELECT id, national_dex, pokeapi_id, name, display_name, form_type, form_name, primary_type, secondary_type, sprite_url, generation, hp, attack, defense, special_attack, special_defense, speed
+     FROM pokemon
+     ${whereClause}
+     ${orderByClause}
+     LIMIT ? OFFSET ?`,
+    params
+  );
+
+  return results.map(dbRowToPokemonListItem);
+}
+
 export async function getPokemonById(id: number): Promise<Pokemon | null> {
   const db = await getDatabase();
 

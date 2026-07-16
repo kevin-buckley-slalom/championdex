@@ -273,7 +273,7 @@ describe('seedDatabase - data_version gate logic', () => {
     expect(result?.value).toBe('1.10.0');
 
     // Verify the query
-    const call = dbMock.getFirstAsync.mock.calls[0];
+    const call = (dbMock.getFirstAsync as jest.Mock).mock.calls[0];
     expect(call[0]).toBe('SELECT value FROM sync_metadata WHERE key = ?');
     expect(call[1][0]).toBe('data_version');
   });

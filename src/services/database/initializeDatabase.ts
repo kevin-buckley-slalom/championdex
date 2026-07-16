@@ -202,6 +202,7 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
 
 let db: SQLite.SQLiteDatabase | null = null;
 let initPromise: Promise<void> | null = null;
+let phase1Promise: Promise<void> | null = null;
 
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (db) return db;
@@ -211,20 +212,26 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   return db;
 }
 
-export async function initializeDatabase(): Promise<void> {
-  if (initPromise) return initPromise;
-  initPromise = _initializeDatabase();
+/**
+ * Phase A (blocking): Opens DB, creates base schema, checks seed version gate.
+ * This must complete before the app renders — the query layer depends on tables existing.
+ * Phase B (migrations + enrichment) runs fire-and-forget after this returns.
+ */
+export async function initializeDatabasePhase1(): Promise<void> {
+  if (phase1Promise) return phase1Promise;
+  phase1Promise = _initializeDatabasePhase1();
   try {
-    await initPromise;
+    await phase1Promise;
   } finally {
-    initPromise = null;
+    phase1Promise = null;
   }
 }
 
-async function _initializeDatabase(): Promise<void> {
+async function _initializeDatabasePhase1(): Promise<void> {
   await copyBundledDbIfNeeded();
   const database = await getDatabase();
 
+  // Create all tables using CREATE TABLE IF NOT EXISTS
   await database.execAsync(`
     CREATE TABLE IF NOT EXISTS pokemon (
       id                INTEGER PRIMARY KEY,
@@ -394,9 +401,54 @@ async function _initializeDatabase(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_encounter_pokemon_game ON pokemon_encounter_locations(pokemon_id, game_version);
   `);
 
+  // Check if Phase 1 (base data) is already seeded — if so, Phase 1 is done
+  try {
+    const result = await database.getFirstAsync<{ value: string }>(
+      'SELECT value FROM sync_metadata WHERE key = ?',
+      ['data_version']
+    );
+
+    if (result?.value) {
+      console.log('[Database] Base data already seeded');
+      return;
+    }
+  } catch (error) {
+    // Table may not exist on first run
+  }
+
+  // First run: seed base data (blocking) — use seedDatabase for consistency
+  console.log('[Database] Seeding base data...');
+  const { seedDatabase } = require('./seedDatabase');
+  await seedDatabase(database);
+}
+
+/**
+ * Backwards compatibility: initializeDatabase now calls Phase 1 and Phase 2
+ * (Phase 2 is fire-and-forget within seedDatabase)
+ */
+export async function initializeDatabase(): Promise<void> {
+  if (initPromise) return initPromise;
+  initPromise = _initializeDatabase();
+  try {
+    await initPromise;
+  } finally {
+    initPromise = null;
+  }
+}
+
+async function _initializeDatabase(): Promise<void> {
+  // Phase 1: blocking schema + base seed
+  await initializeDatabasePhase1();
+  const database = await getDatabase();
+
+  // Phase 2: migrations (fire-and-forget)
+  // seedDatabase already kicks off enrichment internally via startPokeApiEnrichment
+  _initializeDatabasePhase2(database).catch((error) => {
+    console.warn('[Database] Phase 2 error:', error);
+  });
+}
+
+async function _initializeDatabasePhase2(database: SQLite.SQLiteDatabase): Promise<void> {
   // Migrations — safe to run on existing databases (each is idempotent)
   await runMigrations(database);
-
-  // Seed the database with bundled data
-  await seedDatabase(database);
 }

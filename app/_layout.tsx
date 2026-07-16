@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
-import { initializeDatabase } from '@/services/database/initializeDatabase';
+import { initializeDatabasePhase1 } from '@/services/database/initializeDatabase';
 import { startArtworkPrefetch, startAlternateFormPrefetch } from '@/services/prefetch/artworkPrefetchService';
 import { usePreloadBackdropImages } from '@/hooks/usePreloadBackdropImages';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -32,13 +32,20 @@ export default function RootLayout() {
   usePreloadBackdropImages();
 
   useEffect(() => {
-    initializeDatabase()
+    initializeDatabasePhase1()
       .then(() => {
         setIsReady(true);
         // Trigger artwork prefetch fire-and-forget (does not block ready state)
         startArtworkPrefetch();
         // Also trigger alternate form prefetch fire-and-forget
         startAlternateFormPrefetch();
+
+        // Phase 2: kick off migrations + enrichment in background (fire-and-forget)
+        // Import here to avoid circular dependencies
+        const { initializeDatabase } = require('@/services/database/initializeDatabase');
+        initializeDatabase().catch((error: any) => {
+          console.warn('[Database] Phase 2 error:', error);
+        });
       })
       .catch((error) => {
         console.error('Failed to initialize database:', error);
