@@ -1,59 +1,32 @@
-import * as FileSystem from 'expo-file-system';
-import { Asset } from 'expo-asset';
-
-const BUNDLED_DB_VERSION = '1.10.0'; // must match DATA_VERSION in seedDatabase.ts
+import { importDatabaseFromAssetAsync } from 'expo-sqlite';
 
 /**
- * On fresh install, copies the bundled pre-built DB into the app's document directory.
- * Returns true if the copy was performed, false if DB already exists.
+ * On fresh install, copies the bundled pre-built DB into the SQLite directory
+ * using expo-sqlite's native asset import mechanism.
  *
- * IMPORTANT: Only call this BEFORE openDatabaseAsync — the file must exist before expo-sqlite opens it.
+ * Uses forceOverwrite: false so existing installs are untouched.
+ * Must be called BEFORE openDatabaseAsync.
+ *
+ * This leverages importDatabaseFromAssetAsync which:
+ * 1. Detects if the DB file already exists in the SQLite directory
+ * 2. If not present, copies the bundled asset to the correct location
+ * 3. Returns immediately on subsequent launches (no-op)
+ *
+ * This is the official, production-safe way to handle bundled databases.
  */
-export async function copyBundledDbIfNeeded(): Promise<boolean> {
-  // Use the deprecated documentDirectory for now as fallback for SDK 57 compatibility
-  // When available, migrate to: const docDir = await FileSystem.Paths.document.getDirectoryAsync();
-  let dbDir: string;
+export async function copyBundledDbIfNeeded(): Promise<void> {
   try {
-    const docPath = (FileSystem as any).documentDirectory;
-    if (docPath) {
-      dbDir = `${docPath}SQLite/`;
-    } else {
-      // Fallback: use a relative path approach
-      return false;
-    }
-  } catch {
-    return false;
-  }
-
-  const dbPath = `${dbDir}championdex.db`;
-
-  // Check if DB already exists
-  try {
-    const info = await FileSystem.getInfoAsync(dbPath);
-    if (info.exists) {
-      return false; // existing install, let seedDatabase handle any version bumps
-    }
-  } catch {
-    // File doesn't exist yet, continue
-  }
-
-  try {
-    // Ensure SQLite directory exists
-    await FileSystem.makeDirectoryAsync(dbDir, { intermediates: true });
-
-    // Load and copy bundled DB
-    const asset = Asset.fromModule(require('../../../assets/db/championdex.db'));
-    await asset.downloadAsync();
-
-    if (!asset.localUri) {
-      throw new Error('Failed to load bundled database asset');
-    }
-
-    await FileSystem.copyAsync({ from: asset.localUri, to: dbPath });
-    console.log('[Database] Copied bundled DB to', dbPath);
-    return true;
+    await importDatabaseFromAssetAsync(
+      'championdex.db',
+      {
+        assetId: require('../../../assets/db/championdex.db'),
+        forceOverwrite: false,
+      },
+      undefined
+    );
+    console.log('[Database] Bundled DB imported successfully (or already exists)');
   } catch (error) {
-    console.error('[Database] Failed to copy bundled DB, continuing with normal initialization:', error);
-    return false;
+    console.error('[Database] Failed to import bundled DB:', error);
+    throw error;
   }
 }
