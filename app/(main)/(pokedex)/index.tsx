@@ -3,6 +3,7 @@ import { View, StyleSheet, Pressable, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { colors, typeColors } from '@/constants/colors';
 import { spacing, fontSize, borderRadius } from '@/constants/spacing';
 import { PokemonType } from '@/types';
@@ -14,9 +15,11 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
 import { SubTabBar } from '@/components/lists/SubTabBar';
 import { FilterSortSheet } from '@/components/lists/FilterSortSheet';
+import { getPokemonById } from '@/services/database/pokemonRepository';
 
 export default function PokedexScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -51,8 +54,14 @@ export default function PokedexScreen() {
   }, []);
 
   const handlePokemonPress = useCallback((pokemonId: number) => {
+    // Kick off the detail query before navigating so it's in-flight (or done) when the screen mounts
+    queryClient.prefetchQuery({
+      queryKey: ['pokemon', 'detail', pokemonId],
+      queryFn: () => getPokemonById(pokemonId),
+      staleTime: Infinity,
+    });
     router.push(`/(main)/(pokedex)/${pokemonId}`);
-  }, [router]);
+  }, [router, queryClient]);
 
   const renderPokemonCard = useCallback(({ item }: any) => (
     <PokemonCard pokemon={item} onPress={() => handlePokemonPress(item.id)} sortBy={sortBy} />
