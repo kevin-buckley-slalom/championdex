@@ -16,6 +16,7 @@ import { importDatabaseFromAssetAsync } from 'expo-sqlite';
  */
 export async function copyBundledDbIfNeeded(): Promise<void> {
   try {
+    const t0 = Date.now();
     await importDatabaseFromAssetAsync(
       'championdex.db',
       {
@@ -24,7 +25,7 @@ export async function copyBundledDbIfNeeded(): Promise<void> {
       },
       undefined
     );
-    console.log('[Database] Bundled DB imported successfully (or already exists)');
+    console.log(`[Database] Bundled DB imported successfully (or already exists) in ${Date.now() - t0}ms`);
   } catch (error) {
     console.error('[Database] Failed to import bundled DB:', error);
     throw error;
