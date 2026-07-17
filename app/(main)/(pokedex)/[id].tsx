@@ -1,8 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, StyleSheet, Text, ScrollView, TextInput, FlatList } from 'react-native';
+import { View, StyleSheet, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedScrollHandler, useAnimatedStyle, interpolate, Extrapolate } from 'react-native-reanimated';
 import { colors, typeColors } from '@/constants/colors';
@@ -11,9 +10,7 @@ import { usePokemonDetail } from '@/hooks/queries/usePokemonDetail';
 import { usePokemonSpeciesData } from '@/hooks/queries/usePokemonSpeciesData';
 import { usePokemonAbilities } from '@/hooks/queries/usePokemonAbilities';
 import { useRelatedForms } from '@/hooks/queries/useRelatedForms';
-import { useMovesetForPokemon } from '@/hooks/queries/useMovesetForPokemon';
 import { useFormVariants } from '@/hooks/queries/useFormVariants';
-import { useDebounce } from '@/hooks/ui/useDebounce';
 import { prefetchShinyArtwork, isImageCached, getShinyHomeRenderUrl } from '@/services/prefetch/artworkPrefetchService';
 import { EmptyState } from '@/components/common/EmptyState';
 import { TypeBadge } from '@/components/common/TypeBadge';
@@ -27,28 +24,11 @@ import { TypeVariantsSection } from '@/components/pokemon/TypeVariantsSection';
 import { FlavorTextSection } from '@/components/pokemon/FlavorTextSection';
 import { EvolutionChain } from '@/components/pokemon/EvolutionChain';
 import { EncounterLocationsSection } from '@/components/pokemon/EncounterLocationsSection';
+import { MovesetSection } from '@/components/pokemon/MovesetSection';
 import { InfoStrip } from '@/components/pokemon/InfoStrip';
 import { AbilitiesSection } from '@/components/pokemon/AbilitiesSection';
 import { toMetricHeight, toImperialHeight, toMetricWeight, toImperialWeight } from '@/utils/unitConversions';
 import { formatGenderRatioString } from '@/utils/pokemonUtils';
-
-function formatLearnMethod(method: string, level: number | null): string {
-  const cleanMethod = method.toLowerCase().trim();
-
-  if (cleanMethod === 'level-up' && level !== null) {
-    return `Lv. ${level}`;
-  } else if (cleanMethod === 'tm') {
-    return 'TM';
-  } else if (cleanMethod === 'egg') {
-    return 'Egg';
-  } else if (cleanMethod === 'tutor') {
-    return 'Tutor';
-  } else if (cleanMethod === 'move-tutor') {
-    return 'Tutor';
-  } else {
-    return method.charAt(0).toUpperCase() + method.slice(1);
-  }
-}
 
 /**
  * Maps Pokémon type to ambient background color, opacity, and gradient style
@@ -115,16 +95,6 @@ export default function PokemonDetailScreen() {
   const pokemonId = parseInt(id ?? '0', 10);
 
   const { data: pokemon, isLoading, error } = usePokemonDetail(pokemonId);
-  const { data: speciesData } = usePokemonSpeciesData(pokemonId);
-  const { data: abilities } = usePokemonAbilities(pokemonId);
-  const { data: relatedForms } = useRelatedForms(pokemonId);
-  const { cosmeticAlternates, typeVariants } = useFormVariants(pokemon?.nationalDex ?? 0);
-
-  // Moveset section state
-  const [moveSearchQuery, setMoveSearchQuery] = useState('');
-  const debouncedMoveSearch = useDebounce(moveSearchQuery, 300);
-  const [moveSortBy, setMoveSortBy] = useState<'name' | 'power' | 'accuracy' | 'category'>('name');
-  const { moves, isLoading: movesLoading } = useMovesetForPokemon(pokemonId, debouncedMoveSearch, moveSortBy);
 
   // Shiny artwork prefetch state
   const [shinyReady, setShinyReady] = useState(false);
@@ -132,14 +102,29 @@ export default function PokemonDetailScreen() {
   // Below-fold content deferral state
   const [belowFoldReady, setBelowFoldReady] = useState(false);
 
+  // Particle layer deferral — tied to belowFoldReady (350ms) with fade-in
+  // MegaParticles uses Image.prefetch (async, non-blocking) and fades in over 400ms
+  // so mounting it at 350ms is safe and appears smooth
+  const [particlesReady, setParticlesReady] = useState(false);
+
   useEffect(() => {
-    const id = requestAnimationFrame(() => setBelowFoldReady(true));
-    return () => cancelAnimationFrame(id);
+    const belowFoldId = setTimeout(() => setBelowFoldReady(true), 350);
+    const particlesId = setTimeout(() => setParticlesReady(true), 1100);
+    return () => {
+      clearTimeout(belowFoldId);
+      clearTimeout(particlesId);
+    };
   }, []);
 
-  // Lazy prefetch shiny artwork on detail screen mount
+  // All queries fire when belowFoldReady — they run async on native thread, don't block JS
+  const { data: speciesData } = usePokemonSpeciesData(pokemonId);
+  const { data: abilities } = usePokemonAbilities(pokemonId);
+  const { data: relatedForms } = useRelatedForms(belowFoldReady ? pokemonId : 0);
+  const { cosmeticAlternates, typeVariants } = useFormVariants(belowFoldReady ? (pokemon?.nationalDex ?? 0) : 0);
+
+  // Defer shiny prefetch check until after first paint
   useEffect(() => {
-    if (!pokemon?.pokeApiId) return;
+    if (!belowFoldReady || !pokemon?.pokeApiId) return;
 
     const shinyUrl = getShinyHomeRenderUrl(pokemon.pokeApiId);
 
@@ -160,7 +145,7 @@ export default function PokemonDetailScreen() {
         });
       }
     });
-  }, [pokemon?.pokeApiId, pokemon?.displayName, pokemon?.formType, pokemon?.nationalDex]);
+  }, [belowFoldReady, pokemon?.pokeApiId, pokemon?.displayName]);
 
   // Parallax scroll handler
   const scrollOffset = useSharedValue(0);
@@ -193,9 +178,13 @@ export default function PokemonDetailScreen() {
     );
   }
 
-  // Still loading — render nothing rather than a flash of "not found"
   if (!pokemon && !error) {
-    return null;
+    return (
+      <SafeAreaView style={styles.container} edges={['left', 'right']}>
+        <Stack.Screen options={{ title: 'Pokémon' }} />
+        <View style={styles.skeletonHero} />
+      </SafeAreaView>
+    );
   }
 
   if (!pokemon) {
@@ -234,7 +223,7 @@ export default function PokemonDetailScreen() {
         <Animated.ScrollView
           style={styles.content}
           contentContainerStyle={styles.contentContainer}
-          scrollEventThrottle={16}
+          scrollEventThrottle={32}
           onScroll={scrollHandler}
         >
         {/* Hero Section with Parallax Artwork */}
@@ -252,6 +241,7 @@ export default function PokemonDetailScreen() {
           cardSurfaceColor={cardSurfaceColor}
           formType={pokemon.formType}
           pokemonSlug={pokemon.name}
+          particlesEnabled={particlesReady}
         />
 
         {/* Left accent bar wrapper — contains all info sections below hero */}
@@ -284,47 +274,48 @@ export default function PokemonDetailScreen() {
             accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
           />
 
+          {/* Above-fold: Render immediately (uses pokemon data already in hand) */}
+          {/* Abilities — uses separate query but renders empty if not ready */}
+          {abilities.length > 0 && (
+            <View style={styles.section}>
+              <AbilitiesSection
+                abilities={abilities}
+                accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
+                onAbilityPress={(id) => router.push(`/abilities/${id}`)}
+              />
+            </View>
+          )}
+
+          {/* Base Stats */}
+          <View style={styles.section}>
+            <StatChart
+              stats={{
+                hp: pokemon.baseStats.hp,
+                attack: pokemon.baseStats.attack,
+                defense: pokemon.baseStats.defense,
+                spAttack: pokemon.baseStats.specialAttack,
+                spDefense: pokemon.baseStats.specialDefense,
+                speed: pokemon.baseStats.speed,
+              }}
+              accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
+              animated
+              showValues
+            />
+          </View>
+
+          {/* Type Effectiveness */}
+          <View style={styles.section}>
+            <TypeEffectivenessTable
+              primaryType={pokemon.primaryType.toLowerCase()}
+              secondaryType={pokemon.secondaryType ? pokemon.secondaryType.toLowerCase() : null}
+            />
+          </View>
+
           {belowFoldReady ? (
             <>
-              {/* Abilities */}
-              {abilities.length > 0 && (
-                <View style={styles.section}>
-                  <AbilitiesSection
-                    abilities={abilities}
-                    accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
-                    onAbilityPress={(id) => router.push(`/abilities/${id}`)}
-                  />
-                </View>
-              )}
-
-              {/* Base Stats */}
-              <View style={styles.section}>
-                <StatChart
-                  stats={{
-                    hp: pokemon.baseStats.hp,
-                    attack: pokemon.baseStats.attack,
-                    defense: pokemon.baseStats.defense,
-                    spAttack: pokemon.baseStats.specialAttack,
-                    spDefense: pokemon.baseStats.specialDefense,
-                    speed: pokemon.baseStats.speed,
-                  }}
-                  accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
-                  animated
-                  showValues
-                />
-              </View>
-
-              {/* Type Effectiveness */}
-              <View style={styles.section}>
-                <TypeEffectivenessTable
-                  primaryType={pokemon.primaryType.toLowerCase()}
-                  secondaryType={pokemon.secondaryType ? pokemon.secondaryType.toLowerCase() : null}
-                />
-              </View>
-
+              {/* Below-fold: Deferred (requires separate queries) */}
               {/* Evolution */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Evolution</Text>
                 <EvolutionChain
                   pokemonId={pokemonId}
                   accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
@@ -358,7 +349,6 @@ export default function PokemonDetailScreen() {
 
               {/* Flavor Text */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Pokédex Entries</Text>
                 <FlavorTextSection
                   flavorTexts={speciesData?.flavorTexts ?? []}
                   accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
@@ -367,7 +357,6 @@ export default function PokemonDetailScreen() {
 
               {/* Location Encounters */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Location Encounters</Text>
                 <EncounterLocationsSection
                   pokemonId={pokemonId}
                   pokemonName={pokemon.displayName}
@@ -376,93 +365,8 @@ export default function PokemonDetailScreen() {
 
               {/* Moveset Section */}
               <View style={styles.section}>
-            <View style={styles.movesetHeader}>
-              <Text style={styles.sectionTitle}>
-                Moveset <Text style={styles.moveCount}>({moves.length})</Text>
-              </Text>
-            </View>
-
-            {/* Search Input */}
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search moves..."
-              placeholderTextColor={colors.textMuted}
-              value={moveSearchQuery}
-              onChangeText={setMoveSearchQuery}
-            />
-
-            {/* Sort Controls */}
-            <View style={styles.sortControlsContainer}>
-              {(['name', 'power', 'accuracy', 'category'] as const).map((option) => (
-                <Pressable
-                  key={option}
-                  onPress={() => setMoveSortBy(option)}
-                  style={[
-                    styles.sortButton,
-                    moveSortBy === option && styles.sortButtonActive,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.sortButtonText,
-                      moveSortBy === option && styles.sortButtonTextActive,
-                    ]}
-                  >
-                    {option.charAt(0).toUpperCase() + option.slice(1)}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            {/* Moves List */}
-            {moves.length === 0 && !movesLoading ? (
-              <Text style={styles.emptyState}>No moves found</Text>
-            ) : (
-              <FlatList
-                scrollEnabled={false}
-                data={moves}
-                keyExtractor={(item, idx) => `${item.id}-${idx}`}
-                renderItem={({ item: move }) => (
-                  <Pressable
-                    onPress={() => router.push(`/moves/${move.id}`)}
-                    style={({ pressed }) => [
-                      styles.moveRow,
-                      pressed && styles.moveRowPressed,
-                    ]}
-                  >
-                    <View style={styles.moveTypeColumn}>
-                      <TypeBadge type={move.type} size="sm" />
-                    </View>
-                    <View style={styles.moveNameColumn}>
-                      <Text style={styles.moveName}>{move.displayName}</Text>
-                      <View style={styles.moveMetaRow}>
-                        <Text style={styles.moveMeta}>
-                          {move.category.charAt(0).toUpperCase() + move.category.slice(1)}
-                        </Text>
-                        {move.power !== null && (
-                          <Text style={styles.moveMeta}>Pow: {move.power}</Text>
-                        )}
-                        {move.power === null && (
-                          <Text style={styles.moveMeta}>Pow: —</Text>
-                        )}
-                        {move.accuracy !== null && (
-                          <Text style={styles.moveMeta}>Acc: {move.accuracy}</Text>
-                        )}
-                        {move.accuracy === null && (
-                          <Text style={styles.moveMeta}>Acc: —</Text>
-                        )}
-                        <Text style={styles.moveMeta}>PP: {move.pp}</Text>
-                      </View>
-                      <Text style={styles.moveLearnMethod}>
-                        {formatLearnMethod(move.learnMethod, move.learnLevel)}
-                      </Text>
-                    </View>
-                  </Pressable>
-                )}
-                scrollEventThrottle={16}
-              />
-            )}
-          </View>
+                <MovesetSection pokemonId={pokemonId} pokemonName={pokemon.displayName} />
+              </View>
             </>
           ) : (
             <View style={{ height: 800 }} />
@@ -549,102 +453,10 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     fontStyle: 'italic',
   },
-  movesetHeader: {
-    marginBottom: spacing.md,
-  },
-  moveCount: {
-    color: colors.textSecondary,
-    fontSize: fontSize.lg,
-    fontWeight: '400',
-  },
-  searchInput: {
+  skeletonHero: {
+    width: '100%',
+    height: 340,
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    fontSize: fontSize.md,
-    color: colors.text,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.md,
-  },
-  sortControlsContainer: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-    flexWrap: 'wrap',
-  },
-  sortButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  sortButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  sortButtonText: {
-    fontSize: fontSize.sm,
-    fontWeight: '500',
-    color: colors.text,
-  },
-  sortButtonTextActive: {
-    color: colors.accent,
-    fontWeight: '600',
-  },
-  moveRow: {
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'flex-start',
-    gap: spacing.md,
-  },
-  moveRowPressed: {
-    opacity: 0.7,
-  },
-  moveTypeColumn: {
-    justifyContent: 'flex-start',
-    paddingTop: spacing.xs,
-  },
-  moveNameColumn: {
-    flex: 1,
-  },
-  moveName: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  moveMetaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginBottom: spacing.xs,
-  },
-  moveMeta: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    fontWeight: '400',
-  },
-  moveLearnMethod: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    fontWeight: '500',
-    marginTop: spacing.xs,
-  },
-  emptyState: {
-    fontSize: fontSize.md,
-    color: colors.textMuted,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    paddingVertical: spacing.lg,
   },
 
 });

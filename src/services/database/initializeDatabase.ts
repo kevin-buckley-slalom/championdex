@@ -3,6 +3,7 @@ import { seedDatabase } from './seedDatabase';
 import { copyBundledDbIfNeeded } from './bundledDbService';
 
 async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
+
   // Each migration uses ALTER TABLE ... ADD COLUMN IF NOT EXISTS pattern.
   // SQLite doesn't support IF NOT EXISTS on ALTER TABLE, so we check the
   // column list first and skip if already present.
@@ -231,7 +232,7 @@ async function _initializeDatabasePhase1(): Promise<void> {
   await copyBundledDbIfNeeded();
   const database = await getDatabase();
 
-  // Fast path: if data_version is already current, all tables and data exist — nothing to do.
+  // Fast path: if tables already exist, skip DDL
   try {
     const result = await database.getFirstAsync<{ value: string }>(
       'SELECT value FROM sync_metadata WHERE key = ?',
@@ -330,7 +331,8 @@ async function _initializeDatabasePhase1(): Promise<void> {
       move_id       INTEGER NOT NULL REFERENCES moves(id) ON DELETE CASCADE,
       learn_method  TEXT NOT NULL,
       learn_level   INTEGER,
-      PRIMARY KEY (pokemon_id, move_id, learn_method)
+      version_group TEXT NOT NULL DEFAULT '',
+      PRIMARY KEY (pokemon_id, move_id, learn_method, version_group)
     );
 
     CREATE TABLE IF NOT EXISTS teams (

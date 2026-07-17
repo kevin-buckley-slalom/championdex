@@ -8,7 +8,7 @@
  * Never intercepts touches (pointerEvents: 'none').
  */
 
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, useWindowDimensions, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
@@ -109,12 +109,12 @@ export const BackdropParticleLayer: React.FC<BackdropParticleLayerProps> = ({
 // ========== GRASS PARTICLES SUB-COMPONENT ==========
 const GrassParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) => {
   const { width: screenWidth } = useWindowDimensions();
-  const ty0 = useSharedValue(0), tx0 = useSharedValue(0), op0 = useSharedValue(0), ro0 = useSharedValue(0), sc0 = useSharedValue(1);
-  const ty1 = useSharedValue(0), tx1 = useSharedValue(0), op1 = useSharedValue(0), ro1 = useSharedValue(0), sc1 = useSharedValue(1);
-  const ty2 = useSharedValue(0), tx2 = useSharedValue(0), op2 = useSharedValue(0), ro2 = useSharedValue(0), sc2 = useSharedValue(1);
-  const ty3 = useSharedValue(0), tx3 = useSharedValue(0), op3 = useSharedValue(0), ro3 = useSharedValue(0), sc3 = useSharedValue(1);
-  const ty4 = useSharedValue(0), tx4 = useSharedValue(0), op4 = useSharedValue(0), ro4 = useSharedValue(0), sc4 = useSharedValue(1);
-  const ty5 = useSharedValue(0), tx5 = useSharedValue(0), op5 = useSharedValue(0), ro5 = useSharedValue(0), sc5 = useSharedValue(1);
+  // 5 particles — ty/tx/op/ro/sc each
+  const ty0 = useSharedValue(0); const tx0 = useSharedValue(0); const op0 = useSharedValue(0); const ro0 = useSharedValue(0); const sc0 = useSharedValue(1);
+  const ty1 = useSharedValue(0); const tx1 = useSharedValue(0); const op1 = useSharedValue(0); const ro1 = useSharedValue(0); const sc1 = useSharedValue(1);
+  const ty2 = useSharedValue(0); const tx2 = useSharedValue(0); const op2 = useSharedValue(0); const ro2 = useSharedValue(0); const sc2 = useSharedValue(1);
+  const ty3 = useSharedValue(0); const tx3 = useSharedValue(0); const op3 = useSharedValue(0); const ro3 = useSharedValue(0); const sc3 = useSharedValue(1);
+  const ty4 = useSharedValue(0); const tx4 = useSharedValue(0); const op4 = useSharedValue(0); const ro4 = useSharedValue(0); const sc4 = useSharedValue(1);
 
   const particleData = useMemo<ParticleData[]>(() => {
     const data: ParticleData[] = [];
@@ -215,14 +215,12 @@ const GrassParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) => {
 // ========== FIRE PARTICLES SUB-COMPONENT ==========
 const FireParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) => {
   const { width: screenWidth } = useWindowDimensions();
-  const sharedVals = [
-    useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0),
-    useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0),
-    useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0),
-    useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0),
-  ];
-  const [ty0, tx0, op0, ro0, sc0, ty1, tx1, op1, ro1, sc1, ty2, tx2, op2, ro2, sc2, ty3, tx3, op3, ro3, sc3, ty4, tx4, op4, ro4, sc4] = sharedVals;
-  const [ty5, tx5, op5, ro5, sc5] = [useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(1)];
+  const ty0 = useSharedValue(0); const tx0 = useSharedValue(0); const op0 = useSharedValue(0); const ro0 = useSharedValue(0); const sc0 = useSharedValue(1);
+  const ty1 = useSharedValue(0); const tx1 = useSharedValue(0); const op1 = useSharedValue(0); const ro1 = useSharedValue(0); const sc1 = useSharedValue(1);
+  const ty2 = useSharedValue(0); const tx2 = useSharedValue(0); const op2 = useSharedValue(0); const ro2 = useSharedValue(0); const sc2 = useSharedValue(1);
+  const ty3 = useSharedValue(0); const tx3 = useSharedValue(0); const op3 = useSharedValue(0); const ro3 = useSharedValue(0); const sc3 = useSharedValue(1);
+  const ty4 = useSharedValue(0); const tx4 = useSharedValue(0); const op4 = useSharedValue(0); const ro4 = useSharedValue(0); const sc4 = useSharedValue(1);
+  const ty5 = useSharedValue(0); const tx5 = useSharedValue(0); const op5 = useSharedValue(0); const ro5 = useSharedValue(0); const sc5 = useSharedValue(1);
 
   const fireParticleData = useMemo<ParticleData[]>(() => {
     const data: ParticleData[] = [];
@@ -327,8 +325,11 @@ const FireParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) => {
 // ========== WATER PARTICLES SUB-COMPONENT ==========
 const WaterParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) => {
   const { width: screenWidth } = useWindowDimensions();
-  const sharedVals = Array(24).fill(0).map(() => useSharedValue(0));
-  const [ty0, tx0, op0, ro0, sc0, ty1, tx1, op1, ro1, sc1, ty2, tx2, op2, ro2, sc2, ty3, tx3, op3, ro3, sc3] = sharedVals;
+  // 4 particles — ty/tx/op/ro/sc each
+  const ty0 = useSharedValue(0); const tx0 = useSharedValue(0); const op0 = useSharedValue(0); const ro0 = useSharedValue(0); const sc0 = useSharedValue(1);
+  const ty1 = useSharedValue(0); const tx1 = useSharedValue(0); const op1 = useSharedValue(0); const ro1 = useSharedValue(0); const sc1 = useSharedValue(1);
+  const ty2 = useSharedValue(0); const tx2 = useSharedValue(0); const op2 = useSharedValue(0); const ro2 = useSharedValue(0); const sc2 = useSharedValue(1);
+  const ty3 = useSharedValue(0); const tx3 = useSharedValue(0); const op3 = useSharedValue(0); const ro3 = useSharedValue(0); const sc3 = useSharedValue(1);
 
   const waterParticleData = useMemo(() => {
     const pool = [
@@ -426,9 +427,13 @@ const WaterParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) => {
 // Placeholder sub-components for other types (underwater, ice, electric, flying, bug, fairy, mega)
 const UnderwaterParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) => {
   const { width: screenWidth } = useWindowDimensions();
-  const sharedVals = Array(24).fill(0).map(() => useSharedValue(0));
-  const [ty0, tx0, op0, ro0, sc0, ty1, tx1, op1, ro1, sc1, ty2, tx2, op2, ro2, sc2, ty3, tx3, op3, ro3, sc3, ty4, tx4, op4, ro4, sc4] = sharedVals;
-  const ty5 = useSharedValue(0), tx5 = useSharedValue(0), op5 = useSharedValue(0), ro5 = useSharedValue(0), sc5 = useSharedValue(1);
+  // 6 particles — ty/tx/op/ro each (sc unused in this component)
+  const ty0 = useSharedValue(0); const tx0 = useSharedValue(0); const op0 = useSharedValue(0); const ro0 = useSharedValue(0);
+  const ty1 = useSharedValue(0); const tx1 = useSharedValue(0); const op1 = useSharedValue(0); const ro1 = useSharedValue(0);
+  const ty2 = useSharedValue(0); const tx2 = useSharedValue(0); const op2 = useSharedValue(0); const ro2 = useSharedValue(0);
+  const ty3 = useSharedValue(0); const tx3 = useSharedValue(0); const op3 = useSharedValue(0); const ro3 = useSharedValue(0);
+  const ty4 = useSharedValue(0); const tx4 = useSharedValue(0); const op4 = useSharedValue(0); const ro4 = useSharedValue(0);
+  const ty5 = useSharedValue(0); const tx5 = useSharedValue(0); const op5 = useSharedValue(0); const ro5 = useSharedValue(0);
 
   const bubbleData = useMemo(() => {
     const data = [];
@@ -501,9 +506,13 @@ const UnderwaterParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) =
 
 const IceParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) => {
   const { width: screenWidth } = useWindowDimensions();
-  const sharedVals = Array(24).fill(0).map(() => useSharedValue(0));
-  const [ty0, tx0, op0, ro0, sc0, ty1, tx1, op1, ro1, sc1, ty2, tx2, op2, ro2, sc2, ty3, tx3, op3, ro3, sc3, ty4, tx4, op4, ro4, sc4] = sharedVals;
-  const ty5 = useSharedValue(0), tx5 = useSharedValue(0), op5 = useSharedValue(0), ro5 = useSharedValue(0), sc5 = useSharedValue(1);
+  // 6 particles — ty/tx/op/ro each (sc unused in this component)
+  const ty0 = useSharedValue(0); const tx0 = useSharedValue(0); const op0 = useSharedValue(0); const ro0 = useSharedValue(0);
+  const ty1 = useSharedValue(0); const tx1 = useSharedValue(0); const op1 = useSharedValue(0); const ro1 = useSharedValue(0);
+  const ty2 = useSharedValue(0); const tx2 = useSharedValue(0); const op2 = useSharedValue(0); const ro2 = useSharedValue(0);
+  const ty3 = useSharedValue(0); const tx3 = useSharedValue(0); const op3 = useSharedValue(0); const ro3 = useSharedValue(0);
+  const ty4 = useSharedValue(0); const tx4 = useSharedValue(0); const op4 = useSharedValue(0); const ro4 = useSharedValue(0);
+  const ty5 = useSharedValue(0); const tx5 = useSharedValue(0); const op5 = useSharedValue(0); const ro5 = useSharedValue(0);
 
   const snowData = useMemo(() => {
     const data = [];
@@ -863,9 +872,13 @@ const FlyingParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) => {
 // ========== BUG PARTICLES SUB-COMPONENT ==========
 const BugParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) => {
   const { width: screenWidth } = useWindowDimensions();
-  const sharedVals = Array(24).fill(0).map(() => useSharedValue(0));
-  const [ty0, tx0, op0, ro0, sc0, ty1, tx1, op1, ro1, sc1, ty2, tx2, op2, ro2, sc2, ty3, tx3, op3, ro3, sc3, ty4, tx4, op4, ro4] = sharedVals;
-  const [sc4, ty5, tx5, op5, ro5, sc5] = [useSharedValue(1), useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(0), useSharedValue(1)];
+  // 6 particles — ty/tx/op each (ro/sc unused in this component)
+  const ty0 = useSharedValue(0); const tx0 = useSharedValue(0); const op0 = useSharedValue(0);
+  const ty1 = useSharedValue(0); const tx1 = useSharedValue(0); const op1 = useSharedValue(0);
+  const ty2 = useSharedValue(0); const tx2 = useSharedValue(0); const op2 = useSharedValue(0);
+  const ty3 = useSharedValue(0); const tx3 = useSharedValue(0); const op3 = useSharedValue(0);
+  const ty4 = useSharedValue(0); const tx4 = useSharedValue(0); const op4 = useSharedValue(0);
+  const ty5 = useSharedValue(0); const tx5 = useSharedValue(0); const op5 = useSharedValue(0);
 
   const bugParticleData = useMemo(() => [
     { startX: screenWidth * 0.20, startY: heroHeight * 0.15, duration: 4800, staggerDelay: 0, driftAmp: screenWidth * 0.42, driftDir: 1, swayHalfPeriod: 5500 },
@@ -1068,9 +1081,23 @@ const FairyParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) => {
 // ========== MEGA PARTICLES SUB-COMPONENT ==========
 const MegaParticles: React.FC<{ heroHeight: number; artworkUrl?: string | null }> = ({ heroHeight, artworkUrl }) => {
   const { width: screenWidth } = useWindowDimensions();
+  const [imageReady, setImageReady] = useState(false);
+  const fadeInOpacity = useSharedValue(0);
   const megaGradRot = useSharedValue(0);
   const megaAOp0 = useSharedValue(0), megaAOp1 = useSharedValue(0), megaAOp2 = useSharedValue(0);
   const megaAOp3 = useSharedValue(0), megaAOp4 = useSharedValue(0), megaAOp5 = useSharedValue(0);
+
+  useEffect(() => {
+    if (!artworkUrl) return;
+    Image.prefetch(artworkUrl)
+      .then(() => setImageReady(true))
+      .catch(() => setImageReady(true));
+  }, [artworkUrl]);
+
+  useEffect(() => {
+    if (!imageReady) return;
+    fadeInOpacity.value = withTiming(1, { duration: 400, easing: Easing.inOut(Easing.quad) });
+  }, [imageReady]);
 
   useEffect(() => {
     megaGradRot.value = 0;
@@ -1118,7 +1145,9 @@ const MegaParticles: React.FC<{ heroHeight: number; artworkUrl?: string | null }
     };
   }, []);
 
-  const megaGradRotStyle = useAnimatedStyle(() => ({ opacity: megaGradRot.value }));
+  const megaGradRotStyle = useAnimatedStyle(() => ({
+    opacity: megaGradRot.value * fadeInOpacity.value
+  }));
   const megaAStyle0 = useAnimatedStyle(() => ({ opacity: megaAOp0.value }));
   const megaAStyle1 = useAnimatedStyle(() => ({ opacity: megaAOp1.value }));
   const megaAStyle2 = useAnimatedStyle(() => ({ opacity: megaAOp2.value }));
@@ -1151,7 +1180,7 @@ const MegaParticles: React.FC<{ heroHeight: number; artworkUrl?: string | null }
               <Stop offset="100%" stopColor="#FF0000" stopOpacity="0" />
             </SvgLinearGradient>
             <Filter id={filterId} x="-60%" y="-60%" width="220%" height="220%">
-              <FeGaussianBlur stdDeviation="128" />
+              <FeGaussianBlur stdDeviation="32" />
             </Filter>
             <Mask id={maskId}>
               <SvgImage href={artworkUrl} x={cx - (ARTWORK_SIZE * 1.08) / 2} y={cy - (ARTWORK_SIZE * 1.08) / 2} width={ARTWORK_SIZE * 1.08} height={ARTWORK_SIZE * 1.08} preserveAspectRatio="xMidYMid meet" filter={`url(#${filterId})`} />
@@ -1168,12 +1197,12 @@ const MegaParticles: React.FC<{ heroHeight: number; artworkUrl?: string | null }
       <View style={shadowStyle} pointerEvents="none">
         <Image source={{ uri: artworkUrl }} style={{ flex: 1, width: '100%', height: '100%' }} contentFit="contain" tintColor="#1a1a2e" cachePolicy="memory-disk" />
       </View>
-      {renderMegaLayer(0, '0', '0.5', '1', '0.5', megaAStyle0)}
-      {renderMegaLayer(1, '0', '1', '1', '0', megaAStyle1)}
-      {renderMegaLayer(2, '0', '0', '1', '1', megaAStyle2)}
-      {renderMegaLayer(3, '1', '0.5', '0', '0.5', megaAStyle3)}
-      {renderMegaLayer(4, '1', '0', '0', '1', megaAStyle4)}
-      {renderMegaLayer(5, '1', '1', '0', '0', megaAStyle5)}
+      {imageReady && renderMegaLayer(0, '0', '0.5', '1', '0.5', megaAStyle0)}
+      {imageReady && renderMegaLayer(1, '0', '1', '1', '0', megaAStyle1)}
+      {imageReady && renderMegaLayer(2, '0', '0', '1', '1', megaAStyle2)}
+      {imageReady && renderMegaLayer(3, '1', '0.5', '0', '0.5', megaAStyle3)}
+      {imageReady && renderMegaLayer(4, '1', '0', '0', '1', megaAStyle4)}
+      {imageReady && renderMegaLayer(5, '1', '1', '0', '0', megaAStyle5)}
       <View style={{ position: 'absolute', width: ARTWORK_SIZE * 1.015, height: ARTWORK_SIZE * 1.015, alignSelf: 'center', top: '50%', marginTop: -(ARTWORK_SIZE * 1.015) / 2 }} pointerEvents="none">
         <Image source={{ uri: artworkUrl }} style={{ flex: 1, width: '100%', height: '100%' }} contentFit="contain" tintColor="rgba(0,0,0,0.85)" cachePolicy="memory-disk" />
       </View>

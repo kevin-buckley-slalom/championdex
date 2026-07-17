@@ -17,7 +17,7 @@
  * File: src/components/pokemon/PokemonHero.tsx
  */
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, StyleSheet, Text, Pressable, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -143,6 +143,80 @@ const PARTICLE_FONT_SIZE = Math.round(ARTWORK_SIZE * 0.15); // ~15% of artwork =
 const PARTICLE_DISTANCE = Math.round(ARTWORK_SIZE * 0.5); // ~50% of artwork = ~140px at 280
 const PARTICLE_BURST_DURATION = 500;
 const STAR_POP_DURATION = 200;
+
+/**
+ * StarBurstParticles Sub-Component
+ *
+ * Owns all particle burst animation state and rendering.
+ * Only mounts when shinyReady is true (i.e., when user can toggle shiny).
+ * This defers the allocation of 24 useSharedValue calls (6 particles × 4 values)
+ * until after first paint, keeping PokemonHero's initial mount lean.
+ *
+ * All hooks are unconditional at this component's top level.
+ */
+interface StarBurstParticlesProps {
+  onBurstStart: (callback: () => void) => void;
+}
+
+const StarBurstParticles: React.FC<StarBurstParticlesProps> = ({ onBurstStart }) => {
+  // 6 particles — each has translateX, translateY, opacity, rotate
+  const particles: ParticleAnimatedValue[] = PARTICLE_ANGLES.map(() => ({
+    translateX: useSharedValue(0),
+    translateY: useSharedValue(0),
+    opacity: useSharedValue(0),
+    rotate: useSharedValue(0),
+  }));
+
+  const particleAnimatedStyles = particles.map((p) =>
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useAnimatedStyle(() => ({
+      transform: [
+        { translateX: p.translateX.value },
+        { translateY: p.translateY.value },
+        { rotate: `${p.rotate.value}deg` },
+      ],
+      opacity: p.opacity.value,
+    }))
+  );
+
+  // Provide burst trigger function to parent
+  useEffect(() => {
+    onBurstStart(() => {
+      PARTICLE_ANGLES.forEach((angleDeg, i) => {
+        const angle = (angleDeg * Math.PI) / 180;
+        const dx = Math.cos(angle) * PARTICLE_DISTANCE;
+        const dy = Math.sin(angle) * PARTICLE_DISTANCE;
+        const delay = i * 40;
+
+        particles[i].translateX.value = 0;
+        particles[i].translateY.value = 0;
+        particles[i].opacity.value = 0;
+        particles[i].rotate.value = 0;
+
+        particles[i].translateX.value = withDelay(delay, withTiming(dx, { duration: PARTICLE_BURST_DURATION, easing: Easing.out(Easing.poly(6)) }));
+        particles[i].translateY.value = withDelay(delay, withTiming(dy, { duration: PARTICLE_BURST_DURATION, easing: Easing.out(Easing.poly(6)) }));
+        particles[i].opacity.value = withDelay(delay, withSequence(
+          withTiming(1, { duration: PARTICLE_BURST_DURATION * 0.2 }),
+          withTiming(0, { duration: PARTICLE_BURST_DURATION * 0.6 }),
+        ));
+        particles[i].rotate.value = withDelay(delay, withTiming(450, { duration: PARTICLE_BURST_DURATION, easing: Easing.out(Easing.poly(6)) }));
+      });
+    });
+  }, [onBurstStart, particles]);
+
+  return (
+    <View style={styles.particleLayer} pointerEvents="none">
+      {particles.map((_, i) => (
+        <Animated.Text
+          key={i}
+          style={[styles.particle, particleAnimatedStyles[i], { fontSize: PARTICLE_FONT_SIZE }]}
+        >
+          ★
+        </Animated.Text>
+      ))}
+    </View>
+  );
+};
 
 interface ParticleAnimatedValue {
   translateX: SharedValue<number>;
@@ -334,13 +408,8 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
   // Star button animation
   const starScale = useSharedValue(1);
 
-  // 6 particles — each has translateX, translateY, opacity, rotate
-  const particles: ParticleAnimatedValue[] = PARTICLE_ANGLES.map(() => ({
-    translateX: useSharedValue(0),
-    translateY: useSharedValue(0),
-    opacity: useSharedValue(0),
-    rotate: useSharedValue(0),
-  }));
+  // Ref to hold the burst trigger function from StarBurstParticles sub-component
+  const burstTriggerRef = React.useRef<(() => void) | null>(null);
 
   // Current artwork URL based on shiny state
   const currentArtworkUrl = useMemo(
@@ -394,31 +463,13 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
       withTiming(1.0, { duration: 100, easing: Easing.in(Easing.quad) })
     );
 
-    // Particle burst only when turning ON
-    if (nextIsShiny) {
-      PARTICLE_ANGLES.forEach((angleDeg, i) => {
-        const angle = (angleDeg * Math.PI) / 180;
-        const dx = Math.cos(angle) * PARTICLE_DISTANCE;
-        const dy = Math.sin(angle) * PARTICLE_DISTANCE;
-        const delay = i * 40;
-
-        particles[i].translateX.value = 0;
-        particles[i].translateY.value = 0;
-        particles[i].opacity.value = 0;
-        particles[i].rotate.value = 0;
-
-        particles[i].translateX.value = withDelay(delay, withTiming(dx, { duration: PARTICLE_BURST_DURATION, easing: Easing.out(Easing.poly(6)) }));
-        particles[i].translateY.value = withDelay(delay, withTiming(dy, { duration: PARTICLE_BURST_DURATION, easing: Easing.out(Easing.poly(6)) }));
-        particles[i].opacity.value = withDelay(delay, withSequence(
-          withTiming(1, { duration: PARTICLE_BURST_DURATION * 0.2 }),
-          withTiming(0, { duration: PARTICLE_BURST_DURATION * 0.6 }),
-        ));
-        particles[i].rotate.value = withDelay(delay, withTiming(450, { duration: PARTICLE_BURST_DURATION, easing: Easing.out(Easing.poly(6)) }));
-      });
+    // Particle burst only when turning ON (trigger from StarBurstParticles sub-component)
+    if (nextIsShiny && burstTriggerRef.current) {
+      burstTriggerRef.current();
     }
 
     handleShinyToggle(nextIsShiny);
-  }, [isShiny, starScale, particles, handleShinyToggle]);
+  }, [isShiny, starScale, handleShinyToggle]);
 
   /**
    * Backdrop parallax transform (0.25x velocity, slowest movement)
@@ -527,18 +578,6 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
     transform: [{ scale: starScale.value }],
   }));
 
-  const particleAnimatedStyles = particles.map((p) =>
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useAnimatedStyle(() => ({
-      transform: [
-        { translateX: p.translateX.value },
-        { translateY: p.translateY.value },
-        { rotate: `${p.rotate.value}deg` },
-      ],
-      opacity: p.opacity.value,
-    }))
-  );
-
   /**
    * Notify parent of scroll progress if callback provided
    */
@@ -635,17 +674,14 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
         </Animated.View>
       </Animated.View>
 
-      {/* Layer 4b: Particle burst layer — centered over artwork */}
-      <View style={styles.particleLayer} pointerEvents="none">
-        {particles.map((_, i) => (
-          <Animated.Text
-            key={i}
-            style={[styles.particle, particleAnimatedStyles[i], { fontSize: PARTICLE_FONT_SIZE }]}
-          >
-            ★
-          </Animated.Text>
-        ))}
-      </View>
+      {/* Layer 4b: Particle burst layer — only mounted when shinyReady (defers 24 useSharedValue calls) */}
+      {shinyReady && (
+        <StarBurstParticles
+          onBurstStart={(trigger) => {
+            burstTriggerRef.current = trigger;
+          }}
+        />
+      )}
 
       {/* Layer 5: Floating star shiny toggle (repositioned to fit in right box) */}
       <View style={styles.starButtonWrapper}>

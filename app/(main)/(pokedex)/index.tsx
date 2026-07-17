@@ -16,6 +16,8 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { SubTabBar } from '@/components/lists/SubTabBar';
 import { FilterSortSheet } from '@/components/lists/FilterSortSheet';
 import { getPokemonById } from '@/services/database/pokemonRepository';
+import { Image } from 'expo-image';
+import { getHomeRenderUrl } from '@/services/prefetch/artworkPrefetchService';
 
 export default function PokedexScreen() {
   const router = useRouter();
@@ -54,13 +56,37 @@ export default function PokedexScreen() {
   }, []);
 
   const handlePokemonPress = useCallback((pokemonId: number) => {
-    // Kick off the detail query before navigating so it's in-flight (or done) when the screen mounts
-    queryClient.prefetchQuery({
-      queryKey: ['pokemon', 'detail', pokemonId],
-      queryFn: () => getPokemonById(pokemonId),
-      staleTime: Infinity,
-    });
-    router.push(`/(main)/(pokedex)/${pokemonId}`);
+    let navigationPending = true;
+
+    const performNavigation = () => {
+      if (navigationPending) {
+        navigationPending = false;
+        router.push(`/(main)/(pokedex)/${pokemonId}`);
+      }
+    };
+
+    const prefetchAndNavigate = async () => {
+      try {
+        await queryClient.prefetchQuery({
+          queryKey: ['pokemon', 'detail', pokemonId],
+          queryFn: () => getPokemonById(pokemonId),
+          staleTime: Infinity,
+        });
+
+        const cached = queryClient.getQueryData<{ pokeApiId?: number }>(['pokemon', 'detail', pokemonId]);
+        if (cached?.pokeApiId) {
+          const artworkUrl = getHomeRenderUrl(cached.pokeApiId);
+          await Image.prefetch(artworkUrl);
+        }
+      } catch (error) {
+        console.warn('[Pokedex] Prefetch error:', error);
+      } finally {
+        performNavigation();
+      }
+    };
+
+    setTimeout(() => performNavigation(), 250);
+    prefetchAndNavigate();
   }, [router, queryClient]);
 
   const renderPokemonCard = useCallback(({ item }: any) => (

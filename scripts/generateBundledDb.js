@@ -268,7 +268,8 @@ async function main() {
       move_id       INTEGER NOT NULL REFERENCES moves(id) ON DELETE CASCADE,
       learn_method  TEXT NOT NULL,
       learn_level   INTEGER,
-      PRIMARY KEY (pokemon_id, move_id, learn_method)
+      version_group TEXT NOT NULL DEFAULT '',
+      PRIMARY KEY (pokemon_id, move_id, learn_method, version_group)
     );
     CREATE TABLE teams (
       id          TEXT PRIMARY KEY,
@@ -676,78 +677,72 @@ async function main() {
   });
   writeEncounters();
 
-  // ── Movesets from @pkmn/dex learnsets (no network) ───────────────────────
-  console.log('[GenerateBundledDb] Seeding movesets from dex learnsets...');
-  const moveNameToId = new Map();
-  for (const row of db.prepare('SELECT id, name FROM moves').all()) {
-    moveNameToId.set(row.name, row.id);
+  // ── Movesets from PokeAPI with version_group support ──────────────────────
+  console.log(`[GenerateBundledDb] Fetching movesets from PokeAPI for ${defaultFormSpecies.length} species...`);
+
+  // Build move ID set for validation
+  const validMoveIds = new Set();
+  for (const row of db.prepare('SELECT id FROM moves').all()) {
+    validMoveIds.add(row.id);
   }
 
-  const moveInsertStmt = db.prepare(`INSERT OR IGNORE INTO pokemon_moves (pokemon_id, move_id, learn_method, learn_level) VALUES (?, ?, ?, ?)`);
-  let movesetSeeded = 0;
+  const moveRows = []; // collected before writing
+  let movesetsFetched = 0;
 
-  // Process in batches of 50 using async learnsets API
-  const MOVESET_BATCH = 50;
-  for (let i = 0; i < defaultFormSpecies.length; i += MOVESET_BATCH) {
-    const batch = defaultFormSpecies.slice(i, i + MOVESET_BATCH);
-    const batchMoves = [];
-
+  for (let i = 0; i < defaultFormSpecies.length; i += BATCH) {
+    const batch = defaultFormSpecies.slice(i, i + BATCH);
+    let hadFetch = false;
     await Promise.all(batch.map(async species => {
-      const pokemonId = nameToDbId.get(species.id);
+      const pokemonId = nationalDexToDbId.get(species.num);
       if (!pokemonId) return;
       try {
-        const learnsetData = await Dex.learnsets.get(species.id);
-        if (!learnsetData?.learnset) return;
+        const data = await pokeApiFetch(`https://pokeapi.co/api/v2/pokemon/${species.num}/`);
+        if (!data.moves || !Array.isArray(data.moves) || data.moves.length === 0) return;
+        hadFetch = true;
 
-        const moveMethodMap = new Map();
-        for (const [moveName, methodStrings] of Object.entries(learnsetData.learnset)) {
-          const moveId = moveNameToId.get(moveName);
-          if (!moveId || !Array.isArray(methodStrings)) continue;
+        const seenMoves = new Set();
+        for (const moveEntry of data.moves) {
+          if (!moveEntry.move?.url) continue;
+          const moveIdMatch = moveEntry.move.url.match(/\/move\/(\d+)\//);
+          if (!moveIdMatch) continue;
+          const moveId = parseInt(moveIdMatch[1], 10);
+          if (!validMoveIds.has(moveId)) continue;
 
-          let bestGen = 0, bestMethod = null, bestLevel = null;
-          for (const code of methodStrings) {
-            if (typeof code !== 'string') continue;
-            const m = code.match(/^(\d+)(.*)$/);
-            if (!m) continue;
-            const gen = parseInt(m[1], 10);
-            if (gen <= bestGen && bestMethod !== null) continue;
-            const letter = m[2].charAt(0);
-            let method = 'other', level = null;
-            if (letter === 'L') {
-              method = 'level-up';
-              const lm = m[2].match(/^L(\d+)$/);
-              level = lm ? parseInt(lm[1], 10) : null;
-            } else if (letter === 'M') method = 'machine';
-            else if (letter === 'E') method = 'egg';
-            else if (letter === 'T') method = 'tutor';
-            else if (letter === 'V') method = 'transfer';
-            else if (letter === 'S') method = 'event';
-            else if (letter === 'D') method = 'dream-world';
-            bestGen = gen; bestMethod = method; bestLevel = level;
+          if (!moveEntry.version_group_details || !Array.isArray(moveEntry.version_group_details)) continue;
+
+          for (const detail of moveEntry.version_group_details) {
+            const learnMethod = detail.move_learn_method?.name ?? 'other';
+            const versionGroup = detail.version_group?.name ?? '';
+            const learnLevel = (learnMethod === 'level-up' && detail.level_learned_at > 0) ? detail.level_learned_at : null;
+
+            const key = `${moveId}:${learnMethod}:${versionGroup}`;
+            if (seenMoves.has(key)) continue;
+            seenMoves.add(key);
+
+            moveRows.push({ pokemonId, moveId, learnMethod, learnLevel, versionGroup });
           }
-          if (bestMethod) moveMethodMap.set(`${moveId}:${bestMethod}`, { moveId, learnMethod: bestMethod, learnLevel: bestLevel });
         }
-        if (moveMethodMap.size > 0) {
-          batchMoves.push({ pokemonId, moves: [...moveMethodMap.values()] });
-          movesetSeeded++;
-        }
-      } catch (e) { /* skip */ }
-    }));
-
-    // Write batch in transaction
-    const writeBatch = db.transaction(() => {
-      for (const { pokemonId, moves } of batchMoves) {
-        for (const { moveId, learnMethod, learnLevel } of moves) {
-          moveInsertStmt.run(pokemonId, moveId, learnMethod, learnLevel);
-        }
+        movesetsFetched++;
+      } catch (e) {
+        // Many species have no move data — silent skip
       }
-    });
-    writeBatch();
-
-    if ((i + MOVESET_BATCH) % 200 === 0 || i + MOVESET_BATCH >= defaultFormSpecies.length) {
-      console.log(`  [Movesets] ${Math.min(i + MOVESET_BATCH, defaultFormSpecies.length)}/${defaultFormSpecies.length} (${movesetSeeded} with moves)`);
+    }));
+    if (hadFetch) await sleep(50);
+    const batchNum = Math.floor(i / BATCH) + 1;
+    const totalBatches = Math.ceil(defaultFormSpecies.length / BATCH);
+    if (batchNum % 10 === 0 || batchNum === totalBatches) {
+      console.log(`  [Movesets] batch ${batchNum}/${totalBatches} (${movesetsFetched} with data)`);
     }
   }
+
+  console.log(`[GenerateBundledDb] Writing ${moveRows.length} moveset rows...`);
+  const moveInsertStmt = db.prepare(`INSERT OR IGNORE INTO pokemon_moves (pokemon_id, move_id, learn_method, learn_level, version_group) VALUES (?, ?, ?, ?, ?)`);
+  const writeMovesets = db.transaction(() => {
+    for (const r of moveRows) {
+      moveInsertStmt.run(r.pokemonId, r.moveId, r.learnMethod, r.learnLevel, r.versionGroup);
+    }
+  });
+  writeMovesets();
 
   // ── Write all sync_metadata gates ────────────────────────────────────────
   console.log('[GenerateBundledDb] Writing sync_metadata...');
@@ -778,6 +773,10 @@ async function main() {
     evolutions: db.prepare('SELECT COUNT(*) as c FROM pokemon_evolutions').get().c,
     encounters: db.prepare('SELECT COUNT(*) as c FROM pokemon_encounter_locations').get().c,
   };
+
+  // Checkpoint WAL and switch back to DELETE mode for a clean bundled database
+  db.pragma('wal_checkpoint(TRUNCATE)');
+  db.pragma('journal_mode = DELETE');
 
   db.close();
 

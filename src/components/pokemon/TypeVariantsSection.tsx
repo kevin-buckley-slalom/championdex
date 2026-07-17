@@ -3,6 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
+  useWindowDimensions,
 } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
 import { colors } from '@/constants/colors';
@@ -27,9 +28,10 @@ interface VariantCardProps {
     typePrimary: string;
     typeSecondary?: string;
   };
+  cardWidth: number;
 }
 
-const VariantCard: React.FC<VariantCardProps> = ({ variant }) => {
+const VariantCard: React.FC<VariantCardProps> = ({ variant, cardWidth }) => {
   const accessibilityLabel = variant.name;
   const typeInfo = variant.typeSecondary
     ? `${variant.typePrimary} and ${variant.typeSecondary}`
@@ -43,7 +45,7 @@ const VariantCard: React.FC<VariantCardProps> = ({ variant }) => {
       accessibilityRole="image"
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
-      style={styles.card}
+      style={[styles.card, { width: cardWidth }]}
     >
       <View style={[styles.spriteContainer, { width: SPRITE_SIZE, height: SPRITE_SIZE }]}>
         {variant.spriteUrl ? (
@@ -58,7 +60,7 @@ const VariantCard: React.FC<VariantCardProps> = ({ variant }) => {
           <View
             style={[
               styles.sprite,
-              { width: SPRITE_SIZE, height: SPRITE_SIZE, backgroundColor: colors.borderLight },
+              { width: SPRITE_SIZE, height: SPRITE_SIZE },
             ]}
             accessible={false}
           />
@@ -66,19 +68,12 @@ const VariantCard: React.FC<VariantCardProps> = ({ variant }) => {
       </View>
 
       <View style={styles.typesContainer}>
-        <TypeBadge type={variant.typePrimary} size="sm" />
+        <TypeBadge type={variant.typePrimary} size="sm" fixed />
         {variant.typeSecondary && (
-          <TypeBadge type={variant.typeSecondary} size="sm" />
+          <TypeBadge type={variant.typeSecondary} size="sm" fixed />
         )}
       </View>
 
-      <Text
-        style={styles.variantName}
-        numberOfLines={1}
-        accessible={false}
-      >
-        {variant.name}
-      </Text>
     </View>
   );
 };
@@ -86,6 +81,9 @@ const VariantCard: React.FC<VariantCardProps> = ({ variant }) => {
 export const TypeVariantsSection: React.FC<TypeVariantsSectionProps> = ({
   variants,
 }) => {
+  const { width: screenWidth } = useWindowDimensions();
+  const cardWidth = (screenWidth - 14 - 2 * spacing.lg - 3 * spacing.xs * 2) / 3;
+
   if (!variants || variants.length === 0) {
     return null;
   }
@@ -101,7 +99,7 @@ export const TypeVariantsSection: React.FC<TypeVariantsSectionProps> = ({
         accessibilityLabel="Type forms"
       >
         {variants.map((variant) => (
-          <VariantCard key={variant.id} variant={variant} />
+          <VariantCard key={variant.id} variant={variant} cardWidth={cardWidth} />
         ))}
       </View>
     </View>
@@ -113,9 +111,11 @@ const styles = StyleSheet.create({
     marginVertical: spacing.lg,
   },
   sectionTitle: {
-    fontSize: fontSize['2xl'],
+    fontSize: fontSize.md,
     fontWeight: '600',
-    color: colors.text,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
     marginBottom: spacing.md,
   },
   grid: {
@@ -123,19 +123,17 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   card: {
-    flex: 1,
-    flexBasis: '30%',
     margin: spacing.xs,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderRadius: borderRadius.md,
-    padding: spacing.sm,
-    alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.10)',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center',
   },
   spriteContainer: {
     borderRadius: borderRadius.sm,
-    backgroundColor: colors.borderLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.xs,

@@ -215,12 +215,13 @@ export async function getPokemonMoveset(pokemonId: number): Promise<Array<{
   pp: number;
   learnMethod: string;
   learnLevel: number | null;
+  versionGroup: string;
 }>> {
   const db = await getDatabase();
   const results = await db.getAllAsync<any>(
     `SELECT
        m.id, m.name, m.display_name, m.type, m.category, m.power, m.accuracy, m.pp,
-       pm.learn_method, pm.learn_level
+       pm.learn_method, pm.learn_level, pm.version_group
      FROM pokemon_moves pm
      JOIN moves m ON pm.move_id = m.id
      WHERE pm.pokemon_id = ?
@@ -238,7 +239,17 @@ export async function getPokemonMoveset(pokemonId: number): Promise<Array<{
     pp: r.pp,
     learnMethod: r.learn_method,
     learnLevel: r.learn_level,
+    versionGroup: r.version_group,
   }));
+}
+
+export async function getPokemonMovesetVersions(pokemonId: number): Promise<string[]> {
+  const db = await getDatabase();
+  const results = await db.getAllAsync<{ version_group: string }>(
+    `SELECT DISTINCT version_group FROM pokemon_moves WHERE pokemon_id = ? AND version_group != '' ORDER BY version_group ASC`,
+    [pokemonId]
+  );
+  return results.map(r => r.version_group);
 }
 
 export async function getPokemonWithAbility(abilityId: number): Promise<Array<{

@@ -84,13 +84,16 @@ const StatBar: React.FC<{
 
   useEffect(() => {
     if (animated) {
-      progress.value = withDelay(
-        delay,
-        withTiming(1, {
-          duration: 600,
-          easing: Easing.out(Easing.cubic),
-        })
-      );
+      const timeoutId = setTimeout(() => {
+        progress.value = withDelay(
+          delay,
+          withTiming(1, {
+            duration: 400,
+            easing: Easing.out(Easing.cubic),
+          })
+        );
+      }, 100);
+      return () => clearTimeout(timeoutId);
     } else {
       progress.value = 1;
     }

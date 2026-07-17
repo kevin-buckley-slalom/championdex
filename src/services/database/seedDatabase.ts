@@ -997,9 +997,9 @@ async function seedPokemonMovesets(db: SQLite.SQLiteDatabase, dex: any): Promise
           for (const { moveId, learnMethod, learnLevel } of moveMethodMap.values()) {
             try {
               await db.runAsync(
-                `INSERT OR IGNORE INTO pokemon_moves (pokemon_id, move_id, learn_method, learn_level)
-                 VALUES (?, ?, ?, ?)`,
-                [pokemonDbId, moveId, learnMethod, learnLevel]
+                `INSERT OR IGNORE INTO pokemon_moves (pokemon_id, move_id, learn_method, learn_level, version_group)
+                 VALUES (?, ?, ?, ?, ?)`,
+                [pokemonDbId, moveId, learnMethod, learnLevel, '']
               );
             } catch (e) {
               // Silently skip FK violations
@@ -1303,22 +1303,24 @@ async function runZAFormsEnrichmentBackfill(db: SQLite.SQLiteDatabase): Promise<
 
               if (!moveEntry.version_group_details || moveEntry.version_group_details.length === 0) continue;
 
-              const detail = moveEntry.version_group_details[0];
-              const learnMethod = detail.move_learn_method?.name ?? 'other';
+              for (const detail of moveEntry.version_group_details) {
+                const learnMethod = detail.move_learn_method?.name ?? 'other';
+                const versionGroup = detail.version_group?.name ?? '';
 
-              const key = `${moveId}:${learnMethod}`;
-              if (seenMoves.has(key)) continue;
-              seenMoves.add(key);
+                const key = `${moveId}:${learnMethod}:${versionGroup}`;
+                if (seenMoves.has(key)) continue;
+                seenMoves.add(key);
 
-              const learnLevel = (learnMethod === 'level-up' && detail.level_learned_at > 0)
-                ? detail.level_learned_at
-                : null;
+                const learnLevel = (learnMethod === 'level-up' && detail.level_learned_at > 0)
+                  ? detail.level_learned_at
+                  : null;
 
-              await db.runAsync(
-                `INSERT OR IGNORE INTO pokemon_moves (pokemon_id, move_id, learn_method, learn_level) VALUES (?, ?, ?, ?)`,
-                [id, moveId, learnMethod, learnLevel]
-              );
-              moveCount++;
+                await db.runAsync(
+                  `INSERT OR IGNORE INTO pokemon_moves (pokemon_id, move_id, learn_method, learn_level, version_group) VALUES (?, ?, ?, ?, ?)`,
+                  [id, moveId, learnMethod, learnLevel, versionGroup]
+                );
+                moveCount++;
+              }
             }
           }
 

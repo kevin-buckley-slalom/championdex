@@ -295,12 +295,15 @@ Ambient looping particles layered behind Pokémon artwork. Always behind the art
 
 ## ✅ Mega — COMPLETE
 - 6 SVG-masked ROYGBIV gradient layers at 0°/60°/120°/180°/240°/300° angles
-- Each layer: `<SvgImage>` inside `<Mask>` with `FeGaussianBlur stdDeviation=64` for feathered edges
+- Each layer: `<SvgImage>` inside `<Mask>` with `FeGaussianBlur stdDeviation=32` for feathered edges
 - Layer opacity cycles independently at incommensurate durations (4200–7300ms), staggered delays
 - Peak opacity 0.92, fully transparent between pulses, fast fade-out (25% of cycle)
 - Dark navy base shadow (1.01×, `#1a1a2e`) + tight black contrast mask above aura (1.015×, `rgba(0,0,0,0.85)`)
-- Container fades in 800ms on mount to prevent flash; `megaGradRot` repurposed as fade-in driver
+- On mount: `Image.prefetch(artworkUrl)` fires once; all 6 SVG layers hidden behind `imageReady` state until prefetch resolves — prevents 6× independent cold-decode of the artwork via react-native-svg
+- `fadeInOpacity` shared value animates 0→1 over 400ms when `imageReady` flips — prevents pop-in when layers appear
+- `megaGradRot` drives initial container fade-in (0→1 over 800ms on first mount)
 - SVG canvas 2.0× artwork (560dp); all 6 SVGs separate Animated.View wrappers for GPU-composited opacity
+- Mounts at 1100ms after navigation (gated by `particlesReady` in detail screen) to avoid reconciliation spike during stat bar animations; fully visible ~1500ms after navigation
 - Full spec: `docs/MEGA_AURA_GRADIENT_SPEC.md`
 
 ## ⏳ Pending Backdrops

@@ -3,6 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
+  useWindowDimensions,
 } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
 import { colors } from '@/constants/colors';
@@ -22,9 +23,10 @@ interface AlternateCardProps {
     name: string;
     spriteUrl: string;
   };
+  cardWidth: number;
 }
 
-const AlternateCard: React.FC<AlternateCardProps> = ({ alternate }) => {
+const AlternateCard: React.FC<AlternateCardProps> = ({ alternate, cardWidth }) => {
   const accessibilityLabel = alternate.name;
   const accessibilityHint = `Cosmetic form: ${alternate.name}`;
   const SPRITE_SIZE = 64;
@@ -35,7 +37,7 @@ const AlternateCard: React.FC<AlternateCardProps> = ({ alternate }) => {
       accessibilityRole="image"
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
-      style={styles.card}
+      style={[styles.card, { width: cardWidth }]}
     >
       <View style={[styles.spriteContainer, { width: SPRITE_SIZE, height: SPRITE_SIZE }]}>
         {alternate.spriteUrl ? (
@@ -50,7 +52,7 @@ const AlternateCard: React.FC<AlternateCardProps> = ({ alternate }) => {
           <View
             style={[
               styles.sprite,
-              { width: SPRITE_SIZE, height: SPRITE_SIZE, backgroundColor: colors.borderLight },
+              { width: SPRITE_SIZE, height: SPRITE_SIZE },
             ]}
             accessible={false}
           />
@@ -71,6 +73,9 @@ const AlternateCard: React.FC<AlternateCardProps> = ({ alternate }) => {
 export const CosmeticAlternatesSection: React.FC<CosmeticAlternatesSectionProps> = ({
   alternates,
 }) => {
+  const { width: screenWidth } = useWindowDimensions();
+  const cardWidth = (screenWidth - 14 - 2 * spacing.lg - 3 * spacing.xs * 2) / 3;
+
   if (!alternates || alternates.length === 0) {
     return null;
   }
@@ -86,7 +91,7 @@ export const CosmeticAlternatesSection: React.FC<CosmeticAlternatesSectionProps>
         accessibilityLabel="Other forms"
       >
         {alternates.map((alternate) => (
-          <AlternateCard key={alternate.id} alternate={alternate} />
+          <AlternateCard key={alternate.id} alternate={alternate} cardWidth={cardWidth} />
         ))}
       </View>
     </View>
@@ -98,9 +103,11 @@ const styles = StyleSheet.create({
     marginVertical: spacing.lg,
   },
   sectionTitle: {
-    fontSize: fontSize['2xl'],
+    fontSize: fontSize.md,
     fontWeight: '600',
-    color: colors.text,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
     marginBottom: spacing.md,
   },
   grid: {
@@ -108,19 +115,16 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   card: {
-    flex: 1,
-    flexBasis: '30%',
     margin: spacing.xs,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.10)',
     padding: spacing.sm,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   spriteContainer: {
     borderRadius: borderRadius.sm,
-    backgroundColor: colors.borderLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.xs,

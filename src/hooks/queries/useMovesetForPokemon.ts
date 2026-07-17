@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { getPokemonMoveset } from '@/services/database/pokemonRepository';
+import { getPokemonMoveset, getPokemonMovesetVersions } from '@/services/database/pokemonRepository';
 
 export type SortOption = 'name' | 'power' | 'accuracy' | 'category';
 
-interface Move {
+export interface Move {
   id: number;
   name: string;
   displayName: string;
@@ -15,6 +15,7 @@ interface Move {
   pp: number;
   learnMethod: string;
   learnLevel: number | null;
+  versionGroup: string;
 }
 
 interface UseMovesetForPokemonResult {
@@ -34,6 +35,9 @@ export function useMovesetForPokemon(
       return await getPokemonMoveset(pokemonId);
     },
     staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
     enabled: pokemonId > 0,
   });
 
@@ -84,6 +88,32 @@ export function useMovesetForPokemon(
 
   return {
     moves: filteredAndSorted,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+}
+
+export interface UseMovesetVersionsResult {
+  versions: string[];
+  isLoading: boolean;
+  error: Error | null;
+}
+
+export function useMovesetVersions(pokemonId: number): UseMovesetVersionsResult {
+  const query = useQuery({
+    queryKey: ['pokemon', 'moveset', 'versions', pokemonId],
+    queryFn: async () => {
+      return await getPokemonMovesetVersions(pokemonId);
+    },
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    enabled: pokemonId > 0,
+  });
+
+  return {
+    versions: query.data ?? [],
     isLoading: query.isLoading,
     error: query.error,
   };

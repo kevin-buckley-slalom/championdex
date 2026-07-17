@@ -1,5 +1,5 @@
 # ChampionDex — Session Handoff Notes
-**Updated:** 2026-07-16 | Bundled pre-built SQLite DB shipped; list pagination with useInfiniteQuery; two-phase DB init (blocking Phase 1 / fire-and-forget Phase 2). Next work: remaining backdrop particles (psychic, ghost, dark, dragon, steel, poison, normal, ground).
+**Updated:** 2026-07-17 | Fixed app launch crash from orphan index corruption. Database initialization now verifies integrity and safely recovers from corrupt DB state. Detail view UI polish at ~95% complete.
 
 ---
 
@@ -25,22 +25,29 @@ Fixed — warm launches are clean. See Known Issues section at bottom for resolu
 
 ---
 
-## Architecture: Data Loading (DATA_VERSION: '1.10.0')
+## Architecture: Data Loading (DATA_VERSION: '1.11.0')
 
-### Bundled DB Strategy (implemented 2026-07-16)
-- `assets/db/championdex.db` (~9.8 MB) — pre-built SQLite DB committed to git, contains all Pokémon, moves, flavor text, evolutions
+### Bundled DB Strategy (improved 2026-07-17 with integrity verification)
+- `assets/db/championdex.db` (~44 MB) — pre-built SQLite DB committed to git, contains all Pokémon with 5-column `pokemon_moves` schema
 - Fresh install: `importDatabaseFromAssetAsync` (expo-sqlite) copies DB on first launch (~2.8s one-time copy); no PokeAPI fetches on first run
-- Warm launch: single `SELECT` on `sync_metadata` version key → returns immediately (~50ms)
+- Warm launch: version check + **integrity verification** → if healthy, returns immediately (~50ms); if corrupt, force-overwrites
 - Artwork/encounters enrichment runs fire-and-forget in Phase 2 (background, non-blocking)
 - List uses `useInfiniteQuery` with page size 50 — first 50 rows render immediately
 - Phase 1 (`initializeDatabasePhase1`) blocks render; Phase 2 (`initializeDatabase`) is fire-and-forget after setIsReady
 - **To rebuild bundled DB:** `node scripts/generateBundledDb.js` → commit `assets/db/championdex.db` → bump `DATA_VERSION`
 
-### Seed Flow (legacy warm-launch path — only runs when `data_version` is missing)
+### Database Initialization Flow (with crash recovery)
 
 ```
 app/_layout.tsx → initializeDatabasePhase1()  [blocks render]
-  → copyBundledDbIfNeeded()              ← importDatabaseFromAssetAsync; skips if DB exists
+  → copyBundledDbIfNeeded()              [NEW: two-phase verification]
+      ← Check SecureStore version key
+      ← If stale or missing: force-overwrite (forceOverwrite: true)
+      ← If current: verify DB integrity (SELECT 1)
+          ├─ If corrupt: delete sentinel, force-overwrite, re-verify
+          └─ If healthy: skip import (fast path ~1ms)
+      ← After import: verify integrity again
+      ← Only write sentinel after successful import + verification
   → getDatabase()                        ← openDatabaseAsync('championdex.db')
   → SELECT data_version FROM sync_metadata
       if present → return immediately    ← warm launch fast path (~50ms)
@@ -52,8 +59,14 @@ app/_layout.tsx → initializeDatabase()  [fire-and-forget after render]
   → startPokeApiEnrichment(db, dex)      ← fire-and-forget enrichment streams
 ```
 
+**Key Fix (2026-07-17):** The orphan index crash was caused by partial imports where the sentinel was written before verifying the DB was healthy. Now:
+- Pre-import integrity check detects and recovers from corrupt DB (same version, corrupt file)
+- Post-import verification ensures the import succeeded before writing sentinel
+- Orphan index errors are caught early and trigger automatic recovery
+
 **Version constants:**
-- `DATA_VERSION = '1.10.0'` — bumped for Z-A mega forms (49 new rows)
+- `DATA_VERSION = '1.11.0'` — bumped for 5-column `pokemon_moves` schema with `version_group`
+- `BUNDLED_DATA_VERSION = '1.11.0'` — tracks bundled DB installation in SecureStore (only write after integrity verified)
 - `ENRICH_VERSION = '1.2.0'` — independent; only bump if PokeAPI data needs re-fetch
 
 **Critical constraint:** ALL network calls must happen BEFORE `withTransactionAsync`.
@@ -221,7 +234,7 @@ No batch logs, no network activity. Species counts confirmed: 1025 enriched, 2 n
 
 ### DONE ✅
 - Navigation: Expo Router stack inside `(pokedex)/_layout.tsx` — all 4 detail screens stack-pushable from list screens
-- **Pokemon Detail** `app/(main)/(pokedex)/[id].tsx` — parallax hero (PokemonHero), shiny toggle (ShinyToggle), type badges, dex/classification/height/weight, abilities section (tappable), StatChart (animated bar chart), EvolutionChain (all 16 triggers), RelatedFormsSection (carousel), FlavorTextSection (game version chips)
+- **Pokemon Detail** `app/(main)/(pokedex)/[id].tsx` — parallax hero (PokemonHero), shiny toggle (ShinyToggle), type badges, dex/classification/height/weight, abilities section (tappable), StatChart (animated bar chart), EvolutionChain (tree layout, all 16 triggers), RelatedFormsSection (3-col grid), CosmeticAlternatesSection (3-col grid), TypeVariantsSection (3-col grid), FlavorTextSection (bottom sheet modal), EncounterLocationsSection (bottom sheet modal, 280dp scrollable list)
 - **Move Detail** `app/(main)/(pokedex)/moves/[id].tsx` — name, type badge, category icon, power/accuracy/PP/priority grid, description
 - **Ability Detail** `app/(main)/(pokedex)/abilities/[id].tsx` — name, generation badge, hidden ability indicator, description
 - **Item Detail** `app/(main)/(pokedex)/items/[id].tsx` — name, sprite, category, cost, description (**complete**)
@@ -246,20 +259,20 @@ No batch logs, no network activity. Species counts confirmed: 1025 enriched, 2 n
 4. **Pokemon list on Ability Detail** (REQ-022) ✅ DONE — `usePokemonWithAbility` hook + FlashList with sprites, type badges, hidden ability badge, generation filter chips
 
 5. **CosmeticAlternatesSection** (REQ-026, spec 2.10) ✅ COMPLETE
-   - `src/components/pokemon/CosmeticAlternatesSection.tsx` — responsive 3-column grid (flexBasis 30%, margin spacing.xs), section title "OTHER FORMS"
+   - `src/components/pokemon/CosmeticAlternatesSection.tsx` — 3-column explicit-width grid (cardWidth computed from screenWidth - 14 accentBarWrapper offset - section padding - card margins), section title "OTHER FORMS" (canonical header style), transparent sprite containers (no grey box)
    - `src/hooks/queries/useFormVariants.ts` — queries @pkmn/dex for excluded forms; FORM_POKEAPI_IDS map + FORM_SLUG_OVERRIDES map for correct sprite URLs
    - Validated: 89/89 excluded forms have verified HTTP 200 sprite URLs (script: `node scripts/validateSpriteUrls.js`)
    - Query cache key: `['pokemon', 'form-variants', 'v5', nationalDex]`
 
 6. **TypeVariantsSection** (REQ-027, spec 2.10) ✅ COMPLETE
-   - `src/components/pokemon/TypeVariantsSection.tsx` — same 3-column grid, section title "TYPE FORMS", TypeBadge per form
+   - `src/components/pokemon/TypeVariantsSection.tsx` — same 3-column explicit-width grid, section title "TYPE FORMS" (canonical header style), TypeBadge `size="sm" fixed` per form, name label removed (type chip is sufficient)
    - Same hook (`useFormVariants`) and same sprite resolution logic
 
 7. **Location Encounters** (REQ-029, spec 2.11) ✅ COMPLETE
    - `pokemon_encounter_locations` table in schema + migration guard for existing installs
    - `runEncountersBackfill(db)` — 4th concurrent enrichment stream, gated on `encounters_backfill_v1` sync_metadata key
    - `src/hooks/queries/useEncounterLocations.ts` — `useEncounterLocations(pokemonId, gameVersion)` + `useEncounterGameVersions(pokemonId)`
-   - `src/components/pokemon/EncounterLocationsSection.tsx` — horizontal game version chip selector (newest-first using full `GAME_VERSION_ORDER` map covering all PokeAPI slugs including DLC), location list grouped by location, method + max chance + level range
+   - `src/components/pokemon/EncounterLocationsSection.tsx` — bottom-border version selector row + slide-up bottom sheet modal (same pattern as FlavorTextSection), versions grouped by generation newest-first, encounter list in 280dp max-height ScrollView, location cards (semi-transparent bg, no left accent border), ActivityIndicator loading state
    - Query cache keys: `['pokemon', 'encounters', 'v1', pokemonId, gameVersion]` and `['pokemon', 'encounter-versions', 'v1', pokemonId]`
    - Known data gap: PokeAPI has no encounter data for most Gen 9 paradox Pokémon (e.g. Iron Boulder) and no Legends Z-A data — see PokeAPI data gap notes below
 
@@ -304,6 +317,9 @@ No batch logs, no network activity. Species counts confirmed: 1025 enriched, 2 n
       - Debounce flags must be `useSharedValue(false)`, not JS refs — JS refs can't be read on UI thread
       - Callbacks called via `runOnJS` from reactions must be stable `useCallback` wrappers
       - `runOnJS` must always wrap JS function calls inside `useAnimatedReaction`
+      - **ALL `useSharedValue` calls must be declared unconditionally at the top level of their component** — never inside `.map()`, loops, conditionals, or callbacks. Hooks in loops violate React Rules of Hooks and cause `Cannot read property 'value' of undefined` crashes. Use explicit individual declarations: `const ty0 = useSharedValue(0); const ty1 = useSharedValue(0); ...`
+      - **Use sub-component pattern to conditionally mount hook-heavy components** — if a set of hooks should only run sometimes, put them in a child component and conditionally mount the child, not the hooks
+      - **Each particle type is its own sub-component** (`GrassParticles`, `FireParticles`, etc.) mounted via a `switch` in the outer `BackdropParticleLayer` — only the active type's hooks run
 
 9. **Visual quality, responsiveness & validation** (REQ-032, spec 2.14)
    - Form-switch animation (fade + scale on artwork/stats/badges); type badge contrast audit; layout at 320–430px; full functional + accessibility checklist
@@ -314,6 +330,18 @@ No batch logs, no network activity. Species counts confirmed: 1025 enriched, 2 n
 
 ### KNOWN DEVIATIONS from spec
 - **StatChart**: implemented as animated bar chart, not hexagon/radar SVG. Spec updated in section 10.1.
+
+### UI POLISH DECISIONS (2026-07-17) — design language rules, do not revert
+- **Canonical section header**: `fontSize: fontSize.md, fontWeight: '600', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: spacing.md` — applies to ALL sections (BASE STATS, EVOLUTION, POKÉDEX ENTRIES, LOCATION ENCOUNTERS, RELATED FORMS, OTHER FORMS, TYPE FORMS). Never use `fontSize['2xl']` or `colors.text` for section headers.
+- **Section headers are owned by the component** — never add a `sectionTitle` wrapper in `[id].tsx` for components that render their own header (FlavorTextSection, EncounterLocationsSection, EvolutionChain). Doing so produces duplicate headers.
+- **Game version / version selector pattern**: bottom-border-only `Pressable` row (no background box) showing `"{name} ▾"`, opens a slide-up bottom sheet `Modal` with `animationType="none"` + `Animated.Value` driving sheet slide only (backdrop is static). Versions grouped by generation newest-first. Established in FlavorTextSection, replicated in EncounterLocationsSection.
+- **Sprite containers**: no grey/solid background fill — sprites float transparently on card backgrounds.
+- **Form grids**: all three form sections (RelatedForms, CosmeticAlternates, TypeVariants) use 3-column explicit-width grids. `cardWidth = (screenWidth - 14 - 2 * spacing.lg - 3 * spacing.xs * 2) / 3` — the `14` is `accentBarWrapper`'s `paddingLeft` that applies to all below-hero content. Never use `flexBasis` percentages for grid cards.
+- **RelatedFormsSection**: filters out `isCurrent === true` form (no point navigating to where you already are). Returns null if no remaining forms.
+- **TypeVariantsSection**: name label removed — type chip (`size="sm" fixed`) conveys the type; text label is redundant.
+- **EvolutionChain**: section header uses `alignSelf: 'stretch'` to left-align within the centered container. Mixed-branch chains (e.g. Applin: 2 leaves + 1 sub-chain) render all direct children in one row as `PokemonNode` only (no `ChainNode` recursion in the row), then sub-chains render below their slot via scoped `BranchConnector`.
+- **Left accent border** (3px, accentColor): reserved for prose/flavor content (FlavorTextSection card). Data rows (encounter location cards) use no left accent border.
+- **accentBarWrapper offset**: `paddingLeft: 14` in `[id].tsx` `styles.accentBarWrapper` — any component computing widths from `screenWidth` must subtract this 14px.
 
 ### REQ-029 work completed this session (2026-07-14)
 - `pokemon_encounter_locations` table added to `_initializeDatabase` schema block + `runMigrations` guard (both use `CREATE TABLE IF NOT EXISTS`, idempotent)
@@ -438,6 +466,69 @@ docs/
 `pokemon_flavor_text` and `pokemon_evolutions` were only created in `runMigrations`, not in the main schema block. On a fresh device, `runMigrations` ran a backfill that queried `pokemon_flavor_text` before the table existed, crashing with `no such table`. Fixed by adding both tables (with `CREATE TABLE IF NOT EXISTS`) to the main `_initializeDatabase` schema block. Existing installs unaffected — `runMigrations` versions are still `IF NOT EXISTS`.
 
 **Rule:** Any table that can be queried during `runMigrations` must also exist in the main schema block.
+
+---
+
+## ✅ RESOLVED — EvolutionChain Redesign (2026-07-17)
+
+### What's Implemented
+- **Layout**: Tree layout replaces horizontal ScrollView. Linear chains render as a single row (disc + arrow + disc…). Branching chains render branch children in rows below.
+- **Responsive sizing**: `useWindowDimensions()` — `availableWidth = windowWidth - 64`. `discSize` computed from available width, `branchDiscSize = discSize * 0.82`.
+- **Platform ellipse**: True SVG `<Ellipse>` (not a View) with independent `rx`/`ry` — gives genuine oval floor-shadow appearance. Positioned `bottom: -3` under each disc.
+- **Connector lines**: SVG T-bar — stem from parent → horizontal bar → spurs to children. Built by `buildBranchConnectorPath(containerWidth, branchCount, svgHeight, stemX, childCenterOverride?)`.
+- **Stacked layout (confirmed user design decision — do NOT revert)**: When any branch has further evolutions (e.g. Wurmple → Silcoon/Cascoon), each branch gets its own full-width row. `anyBranchHasChildren` flag drives this. Multi-branch with no further evolutions uses a single row (up to 4 children).
+- **Slot-based child positioning**: Each child in a row gets `width = containerWidth / n`, so disc center is always at `slotWidth * i + slotWidth / 2` — predictable by SVG math, no `justifyContent`/gap unpredictability.
+- **Kirlia/trailing-branch support**: `parentCenterX` computed from linear row geometry passed to `BranchConnector`, so stem originates from the correct disc.
+- **Wurmple stacked connector fix**: `buildBranchConnectorPath` draws a horizontal jog from `stemX` to `leftmostX` whenever `leftmostX !== stemX || branchCount > 1`, eliminating the disconnected-segment gap in stacked single-child rows.
+- **`collectLinearChain`**: Recursively flattens linear chains. Each entry carries `{ pokemon, step }` where `step` is the incoming evolution step (for displaying the trigger label).
+
+### Files Changed
+- `src/components/pokemon/EvolutionChain.tsx` — complete rewrite
+- `app/(main)/(pokedex)/[id].tsx` — removed duplicate `<Text>Evolution</Text>` label (component renders its own header internally)
+
+---
+
+## ✅ RESOLVED — Detail View Navigation Performance (2026-07-17)
+
+### Problem
+Noticeable lag (~1s) when navigating to Pokémon detail views. Mega evolution views had additional jank. Multiple hitches visible during stat bar animations.
+
+### Root Causes Found
+1. **Prefetch racing navigation**: `Image.prefetch()` was called in a `.then()` after `router.push()` — the prefetch raced the transition instead of preceding it.
+2. **`requestIdleCallback` firing during transition**: The original `belowFoldReady` gate used `requestIdleCallback`, which can fire during the ~300ms navigation transition if the JS thread gets briefly idle — causing work to compete with the transition animation.
+3. **Above-fold content gated unnecessarily**: StatChart, TypeEffectivenessTable, AbilitiesSection, and InfoStrip were all gated behind `belowFoldReady`, causing visible pop-in of content that should be instant.
+4. **MegaParticles cold-decode**: `react-native-svg`'s `<SvgImage>` doesn't use expo-image's cache — on first visit, 6 SVGs each independently decoded the artwork URL.
+5. **MegaParticles mount spike**: Mounting 6 complex SVG nodes (each with Defs + SvgImage + FeGaussianBlur + Mask + Rect) caused a React reconciliation spike that dropped frames during stat bar animations.
+
+### What Was Fixed
+
+**`app/(main)/(pokedex)/index.tsx` — prefetch before push:**
+- `handlePokemonPress` now `await`s `queryClient.prefetchQuery()`, then `await`s `Image.prefetch()` before calling `router.push()`
+- A 250ms `Promise.race` timeout ensures navigation fires within 250ms even on slow/cold loads
+
+**`app/(main)/(pokedex)/[id].tsx` — deferral strategy:**
+- `requestIdleCallback` replaced with `setTimeout` to guarantee deferral past the transition
+- `belowFoldReady` at 350ms — gates only truly below-fold sections (EvolutionChain, forms, flavor text, encounters, moveset)
+- `usePokemonAbilities` and `usePokemonSpeciesData` fire immediately (no gate) — needed for above-fold content
+- StatChart, TypeEffectivenessTable render immediately from `pokemon.baseStats`/`pokemon.primaryType` (already in hand)
+- `particlesReady` at 1100ms — after all stat bar animations complete (~800ms finish + 300ms margin)
+
+**`src/components/pokemon/StatChart.tsx` — animation deferral:**
+- Stat bar animation `useEffect` wraps the `withDelay()+withTiming()` schedule in `setTimeout(fn, 100)` so animations start 100ms after mount rather than in the same render cycle as the below-fold reconciliation pass
+
+**`src/components/pokemon/BackdropParticleLayer.tsx` — MegaParticles:**
+- Added `Image.prefetch(artworkUrl)` on mount — ensures artwork is in native disk cache before any SVG renders
+- All 6 SVG layers gated on `imageReady` (prefetch resolved) rather than mounting immediately
+- Added `fadeInOpacity` shared value — aura fades in over 400ms when `imageReady` flips, preventing pop-in
+- `FeGaussianBlur stdDeviation` reduced from 128 → 32 (16× cheaper GPU work, visually equivalent)
+
+### Known Limitation
+MegaParticles still appear ~1.5s after navigation (1100ms gate + 400ms fade-in). The 6 SVG nodes each containing SvgImage + FeGaussianBlur + Mask cause a reconciliation spike that cannot fire during stat bar animations without dropping frames. This is the fundamental cost of the SVG masking approach. Per-frame staggering of SVG mounts was tried and made things worse. The delay + fade-in is the accepted trade-off.
+
+### What Was Investigated and Ruled Out
+- Staggering queries to avoid SQLite thread contention — ruled out; expo-sqlite queries run on native background thread, staggering only delays data arrival
+- Per-frame SVG mount staggering (16ms intervals) — implemented and reverted; made things noticeably worse
+- Replacing SVG mask approach with a simpler oval glow — explicitly rejected by user; visual must be preserved
 
 ---
 
