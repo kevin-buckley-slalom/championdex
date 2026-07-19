@@ -15,6 +15,7 @@ export interface Move {
   pp: number;
   learnMethod: string;
   learnLevel: number | null;
+  learnLabel: string | null;
   versionGroup: string;
 }
 

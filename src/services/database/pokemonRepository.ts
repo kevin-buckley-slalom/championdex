@@ -215,13 +215,14 @@ export async function getPokemonMoveset(pokemonId: number): Promise<Array<{
   pp: number;
   learnMethod: string;
   learnLevel: number | null;
+  learnLabel: string | null;
   versionGroup: string;
 }>> {
   const db = await getDatabase();
   const results = await db.getAllAsync<any>(
     `SELECT
        m.id, m.name, m.display_name, m.type, m.category, m.power, m.accuracy, m.pp,
-       pm.learn_method, pm.learn_level, pm.version_group
+       pm.learn_method, pm.learn_level, pm.learn_label, pm.version_group
      FROM pokemon_moves pm
      JOIN moves m ON pm.move_id = m.id
      WHERE pm.pokemon_id = ?
@@ -239,6 +240,7 @@ export async function getPokemonMoveset(pokemonId: number): Promise<Array<{
     pp: r.pp,
     learnMethod: r.learn_method,
     learnLevel: r.learn_level,
+    learnLabel: r.learn_label ?? null,
     versionGroup: r.version_group,
   }));
 }

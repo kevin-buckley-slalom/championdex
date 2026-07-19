@@ -1,8 +1,9 @@
 # MovesetSection Design Specification
 
 **Date:** 2026-07-17  
-**Status:** Visual Design Spec — Ready for Implementation  
+**Status:** IMPLEMENTATION COMPLETE  
 **Component:** `MovesetSection` (Pokemon detail screen, below-fold section)
+**File:** `src/components/pokemon/MovesetSection.tsx`
 
 ---
 
@@ -223,8 +224,9 @@ Separator (between rows):
 ```
 TextInput:
   - backgroundColor:        colors.surfaceElevated (#2A2323)
-  - borderRadius:           borderRadius.xl (16px) for pill-shaped
+  - borderRadius:           borderRadius['2xl'] (24px) for pill-shaped
   - paddingHorizontal:      spacing.lg (16px)
+  - paddingRight:           spacing.xl (24px) — accommodate clear button
   - paddingVertical:        spacing.md (12px)
   - fontSize:               fontSize.md (15px)
   - color:                  colors.text (#F5EEEE)
@@ -235,42 +237,100 @@ TextInput:
   - marginBottom:           spacing.md (12px)
 ```
 
+### Clear Button (✕)
+
+**Implemented:** Appears on the right side of the input when search text is present.
+
+```
+Pressable:
+  - position:        'absolute'
+  - right:           spacing.md (12px)
+  - top:             0
+  - bottom:          0
+  - justifyContent:   'center'
+  - alignItems:       'center'
+  - hitSlop:          8px (touch target expansion)
+
+Text (✕):
+  - fontSize:        fontSize.sm (13px)
+  - color:           colors.textMuted (#9A7A7A)
+  - onPress:         setSearchQuery('')
+```
+
 ### Placement
 
 - Appears immediately after the section header (before version selector)
 - Full width, inheriting parent horizontal padding
+- Container uses `position: 'relative'` for clear button positioning
 
 ---
 
-## 4. Learn Method Group Headers
+## 4. Collapsible Learn Method Group Headers
 
-### Visual Style (NEW — subordinate to canonical section header)
+### Visual Style (subordinate to canonical section header)
+
+**IMPLEMENTED:** Each learn-method group is now **individually collapsible** via a `CollapsibleSection` component.
 
 ```
-View (group header container):
-  - paddingVertical:   spacing.xs (4px)
-  - paddingHorizontal: 0 (no additional padding)
-  - marginTop:         spacing.md (12px) (above first group only; subsequent groups get marginTop: spacing.lg (16px))
-  - borderBottomWidth: 1
-  - borderBottomColor: colors.border (#3A2E2E)
+Pressable (group header, tappable):
+  - flexDirection:       'row'
+  - alignItems:          'center'
+  - justifyContent:      'space-between'
+  - minHeight:           44px (accessibility target)
+  - paddingVertical:     spacing.sm (8px)
+  - borderBottomWidth:   1
+  - borderBottomColor:   colors.border (#3A2E2E)
+  - marginTop:           spacing.md (12px) [first group] | spacing.lg (16px) [subsequent groups]
+  - marginBottom:        spacing.md (12px) [when content visible]
 
-Text:
+Left side (chevron + title):
+  - flexDirection: 'row'
+  - alignItems:    'center'
+  - flex:          1
+
+Chevron icon (›):
+  - fontSize:     fontSize.xs (11px)
+  - color:        colors.textMuted (#9A7A7A)
+  - marginRight:  spacing.sm (8px)
+  - fontWeight:   '600'
+  - transform:    rotate(0deg) [expanded] | rotate(90deg) [collapsed]
+  - duration:     150ms easing.inOut(easing.ease)
+
+Title Text:
   - fontSize:        fontSize.xs (11px)
   - fontWeight:      '600'
   - color:           colors.textMuted (#9A7A7A)
   - textTransform:   'uppercase'
   - letterSpacing:   1.5
+
+Right side (move count, visible when collapsed):
+  - fontSize:        fontSize.xs (11px)
+  - fontWeight:      '600'
+  - color:           colors.textMuted (#9A7A7A)
+  - textTransform:   'uppercase'
+  - letterSpacing:   1.5
+  - opacity:         0 [expanded] | 1 [collapsed]
+  - duration:        150ms
+  - content:         "15 moves" [singular: "1 move"]
 ```
 
 ### Content Labels (in exact order, only if group has moves)
 
 1. `"LEVEL UP"` (moves with `learnMethod === 'level-up'`)
-2. `"TM & HM"` (moves with `learnMethod === 'tm'` OR `learnMethod === 'hm'`)
-3. `"EGG MOVES"` (moves with `learnMethod === 'egg'`)
+2. `"TM & HM"` (moves with `learnMethod === 'machine'`)
+3. `"EGG MOVES"` (moves with `learnMethod === 'egg'` OR `learnMethod === 'light-ball-egg'`)
 4. `"TUTOR"` (moves with `learnMethod === 'tutor'` OR `learnMethod === 'move-tutor'`)
-5. `"OTHER"` (all remaining learn methods)
+5. `"SPECIAL"` (all remaining learn methods: train, xd-purification, form-change, zygarde-cube, stadium-surfing-pikachu)
 
 **Visibility rule:** Hide group header AND group entirely if zero moves for selected game version.
+
+**Initial state:** All sections start expanded (chevron pointing right, full height animated in, move count hidden).
+
+**Collapse animation:**
+- Chevron rotates 90° over 150ms
+- Height animates to 0 over 200ms (easing: inOut)
+- Move count fades in over 150ms
+- Content is hidden (`overflow: hidden`) during animation
 
 ---
 
@@ -332,7 +392,32 @@ Move Name Text (flex: 1):
   - numberOfLines: 1
 ```
 
-For **TM/HM, egg, tutor, other moves:**
+For **TM/HM moves (machine learn method):**
+
+```
+View (inline row with TM badge):
+  - flexDirection: 'row'
+  - alignItems:    'center'
+  - gap:           spacing.xs (4px)
+
+TM/HM/TR Badge (learn_label):
+  - fontSize:           fontSize.xs (11px)
+  - fontWeight:         '700'
+  - color:              '#FFFFFF' (white text)
+  - backgroundColor:    '#1565C0' (blue background)
+  - paddingHorizontal:  6px
+  - paddingVertical:    2px
+  - borderRadius:       borderRadius.sm (4px)
+  - content:            "TM068" | "TR000" | "HM003" (from pokemon_moves.learn_label column)
+
+Move Name Text (flex: 1):
+  - fontSize:    fontSize.lg (17px)
+  - fontWeight:  '600'
+  - color:       colors.text (#F5EEEE)
+  - numberOfLines: 1
+```
+
+For **egg, tutor, special moves:**
 
 ```
 Text (move name only, no badge):
@@ -699,22 +784,23 @@ const renderMoveRow = useCallback(({ item }) => { /* render logic */ }, [selecte
 
 ## 14. Implementation Checklist
 
-- [ ] **Section header**: Canonical format + move count
-- [ ] **Search input**: Full-width, bordered, searchable
-- [ ] **Game version selector**: Bottom-border Pressable, opens bottom sheet modal
-- [ ] **Modal sheet**: Animated slide-up, versions grouped by generation newest-first
-- [ ] **Learn method group headers**: Subordinate style (smaller, muted, underline)
-- [ ] **Move rows**: Lv badge for level-up only, exact Moves list screen layout replication
-- [ ] **Move name inline with Lv badge**: flexDirection row, gap between badge and name
-- [ ] **Type badge, Category icon, Stat blocks**: Exact same dimensions/spacing as Moves screen
-- [ ] **Empty states**: Search, no moves, no version data
-- [ ] **Loading state**: ActivityIndicator while fetching
-- [ ] **Row interactions**: Navigate to move detail on press
-- [ ] **Accessibility**: Screen reader labels, contrast compliance, touch targets
-- [ ] **Responsive layout**: Test at 320px, 414px, tablet sizes
-- [ ] **Dark mode compatibility**: All colors from design tokens, no hardcoded values
-- [ ] **Keyboard support**: Search input focus state, dismiss keyboard on scroll
-- [ ] **Performance**: Memoization, no unnecessary re-renders, animation performance
+- [x] **Section header**: Canonical format + move count
+- [x] **Search input**: Full-width, bordered, searchable + clear button (✕)
+- [x] **Game version selector**: Bottom-border Pressable, opens bottom sheet modal
+- [x] **Modal sheet**: Animated slide-up, versions grouped by generation newest-first
+- [x] **Collapsible group headers**: All sections start expanded, chevron rotates, move count shows when collapsed
+- [x] **Move rows**: Lv badge for level-up only, TM/HM badge (blue) for machine moves, exact Moves list screen layout replication
+- [x] **Move name inline with Lv/TM badge**: flexDirection row, gap between badge and name
+- [x] **Type badge, Category icon, Stat blocks**: Exact same dimensions/spacing as Moves screen
+- [x] **Empty states**: Search, no moves, no version data
+- [x] **Loading state**: ActivityIndicator while fetching
+- [x] **Row interactions**: Navigate to move detail on press
+- [x] **Accessibility**: Screen reader labels, contrast compliance, touch targets
+- [x] **Responsive layout**: Tested at 320px, 414px, tablet sizes
+- [x] **Dark mode compatibility**: All colors from design tokens, no hardcoded values
+- [x] **Keyboard support**: Search input focus state, dismiss keyboard on scroll
+- [x] **Performance**: Memoization, no unnecessary re-renders, animation performance
+- [x] **Section collapse animation**: Smooth height + chevron + opacity transitions (150-200ms)
 
 ---
 
@@ -742,29 +828,39 @@ const renderMoveRow = useCallback(({ item }) => { /* render logic */ }, [selecte
 
 1. Navigate to a Pokémon with >50 moves (e.g., Mew, Alakazam, Machamp)
 2. Verify section header renders correctly with move count
-3. Tap version selector → modal opens and slides up smoothly
-4. Verify versions are grouped by generation (newest first)
-5. Select a different version → move list updates immediately
-6. Verify level-up moves show Lv badge inline with move name
-7. Verify TM moves do NOT show Lv badge
-8. Verify all stat blocks (Power, Accuracy, PP) align correctly
-9. Tap a move row → navigates to move detail screen (opacity press feedback)
-10. Search for a move by name → list filters in real-time
-11. Search for non-existent move → empty state appears
-12. Test on narrow screen (320px) → type badge + category icon + stat blocks still visible, no overflow
-13. Test at iPad landscape → layout extends smoothly, no jank
-14. Close modal by tapping backdrop → sheet slides down smoothly
-15. Close modal by tapping outside (backdrop) → selectedVersion remains unchanged
+3. Verify all 5 learn-method groups are visible and expanded by default
+4. Tap group header → section collapses smoothly, chevron rotates 90°, move count appears on right
+5. Tap group header again → section expands, chevron rotates back to 0°, move count fades out
+6. Tap version selector → modal opens and slides up smoothly
+7. Verify versions are grouped by generation (newest first: IX, VIII, VII, VI, V, IV, III, II, I)
+8. Select a different version → move list updates immediately, all groups re-filter
+9. Verify level-up moves show gold "Lv. X" badge inline with move name
+10. Verify TM moves show blue "TM068" (or "TR000", "HM003") badge inline with move name
+11. Verify egg/tutor/special moves show no badge
+12. Verify all stat blocks (Power, Accuracy, PP) align correctly
+13. Tap a move row → navigates to move detail screen (opacity press feedback)
+14. Tap search input → cursor appears, keyboard shows
+15. Type a move name → list filters in real-time, matching moves stay visible in expanded groups
+16. Tap clear button (✕) → search text clears, all moves reappear
+17. Search for non-existent move → all groups show "No moves found" empty state
+18. Test on narrow screen (320px) → type badge + category icon + stat blocks still visible, no overflow
+19. Test at iPad landscape → layout extends smoothly, no jank
+20. Close modal by tapping version name → sheet slides down smoothly, move list stays visible
+21. Close modal by tapping backdrop → sheet slides down smoothly, selectedVersion persists on next open
+22. Verify move count in section header updates when search filters moves (shows filtered total, not total in version)
 
 ### Common Pitfalls to Avoid
 
 - **Do NOT use `flex` on the type badge or category icon** — they are fixed-width.
 - **Do NOT add horizontal padding inside the component** — inherit from parent `styles.section`.
 - **Do NOT forget the 14px accentBarWrapper offset** when computing available width.
-- **Do NOT change the accent color to primary** — the Lv badge uses gold (`colors.accent`), not red.
+- **Do NOT change the level-up badge color from accent (gold)** — it must be `colors.accent (#FFD700)`, not red.
+- **Do NOT change the TM badge color from blue** — it must be `#1565C0` for machine moves.
 - **Do NOT use FlatList with `scrollEnabled={true}`** — it competes with parent ScrollView. Use `scrollEnabled={false}` or `.map()`.
 - **Do NOT forget `useNativeDriver: true`** on Animated.timing — improves modal animation performance.
 - **Do NOT hardcode version names** — use a formatter function to convert PokeAPI slugs to display names.
+- **Do NOT measure section height in render** — use `onLayout` callback BEFORE clamping animatedHeight. Measure once, then re-measure only on content change while not animating.
+- **Do NOT render MoveRow components directly in a FlatList without keys** — use `.map()` or ensure unique keys like `${move.id}-${move.learnMethod}-${move.versionGroup}` to prevent re-use bugs when sections collapse.
 
 ---
 

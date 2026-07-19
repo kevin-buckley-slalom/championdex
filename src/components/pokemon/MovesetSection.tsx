@@ -10,6 +10,7 @@ import {
   Dimensions,
   TextInput,
   ActivityIndicator,
+  Easing,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -28,34 +29,78 @@ const CATEGORY_ICONS: Record<string, any> = {
 // Canonical game release order — highest generation first for default selection
 const GAME_VERSION_ORDER: Record<string, number> = {
   // Gen 1
-  'red': 10, 'blue': 10, 'yellow': 15,
-  'red-japan': 10, 'blue-japan': 10, 'green-japan': 10,
+  'red-blue': 10, 'yellow': 15, 'red-green-japan': 10, 'blue-japan': 12,
   // Gen 2
-  'gold': 20, 'silver': 20, 'crystal': 25,
+  'gold-silver': 20, 'crystal': 25,
   // Gen 3
-  'ruby': 30, 'sapphire': 30, 'firered': 35, 'leafgreen': 35, 'emerald': 37,
+  'ruby-sapphire': 30, 'firered-leafgreen': 35, 'emerald': 37,
   'colosseum': 33, 'xd': 34,
   // Gen 4
-  'diamond': 40, 'pearl': 40, 'platinum': 45, 'heartgold': 47, 'soulsilver': 47,
+  'diamond-pearl': 40, 'platinum': 45, 'heartgold-soulsilver': 47,
   // Gen 5
-  'black': 50, 'white': 50, 'black-2': 55, 'white-2': 55,
+  'black-white': 50, 'black-2-white-2': 55,
   // Gen 6
-  'x': 60, 'y': 60, 'omega-ruby': 65, 'alpha-sapphire': 65,
+  'x-y': 60, 'omega-ruby-alpha-sapphire': 65,
   // Gen 7
-  'sun': 70, 'moon': 70, 'ultra-sun': 75, 'ultra-moon': 75,
-  'lets-go-pikachu': 78, 'lets-go-eevee': 78,
+  'sun-moon': 70, 'ultra-sun-ultra-moon': 75, 'lets-go-pikachu-lets-go-eevee': 78,
   // Gen 8
-  'sword': 80, 'shield': 80,
-  'the-isle-of-armor-sword': 82, 'the-isle-of-armor-shield': 82,
-  'the-crown-tundra-sword': 84, 'the-crown-tundra-shield': 84,
-  'brilliant-diamond': 86, 'shining-pearl': 86,
-  'legends-arceus': 88,
+  'sword-shield': 80,
+  'the-isle-of-armor': 82, 'the-crown-tundra': 84,
+  'brilliant-diamond-shining-pearl': 86, 'legends-arceus': 88,
   // Gen 9
-  'scarlet': 90, 'violet': 90,
-  'the-teal-mask-scarlet': 92, 'the-teal-mask-violet': 92,
-  'the-indigo-disk-scarlet': 94, 'the-indigo-disk-violet': 94,
-  // Future/other
-  'legends-za': 98, 'mega-dimension': 96, 'champions': 96,
+  'scarlet-violet': 90, 'the-teal-mask': 92, 'the-indigo-disk': 94,
+  // Future
+  'champions': 96,
+};
+
+const GAME_GENERATION_MAP: Record<string, string> = {
+  // Gen 9
+  'scarlet-violet': 'Generation IX',
+  'the-teal-mask': 'Generation IX',
+  'the-indigo-disk': 'Generation IX',
+  // Gen 8
+  'sword-shield': 'Generation VIII',
+  'the-isle-of-armor': 'Generation VIII',
+  'the-crown-tundra': 'Generation VIII',
+  'brilliant-diamond-shining-pearl': 'Generation VIII',
+  'legends-arceus': 'Generation VIII',
+  // Gen 7
+  'sun-moon': 'Generation VII',
+  'ultra-sun-ultra-moon': 'Generation VII',
+  'lets-go-pikachu-lets-go-eevee': 'Generation VII',
+  // Gen 6
+  'x-y': 'Generation VI',
+  'omega-ruby-alpha-sapphire': 'Generation VI',
+  // Gen 5
+  'black-white': 'Generation V',
+  'black-2-white-2': 'Generation V',
+  // Gen 4
+  'diamond-pearl': 'Generation IV',
+  'platinum': 'Generation IV',
+  'heartgold-soulsilver': 'Generation IV',
+  // Gen 3
+  'ruby-sapphire': 'Generation III',
+  'emerald': 'Generation III',
+  'firered-leafgreen': 'Generation III',
+  'colosseum': 'Generation III',
+  'xd': 'Generation III',
+  // Gen 2
+  'gold-silver': 'Generation II',
+  'crystal': 'Generation II',
+  // Gen 1
+  'red-blue': 'Generation I',
+  'yellow': 'Generation I',
+  'red-green-japan': 'Generation I',
+  'blue-japan': 'Generation I',
+  // Future
+  'champions': 'Future',
+};
+
+const GENERATION_ORDER: Record<string, number> = {
+  'Future': 0,
+  'Generation IX': 1, 'Generation VIII': 2, 'Generation VII': 3,
+  'Generation VI': 4, 'Generation V': 5, 'Generation IV': 6,
+  'Generation III': 7, 'Generation II': 8, 'Generation I': 9,
 };
 
 interface MovesetSectionProps {
@@ -65,6 +110,119 @@ interface MovesetSectionProps {
 
 function formatVersionGroupName(slug: string): string {
   return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+interface CollapsibleSectionProps {
+  title: string;
+  moveCount: number;
+  expanded: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+  isFirst?: boolean;
+}
+
+function CollapsibleSection({
+  title,
+  moveCount,
+  expanded,
+  onToggle,
+  children,
+  isFirst = false,
+}: CollapsibleSectionProps) {
+  const [isAnimating, setIsAnimating] = useState(false);
+  const measured = useRef(false);
+  const animatedHeight = useRef(new Animated.Value(0)).current;
+  const chevronAnim = useRef(new Animated.Value(1)).current;
+  const countOpacity = useRef(new Animated.Value(0)).current;
+  const measuredHeight = useRef(0);
+
+  const toggleSection = () => {
+    if (!measured.current) return;
+    setIsAnimating(true);
+    const newExpanded = !expanded;
+
+    Animated.parallel([
+      Animated.timing(chevronAnim, {
+        toValue: newExpanded ? 1 : 0,
+        duration: 150,
+        useNativeDriver: false,
+      }),
+      Animated.timing(animatedHeight, {
+        toValue: newExpanded ? measuredHeight.current : 0,
+        duration: 200,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: false,
+      }),
+      Animated.timing(countOpacity, {
+        toValue: newExpanded ? 0 : 1,
+        duration: 150,
+        useNativeDriver: false,
+      }),
+    ]).start(() => {
+      setIsAnimating(false);
+      onToggle();
+    });
+  };
+
+  const chevronRotation = chevronAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '90deg'],
+  });
+
+  const handleContentLayout = (e: any) => {
+    const h = e.nativeEvent.layout.height;
+    if (h <= 0) return;
+    if (!measured.current) {
+      measuredHeight.current = h;
+      animatedHeight.setValue(h);
+      measured.current = true;
+    } else if (!isAnimating && expanded) {
+      // Content height changed (e.g. search filter changed) — update tracked height and animated value
+      measuredHeight.current = h;
+      animatedHeight.setValue(h);
+    }
+  };
+
+  // Before measuring: render without height constraint so content is visible and measurable.
+  // After measuring: animatedHeight controls height for collapse/expand.
+  // Using a ref for measured means no re-render fires when measurement completes.
+  const contentStyle = measured.current
+    ? [styles.collapsibleContentContainer, { height: animatedHeight }]
+    : [styles.collapsibleContentContainer];
+
+  return (
+    <View style={[styles.collapsibleSectionContainer, !isFirst && { marginTop: spacing.lg }]}>
+      <Pressable
+        disabled={isAnimating}
+        onPress={toggleSection}
+        style={({ pressed }) => [
+          styles.collapsibleHeader,
+          pressed && !isAnimating && { opacity: 0.7 },
+        ]}
+      >
+        <View style={styles.collapsibleHeaderLeft}>
+          <Animated.Text
+            style={[
+              styles.chevronIcon,
+              { transform: [{ rotate: chevronRotation }] },
+            ]}
+          >
+            ›
+          </Animated.Text>
+          <Text style={styles.groupHeader}>{title}</Text>
+        </View>
+        <Animated.Text style={[styles.collapsedMoveCount, { opacity: countOpacity }]}>
+          {moveCount === 1 ? '1 move' : `${moveCount} moves`}
+        </Animated.Text>
+      </Pressable>
+
+      <Animated.View style={contentStyle}>
+        <View onLayout={handleContentLayout} style={{ width: '100%' }}>
+          {children}
+        </View>
+      </Animated.View>
+    </View>
+  );
 }
 
 function sortVersionsByGeneration(versions: string[]): string[] {
@@ -81,7 +239,15 @@ type GroupedMoves = {
   tmHm: Move[];
   egg: Move[];
   tutor: Move[];
-  other: Move[];
+  special: Move[];
+};
+
+type SectionExpandedState = {
+  levelUp: boolean;
+  tmHm: boolean;
+  egg: boolean;
+  tutor: boolean;
+  special: boolean;
 };
 
 export function MovesetSection({ pokemonId, pokemonName }: MovesetSectionProps) {
@@ -92,18 +258,31 @@ export function MovesetSection({ pokemonId, pokemonName }: MovesetSectionProps) 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVersion, setSelectedVersion] = useState<string>('');
   const [modalVisible, setModalVisible] = useState(false);
+  const [sectionExpanded, setSectionExpanded] = useState<SectionExpandedState>({
+    levelUp: true,
+    tmHm: true,
+    egg: true,
+    tutor: true,
+    special: true,
+  });
 
   const SHEET_HEIGHT = Dimensions.get('window').height * 0.7;
   const slideAnim = useRef(new Animated.Value(SHEET_HEIGHT)).current;
 
-  // Auto-select most recent version when versions arrive
+  // Reset selection when pokemon changes
   useEffect(() => {
-    if (versions.length > 0 && !selectedVersion) {
+    setSelectedVersion('');
+  }, [pokemonId]);
+
+  // Set default to newest available version once versions load (or after reset)
+  useEffect(() => {
+    if (versions.length > 0 && (!selectedVersion || !versions.includes(selectedVersion))) {
       const sortedVersions = sortVersionsByGeneration(versions);
       setSelectedVersion(sortedVersions[0]);
     }
-  }, [versions, selectedVersion]);
+  }, [versions.length, pokemonId]);
 
+  // Modal animation
   useEffect(() => {
     if (modalVisible) {
       Animated.timing(slideAnim, {
@@ -136,21 +315,22 @@ export function MovesetSection({ pokemonId, pokemonName }: MovesetSectionProps) 
       tmHm: [],
       egg: [],
       tutor: [],
-      other: [],
+      special: [],
     };
 
     for (const move of filtered) {
       const method = move.learnMethod.toLowerCase();
       if (method === 'level-up') {
         result.levelUp.push(move);
-      } else if (method === 'tm' || method === 'hm') {
+      } else if (method === 'machine') {
         result.tmHm.push(move);
-      } else if (method === 'egg') {
+      } else if (method === 'egg' || method === 'light-ball-egg') {
         result.egg.push(move);
       } else if (method === 'tutor' || method === 'move-tutor') {
         result.tutor.push(move);
       } else {
-        result.other.push(move);
+        // train (Pokéathlon), xd-purification, form-change, zygarde-cube, stadium-surfing-pikachu
+        result.special.push(move);
       }
     }
 
@@ -159,7 +339,7 @@ export function MovesetSection({ pokemonId, pokemonName }: MovesetSectionProps) 
     result.tmHm.sort((a, b) => a.displayName.localeCompare(b.displayName));
     result.egg.sort((a, b) => a.displayName.localeCompare(b.displayName));
     result.tutor.sort((a, b) => a.displayName.localeCompare(b.displayName));
-    result.other.sort((a, b) => a.displayName.localeCompare(b.displayName));
+    result.special.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
     return result;
   }, [moves, selectedVersion, searchQuery]);
@@ -168,9 +348,28 @@ export function MovesetSection({ pokemonId, pokemonName }: MovesetSectionProps) 
     groupedMoves.tmHm.length +
     groupedMoves.egg.length +
     groupedMoves.tutor.length +
-    groupedMoves.other.length;
+    groupedMoves.special.length;
 
   const sortedVersions = sortVersionsByGeneration(versions);
+
+  const flatListData = useMemo(() => {
+    const groups: Record<string, string[]> = {};
+    sortedVersions.forEach(version => {
+      const gen = GAME_GENERATION_MAP[version] || 'Other';
+      if (!groups[gen]) groups[gen] = [];
+      groups[gen].push(version);
+    });
+    const data: Array<{ type: 'header' | 'item'; generation?: string; version?: string }> = [];
+    Object.keys(GENERATION_ORDER)
+      .sort((a, b) => (GENERATION_ORDER[a] ?? 999) - (GENERATION_ORDER[b] ?? 999))
+      .forEach(gen => {
+        if (groups[gen]) {
+          data.push({ type: 'header', generation: gen });
+          groups[gen].forEach(version => data.push({ type: 'item', version }));
+        }
+      });
+    return data;
+  }, [sortedVersions]);
 
   if (versions.length === 0 && !isLoading) {
     return (
@@ -192,13 +391,24 @@ export function MovesetSection({ pokemonId, pokemonName }: MovesetSectionProps) 
       </Text>
 
       {/* Search Input */}
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Search moves..."
-        placeholderTextColor={colors.textMuted}
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search moves..."
+          placeholderTextColor={colors.textMuted}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <Pressable
+            onPress={() => setSearchQuery('')}
+            style={styles.searchClearButton}
+            hitSlop={8}
+          >
+            <Text style={styles.searchClearIcon}>✕</Text>
+          </Pressable>
+        )}
+      </View>
 
       {/* Game Version Selector */}
       {versions.length > 1 && (
@@ -224,52 +434,73 @@ export function MovesetSection({ pokemonId, pokemonName }: MovesetSectionProps) 
         <>
           {/* Level Up Moves */}
           {groupedMoves.levelUp.length > 0 && (
-            <View>
-              <Text style={styles.groupHeader}>LEVEL UP</Text>
+            <CollapsibleSection
+              title="LEVEL UP"
+              moveCount={groupedMoves.levelUp.length}
+              expanded={sectionExpanded.levelUp}
+              onToggle={() => setSectionExpanded(prev => ({ ...prev, levelUp: !prev.levelUp }))}
+              isFirst={true}
+            >
               {groupedMoves.levelUp.map((move) => (
                 <MoveRow key={`${move.id}-level-${move.learnLevel}`} move={move} showLevelBadge />
               ))}
-            </View>
+            </CollapsibleSection>
           )}
 
           {/* TM & HM Moves */}
           {groupedMoves.tmHm.length > 0 && (
-            <View>
-              <Text style={[styles.groupHeader, { marginTop: spacing.lg }]}>TM & HM</Text>
+            <CollapsibleSection
+              title="TM & HM"
+              moveCount={groupedMoves.tmHm.length}
+              expanded={sectionExpanded.tmHm}
+              onToggle={() => setSectionExpanded(prev => ({ ...prev, tmHm: !prev.tmHm }))}
+            >
               {groupedMoves.tmHm.map((move) => (
-                <MoveRow key={`${move.id}-tm`} move={move} />
+                <MoveRow key={`${move.id}-tm`} move={move} showTmBadge />
               ))}
-            </View>
+            </CollapsibleSection>
           )}
 
           {/* Egg Moves */}
           {groupedMoves.egg.length > 0 && (
-            <View>
-              <Text style={[styles.groupHeader, { marginTop: spacing.lg }]}>EGG MOVES</Text>
+            <CollapsibleSection
+              title="EGG MOVES"
+              moveCount={groupedMoves.egg.length}
+              expanded={sectionExpanded.egg}
+              onToggle={() => setSectionExpanded(prev => ({ ...prev, egg: !prev.egg }))}
+            >
               {groupedMoves.egg.map((move) => (
                 <MoveRow key={`${move.id}-egg`} move={move} />
               ))}
-            </View>
+            </CollapsibleSection>
           )}
 
           {/* Tutor Moves */}
           {groupedMoves.tutor.length > 0 && (
-            <View>
-              <Text style={[styles.groupHeader, { marginTop: spacing.lg }]}>TUTOR</Text>
+            <CollapsibleSection
+              title="TUTOR"
+              moveCount={groupedMoves.tutor.length}
+              expanded={sectionExpanded.tutor}
+              onToggle={() => setSectionExpanded(prev => ({ ...prev, tutor: !prev.tutor }))}
+            >
               {groupedMoves.tutor.map((move) => (
                 <MoveRow key={`${move.id}-tutor`} move={move} />
               ))}
-            </View>
+            </CollapsibleSection>
           )}
 
-          {/* Other Moves */}
-          {groupedMoves.other.length > 0 && (
-            <View>
-              <Text style={[styles.groupHeader, { marginTop: spacing.lg }]}>OTHER</Text>
-              {groupedMoves.other.map((move) => (
-                <MoveRow key={`${move.id}-other`} move={move} />
+          {/* Special / Event Moves */}
+          {groupedMoves.special.length > 0 && (
+            <CollapsibleSection
+              title="SPECIAL"
+              moveCount={groupedMoves.special.length}
+              expanded={sectionExpanded.special}
+              onToggle={() => setSectionExpanded(prev => ({ ...prev, special: !prev.special }))}
+            >
+              {groupedMoves.special.map((move) => (
+                <MoveRow key={`${move.id}-special`} move={move} />
               ))}
-            </View>
+            </CollapsibleSection>
           )}
         </>
       )}
@@ -292,36 +523,30 @@ export function MovesetSection({ pokemonId, pokemonName }: MovesetSectionProps) 
               </View>
 
               <FlatList
-                data={sortedVersions}
-                keyExtractor={(version) => version}
-                renderItem={({ item: version, index: idx }) => {
+                data={flatListData}
+                keyExtractor={(item, index) =>
+                  item.type === 'header' ? `header-${item.generation}` : `version-${item.version}-${index}`
+                }
+                renderItem={({ item }) => {
+                  if (item.type === 'header') {
+                    return (
+                      <View style={styles.generationHeader}>
+                        <Text style={styles.generationHeaderText}>{item.generation}</Text>
+                      </View>
+                    );
+                  }
+                  const version = item.version!;
                   const isSelected = selectedVersion === version;
-                  const isLastItem = idx === sortedVersions.length - 1;
-
                   return (
-                    <View>
-                      <Pressable
-                        onPress={() => {
-                          setSelectedVersion(version);
-                          closeModal();
-                        }}
-                        style={[
-                          styles.versionListItem,
-                          isSelected && styles.versionListItemSelected,
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.versionListItemText,
-                            isSelected && styles.versionListItemTextSelected,
-                          ]}
-                        >
-                          {formatVersionGroupName(version)}
-                        </Text>
-                        {isSelected && <Text style={styles.checkmark}>✓</Text>}
-                      </Pressable>
-                      {!isLastItem && <View style={styles.separator} />}
-                    </View>
+                    <Pressable
+                      onPress={() => { setSelectedVersion(version); closeModal(); }}
+                      style={[styles.versionListItem, isSelected && styles.versionListItemSelected]}
+                    >
+                      <Text style={[styles.versionListItemText, isSelected && styles.versionListItemTextSelected]}>
+                        {formatVersionGroupName(version)}
+                      </Text>
+                      {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                    </Pressable>
                   );
                 }}
               />
@@ -336,9 +561,10 @@ export function MovesetSection({ pokemonId, pokemonName }: MovesetSectionProps) 
 interface MoveRowProps {
   move: Move;
   showLevelBadge?: boolean;
+  showTmBadge?: boolean;
 }
 
-function MoveRow({ move, showLevelBadge = false }: MoveRowProps) {
+function MoveRow({ move, showLevelBadge = false, showTmBadge = false }: MoveRowProps) {
   const router = useRouter();
   const categoryIcon = CATEGORY_ICONS[move.category.toLowerCase()];
 
@@ -351,10 +577,13 @@ function MoveRow({ move, showLevelBadge = false }: MoveRowProps) {
       onPress={() => router.push(`/(main)/(pokedex)/moves/${move.id}`)}
     >
       <View style={styles.leftColumn}>
-        {/* Row 1: Level badge + Move name */}
+        {/* Row 1: Level badge + TM badge + Move name */}
         <View style={styles.nameRow}>
           {showLevelBadge && (
             <Text style={styles.levelBadge}>Lv. {move.learnLevel !== null ? move.learnLevel : '—'}</Text>
+          )}
+          {showTmBadge && move.learnLabel !== null && (
+            <Text style={styles.tmBadge}>{move.learnLabel}</Text>
           )}
           <Text style={styles.moveName} numberOfLines={1}>
             {move.displayName}
@@ -408,6 +637,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.textSecondary,
   },
+  searchContainer: {
+    position: 'relative',
+    marginBottom: spacing.md,
+  },
   searchInput: {
     backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
@@ -415,9 +648,21 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius['2xl'],
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
+    paddingRight: spacing.xl,
     fontSize: fontSize.md,
     color: colors.text,
-    marginBottom: spacing.md,
+  },
+  searchClearButton: {
+    position: 'absolute',
+    right: spacing.md,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchClearIcon: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
   },
   versionSelector: {
     paddingVertical: spacing.md,
@@ -436,10 +681,40 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 1.5,
+  },
+  collapsibleSectionContainer: {
+    width: '100%',
+  },
+  collapsibleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     marginBottom: spacing.md,
+  },
+  collapsibleHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  chevronIcon: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    marginRight: spacing.sm,
+    fontWeight: '600',
+  },
+  collapsedMoveCount: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+  },
+  collapsibleContentContainer: {
+    overflow: 'hidden',
   },
   moveRow: {
     flexDirection: 'row',
@@ -469,6 +744,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.accent,
     backgroundColor: 'rgba(255,215,0,0.12)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+  },
+  tmBadge: {
+    fontSize: fontSize.xs,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    backgroundColor: '#1565C0',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: borderRadius.sm,
@@ -590,9 +874,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.primary,
   },
-  separator: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    opacity: 0.4,
+  generationHeader: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  generationHeaderText: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    fontWeight: '600',
   },
 });

@@ -15,7 +15,7 @@ const path = require('path');
 const Database = require('better-sqlite3');
 
 const DB_PATH = path.join(__dirname, '../assets/db/championdex.db');
-const DATA_VERSION = '1.10.0';
+const DATA_VERSION = '1.12.0';
 const ENRICH_VERSION = '1.2.0';
 
 // ── Semaphore (10 concurrent PokeAPI requests) ─────────────────────────────
@@ -268,6 +268,7 @@ async function main() {
       move_id       INTEGER NOT NULL REFERENCES moves(id) ON DELETE CASCADE,
       learn_method  TEXT NOT NULL,
       learn_level   INTEGER,
+      learn_label   TEXT,
       version_group TEXT NOT NULL DEFAULT '',
       PRIMARY KEY (pokemon_id, move_id, learn_method, version_group)
     );
@@ -677,6 +678,67 @@ async function main() {
   });
   writeEncounters();
 
+  // ── Fetch machines (TM/HM/TR) from PokeAPI ───────────────────────────────
+  console.log('[GenerateBundledDb] Fetching machines from PokeAPI...');
+  const machineLookup = new Map(); // key: "${moveId}:${versionGroup}" -> tmNumber (integer)
+  let machinesFetched = 0;
+
+  try {
+    let machineUrl = 'https://pokeapi.co/api/v2/machine?limit=2000';
+    let pageNum = 1;
+    while (machineUrl) {
+      const machineListData = await pokeApiFetch(machineUrl);
+      machineUrl = machineListData.next || null;
+
+      if (!Array.isArray(machineListData.results)) break;
+
+      const machineUrls = machineListData.results.map(r => r.url);
+      const MACHINE_BATCH = 10;
+
+      for (let i = 0; i < machineUrls.length; i += MACHINE_BATCH) {
+        const batch = machineUrls.slice(i, i + MACHINE_BATCH);
+        let hadFetch = false;
+        await Promise.all(batch.map(async machineUrl => {
+          try {
+            const machineData = await pokeApiFetch(machineUrl);
+            hadFetch = true;
+            machinesFetched++;
+
+            if (machineData.item?.name && machineData.move?.url && machineData.version_group?.name) {
+              // Extract move ID from URL
+              const moveIdMatch = machineData.move.url.match(/\/move\/(\d+)\//);
+              if (!moveIdMatch) return;
+              const moveId = parseInt(moveIdMatch[1], 10);
+
+              // Extract prefix (tm, hm, tr) and number, then format as label (e.g. "tm027" -> "TM027", "hm03" -> "HM003")
+              const itemNameLower = machineData.item.name.toLowerCase();
+              const numberMatch = itemNameLower.match(/^(tm|hm|tr)(\d+)$/);
+              if (!numberMatch) return;
+              const prefix = numberMatch[1].toUpperCase(); // "TM", "HM", "TR"
+              const num = parseInt(numberMatch[2], 10);
+              const label = `${prefix}${String(num).padStart(3, '0')}`; // "TM027", "TR000", "HM003"
+
+              const versionGroup = machineData.version_group.name;
+              const key = `${moveId}:${versionGroup}`;
+              machineLookup.set(key, label);
+            }
+          } catch (e) {
+            // Silent skip on fetch failure
+          }
+        }));
+        if (hadFetch) await sleep(50);
+        const batchNum = Math.floor(i / MACHINE_BATCH) + 1;
+        const totalBatches = Math.ceil(machineUrls.length / MACHINE_BATCH);
+        if (batchNum % 10 === 0 || batchNum === totalBatches) {
+          console.log(`  [Machines page ${pageNum}] batch ${batchNum}/${totalBatches} (${machinesFetched} fetched)`);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn(`  [warn] Machine list fetch failed: ${e.message}`);
+  }
+  console.log(`  [Machines] Total: ${machineLookup.size} machine entries`);
+
   // ── Movesets from PokeAPI with version_group support ──────────────────────
   console.log(`[GenerateBundledDb] Fetching movesets from PokeAPI for ${defaultFormSpecies.length} species...`);
 
@@ -713,13 +775,19 @@ async function main() {
           for (const detail of moveEntry.version_group_details) {
             const learnMethod = detail.move_learn_method?.name ?? 'other';
             const versionGroup = detail.version_group?.name ?? '';
-            const learnLevel = (learnMethod === 'level-up' && detail.level_learned_at > 0) ? detail.level_learned_at : null;
+            let learnLevel = null;
+            let learnLabel = null;
+            if (learnMethod === 'level-up' && detail.level_learned_at > 0) {
+              learnLevel = detail.level_learned_at;
+            } else if (learnMethod === 'machine') {
+              learnLabel = machineLookup.get(`${moveId}:${versionGroup}`) ?? null;
+            }
 
             const key = `${moveId}:${learnMethod}:${versionGroup}`;
             if (seenMoves.has(key)) continue;
             seenMoves.add(key);
 
-            moveRows.push({ pokemonId, moveId, learnMethod, learnLevel, versionGroup });
+            moveRows.push({ pokemonId, moveId, learnMethod, learnLevel, learnLabel, versionGroup });
           }
         }
         movesetsFetched++;
@@ -736,10 +804,10 @@ async function main() {
   }
 
   console.log(`[GenerateBundledDb] Writing ${moveRows.length} moveset rows...`);
-  const moveInsertStmt = db.prepare(`INSERT OR IGNORE INTO pokemon_moves (pokemon_id, move_id, learn_method, learn_level, version_group) VALUES (?, ?, ?, ?, ?)`);
+  const moveInsertStmt = db.prepare(`INSERT OR IGNORE INTO pokemon_moves (pokemon_id, move_id, learn_method, learn_level, learn_label, version_group) VALUES (?, ?, ?, ?, ?, ?)`);
   const writeMovesets = db.transaction(() => {
     for (const r of moveRows) {
-      moveInsertStmt.run(r.pokemonId, r.moveId, r.learnMethod, r.learnLevel, r.versionGroup);
+      moveInsertStmt.run(r.pokemonId, r.moveId, r.learnMethod, r.learnLevel, r.learnLabel, r.versionGroup);
     }
   });
   writeMovesets();

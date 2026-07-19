@@ -1,6 +1,8 @@
 import * as SQLite from 'expo-sqlite';
 import { seedDatabase } from './seedDatabase';
-import { copyBundledDbIfNeeded } from './bundledDbService';
+import { copyBundledDbIfNeeded, overwriteBundledDb } from './bundledDbService';
+
+const BUNDLED_DATA_VERSION = '1.12.0';
 
 async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
 
@@ -205,9 +207,29 @@ let db: SQLite.SQLiteDatabase | null = null;
 let initPromise: Promise<void> | null = null;
 let phase1Promise: Promise<void> | null = null;
 
+/**
+ * Internal flag to force a fresh connection on next getDatabase() call.
+ * Used after database replacement to bypass openDatabaseAsync's connection cache.
+ */
+let forceNewConnection = false;
+
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
-  if (db) return db;
-  db = await SQLite.openDatabaseAsync('championdex.db');
+  if (db && !forceNewConnection) return db;
+
+  // If we're forcing a new connection, close the old cached one first
+  if (db) {
+    try { await db.closeAsync(); } catch (_) {}
+    db = null;
+  }
+
+  // Open with useNewConnection: true if we just replaced the database,
+  // to bypass openDatabaseAsync's built-in connection cache which would
+  // return a stale handle to the deleted file on Android.
+  db = await SQLite.openDatabaseAsync('championdex.db', {
+    useNewConnection: forceNewConnection,
+  });
+  forceNewConnection = false;
+
   await db.execAsync('PRAGMA journal_mode = WAL;');
   await db.execAsync('PRAGMA foreign_keys = ON;');
   return db;
@@ -230,9 +252,44 @@ export async function initializeDatabasePhase1(): Promise<void> {
 
 async function _initializeDatabasePhase1(): Promise<void> {
   await copyBundledDbIfNeeded();
+
+  // Version check: detect stale or corrupt on-device DB and replace with bundled copy.
+  // WAL/SHM files are deleted BEFORE overwriting the main DB file — overwriting first
+  // then deleting causes SQLite to replay the stale WAL onto the new DB, corrupting it.
+  const replaceDb = async () => {
+    // Close and null the cached connection before touching the files
+    if (db) {
+      try { await db.closeAsync(); } catch (_) {}
+      db = null;
+    }
+    // overwriteBundledDb uses deleteDatabaseAsync which removes main + WAL/SHM atomically
+    await overwriteBundledDb();
+    // CRITICAL: Signal that the next getDatabase() call must bypass openDatabaseAsync's
+    // connection cache. On Android, openDatabaseAsync caches connections by database name
+    // (default useNewConnection: false), so it would return a stale handle pointing to the
+    // deleted file. We need useNewConnection: true to get a fresh file handle.
+    forceNewConnection = true;
+  };
+
+  try {
+    const checkDb = await getDatabase();
+    const versionResult = await checkDb.getFirstAsync<{ value: string }>(
+      `SELECT value FROM sync_metadata WHERE key = 'data_version'`
+    );
+    const onDeviceVersion = versionResult?.value ?? null;
+    if (onDeviceVersion && onDeviceVersion !== BUNDLED_DATA_VERSION) {
+      console.log(`[Database] Stale DB detected (on-device: ${onDeviceVersion}, bundled: ${BUNDLED_DATA_VERSION}). Replacing...`);
+      await replaceDb();
+    }
+  } catch (_e) {
+    // Malformed DB or missing sync_metadata — replace unconditionally to recover
+    console.log('[Database] DB check failed, replacing with bundled copy...');
+    await replaceDb();
+  }
+
   const database = await getDatabase();
 
-  // Fast path: if tables already exist, skip DDL
+  // Fast path: if data_version is present, base data is already seeded
   try {
     const result = await database.getFirstAsync<{ value: string }>(
       'SELECT value FROM sync_metadata WHERE key = ?',
@@ -331,6 +388,7 @@ async function _initializeDatabasePhase1(): Promise<void> {
       move_id       INTEGER NOT NULL REFERENCES moves(id) ON DELETE CASCADE,
       learn_method  TEXT NOT NULL,
       learn_level   INTEGER,
+      learn_label   TEXT,
       version_group TEXT NOT NULL DEFAULT '',
       PRIMARY KEY (pokemon_id, move_id, learn_method, version_group)
     );

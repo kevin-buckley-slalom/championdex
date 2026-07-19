@@ -25,7 +25,7 @@ Fixed — warm launches are clean. See Known Issues section at bottom for resolu
 
 ---
 
-## Architecture: Data Loading (DATA_VERSION: '1.11.0')
+## Architecture: Data Loading (DATA_VERSION: '1.12.0')
 
 ### Bundled DB Strategy (improved 2026-07-17 with integrity verification)
 - `assets/db/championdex.db` (~44 MB) — pre-built SQLite DB committed to git, contains all Pokémon with 5-column `pokemon_moves` schema
@@ -36,21 +36,22 @@ Fixed — warm launches are clean. See Known Issues section at bottom for resolu
 - Phase 1 (`initializeDatabasePhase1`) blocks render; Phase 2 (`initializeDatabase`) is fire-and-forget after setIsReady
 - **To rebuild bundled DB:** `node scripts/generateBundledDb.js` → commit `assets/db/championdex.db` → bump `DATA_VERSION`
 
-### Database Initialization Flow (with crash recovery)
+### Database Initialization Flow (with version-based overwrite)
 
 ```
 app/_layout.tsx → initializeDatabasePhase1()  [blocks render]
-  → copyBundledDbIfNeeded()              [NEW: two-phase verification]
-      ← Check SecureStore version key
-      ← If stale or missing: force-overwrite (forceOverwrite: true)
-      ← If current: verify DB integrity (SELECT 1)
-          ├─ If corrupt: delete sentinel, force-overwrite, re-verify
-          └─ If healthy: skip import (fast path ~1ms)
-      ← After import: verify integrity again
-      ← Only write sentinel after successful import + verification
+  → copyBundledDbIfNeeded()              [import if missing]
   → getDatabase()                        ← openDatabaseAsync('championdex.db')
-  → SELECT data_version FROM sync_metadata
-      if present → return immediately    ← warm launch fast path (~50ms)
+  → Version check: SELECT data_version FROM sync_metadata
+      ← Compare on-device version with BUNDLED_DATA_VERSION ('1.12.0')
+      ← If mismatch OR DB corrupt/malformed → replaceDb():
+          ├─ Close cached connection (db = null)
+          ├─ deleteDatabaseAsync('championdex.db') — removes main + WAL/SHM atomically
+          ├─ importDatabaseFromAssetAsync with forceOverwrite: true
+          └─ Set forceNewConnection = true to bypass openDatabaseAsync cache on next getDatabase()
+      ← If match → proceed immediately (warm launch fast path ~50ms)
+  → SELECT data_version FROM sync_metadata (second call via getDatabase())
+      if present → return                 ← base data seeded
       if missing → CREATE TABLE IF NOT EXISTS × 12 + seedDatabase(db)  ← fresh install only
 → setIsReady(true) → app renders
 
@@ -65,8 +66,8 @@ app/_layout.tsx → initializeDatabase()  [fire-and-forget after render]
 - Orphan index errors are caught early and trigger automatic recovery
 
 **Version constants:**
-- `DATA_VERSION = '1.11.0'` — bumped for 5-column `pokemon_moves` schema with `version_group`
-- `BUNDLED_DATA_VERSION = '1.11.0'` — tracks bundled DB installation in SecureStore (only write after integrity verified)
+- `DATA_VERSION = '1.12.0'` — bumped for machine move labels (`learn_label` TEXT column in `pokemon_moves`)
+- `BUNDLED_DATA_VERSION = '1.12.0'` — tracks bundled DB installation; triggers version-check overwrite on mismatch
 - `ENRICH_VERSION = '1.2.0'` — independent; only bump if PokeAPI data needs re-fetch
 
 **Critical constraint:** ALL network calls must happen BEFORE `withTransactionAsync`.
@@ -195,18 +196,19 @@ New UI sections spec'd in `docs/DETAIL_VIEWS_SPEC.md` section 2.10:
 - **Animations**: bar width/opacity interpolate from 0 per-row (60ms stagger)
 - File: `src/components/pokemon/StatChart.tsx`
 
-### Detail Screen Layout (Updated, [id].tsx)
+### Detail Screen Layout (Complete, [id].tsx)
 - Hero section (PokemonHero with parallax, star button integrated)
 - Name + Classification row (inline, name 36px bold, classification italic right-aligned)
 - Type badges (width="fixed", size="md", 110px each)
-- **InfoStrip** (new single-row layout)
-- **AbilitiesSection** (new two-column abilities/hidden)
-- Base Stats chart (above evolution per spec reorder)
-- Evolution chain (pending review for horizontal layout; currently existing implementation)
-- Related forms, Cosmetic alternates, Type variants (grid layouts, existing)
-- Pokédex entries (FlavorTextSection)
-- Location encounters (EncounterLocationsSection)
-- Moveset with search/sort (FlatList)
+- **InfoStrip** — 4-column single-row layout (height/weight/gen/gender), optional legendary/mythical badge
+- **AbilitiesSection** — two-column abilities/hidden, tappable → ability detail
+- Base Stats chart (animated gradient bar, stagger entrance 60ms per row)
+- Type Effectiveness table (tabbed defense/offense, 4-tier severity colors, stagger animation)
+- Evolution chain (tree layout, linear chains as single row, branching chains as stacked rows with connectors)
+- Related forms, Cosmetic alternates, Type variants (3-column grids, tappable → form detail)
+- Pokédex entries (FlavorTextSection, bottom-sheet modal per game version)
+- Location encounters (EncounterLocationsSection, bottom-sheet modal per game version, newest-first)
+- **Moveset section** (collapsible learn-method groups, game version selector, search with clear button)
 
 ---
 
@@ -252,7 +254,7 @@ No batch logs, no network activity. Species counts confirmed: 1025 enriched, 2 n
 
 1. **Classification display** (REQ-028) ✅ ALREADY DONE — `[id].tsx` line 188 already renders italic textMuted classification below name
 
-2. **Moveset Section** (REQ-019) ✅ DONE — `useMovesetForPokemon` hook, search + sort controls (Name/Power/Accuracy/Category), type badge, power/accuracy/PP, learn method; tappable → MoveDetail
+2. **Moveset Section** (REQ-019) ✅ COMPLETE — search with clear button (✕), game version selector (bottom-border button, slide-up modal with generations grouped newest-first), 5 collapsible learn-method groups (Level Up, TM & HM, Egg Moves, Tutor, Special) each showing move count, all sections start expanded, level-up moves show `"Lv. X"` badge (gold accent color), machine moves show `learn_label` badge in blue (e.g. `"TM068"`, `"TR000"`, `"HM003"`), move rows with type badge + category icon + power/accuracy/PP, tappable → MoveDetail
 
 3. **Pokemon list on Move Detail** (REQ-020) ✅ DONE — `usePokemonWithMove` hook + FlashList with sprites, type badges, learn method; tappable rows → Pokemon detail
 
@@ -385,8 +387,9 @@ Known incomplete data in the live PokeAPI (https://pokeapi.co/api/v2/):
 A data researcher investigation is in progress this session to confirm the exact state of the API and whether the GitHub repo has unpublished data.
 
 ### Enrichment behaviour (current steady state)
-`ENRICH_VERSION = '1.2.0'`, `DATA_VERSION = '1.10.0'`. All enrichment data is fully populated. Warm launches produce exactly:
+`ENRICH_VERSION = '1.2.0'`, `DATA_VERSION = '1.12.0'`, `BUNDLED_DATA_VERSION = '1.12.0'`. All enrichment data is fully populated. Warm launches produce exactly:
 ```
+[Database] Base data already seeded, skipping schema creation
 [Database] Starting enrichment streams concurrently...
 [Database] PokeAPI enrichment already complete
 [Database] Classification backfill already complete
@@ -395,6 +398,8 @@ A data researcher investigation is in progress this session to confirm the exact
 [Database] Z-A forms enrichment already complete
 ```
 All five streams (`enrichDatabaseAsync`, `runClassificationBackfill`, `runMovesBackfill`, `runEncountersBackfill`, `runZAFormsEnrichmentBackfill`) launch concurrently from `startPokeApiEnrichment` and gate out immediately via their respective `sync_metadata` keys. If the gate ever misses (e.g. DB cleared), the pipeline runs in concurrent batches of 10 with a shared 10-slot semaphore (`src/services/database/enrichmentSemaphore.ts`) and completes in ~60–90s, not 5–6 min.
+
+**Version mismatch scenario:** If an existing device has `DATA_VERSION = '1.11.0'` but bundled is `1.12.0`, the version check detects the mismatch and triggers `replaceDb()`: closes the cached connection, deletes main + WAL/SHM atomically, re-imports bundled asset with `forceOverwrite: true`, then opens with `useNewConnection: true` to bypass Android connection cache. The new DB opens, runs `runMigrations` (idempotent), enrichment gates pass (already complete in bundled), and warm launch completes normally.
 
 ## Known Issues (all resolved)
 
@@ -507,11 +512,11 @@ Noticeable lag (~1s) when navigating to Pokémon detail views. Mega evolution vi
 - A 250ms `Promise.race` timeout ensures navigation fires within 250ms even on slow/cold loads
 
 **`app/(main)/(pokedex)/[id].tsx` — deferral strategy:**
-- `requestIdleCallback` replaced with `setTimeout` to guarantee deferral past the transition
-- `belowFoldReady` at 350ms — gates only truly below-fold sections (EvolutionChain, forms, flavor text, encounters, moveset)
-- `usePokemonAbilities` and `usePokemonSpeciesData` fire immediately (no gate) — needed for above-fold content
-- StatChart, TypeEffectivenessTable render immediately from `pokemon.baseStats`/`pokemon.primaryType` (already in hand)
-- `particlesReady` at 1100ms — after all stat bar animations complete (~800ms finish + 300ms margin)
+- `setTimeout` gates deferral (replaces `requestIdleCallback` which could fire during transition)
+- `belowFoldReady` at 650ms — gates truly below-fold sections (related forms, cosmetic/type variants, flavor text, encounters, moveset) and shiny prefetch check
+- `usePokemonAbilities` and `usePokemonSpeciesData` fire immediately (no gate) — needed for above-fold content (abilities tapping, gender ratio, classification)
+- StatChart, TypeEffectivenessTable render immediately from `pokemon.baseStats`/`pokemon.primaryType` (already in hand, no async query)
+- `particlesReady` at 1100ms — after all stat bar animations complete (~800ms finish + 300ms margin) to prevent reconciliation jank during particle mount
 
 **`src/components/pokemon/StatChart.tsx` — animation deferral:**
 - Stat bar animation `useEffect` wraps the `withDelay()+withTiming()` schedule in `setTimeout(fn, 100)` so animations start 100ms after mount rather than in the same render cycle as the below-fold reconciliation pass
