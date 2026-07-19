@@ -2,7 +2,7 @@ import * as SQLite from 'expo-sqlite';
 import { seedDatabase } from './seedDatabase';
 import { copyBundledDbIfNeeded, overwriteBundledDb } from './bundledDbService';
 
-const BUNDLED_DATA_VERSION = '1.12.0';
+const BUNDLED_DATA_VERSION = '1.13.0';
 
 async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
 
@@ -205,7 +205,6 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
 
 let db: SQLite.SQLiteDatabase | null = null;
 let initPromise: Promise<void> | null = null;
-let phase1Promise: Promise<void> | null = null;
 
 /**
  * Internal flag to force a fresh connection on next getDatabase() call.
@@ -236,21 +235,30 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
 }
 
 /**
- * Phase A (blocking): Opens DB, creates base schema, checks seed version gate.
- * This must complete before the app renders — the query layer depends on tables existing.
- * Phase B (migrations + enrichment) runs fire-and-forget after this returns.
+ * Single, unified database initialization function.
+ * Handles database copy, version check, schema creation, and data seeding.
+ * Blocks until initialization is fully complete — no internal fire-and-forget phases.
+ * The returned promise is cached so concurrent calls return the same promise.
+ *
+ * Initialization flow:
+ * 1. Copy bundled DB if needed (fresh install)
+ * 2. Version check: replace DB if on-device version is stale or missing
+ * 3. Open connection, create schema if first run, seed base data
+ * 4. Run all migrations (idempotent on existing installs)
+ *
+ * By the time this resolves, the database is fully ready for queries.
  */
-export async function initializeDatabasePhase1(): Promise<void> {
-  if (phase1Promise) return phase1Promise;
-  phase1Promise = _initializeDatabasePhase1();
+export async function initializeDatabase(): Promise<void> {
+  if (initPromise) return initPromise;
+  initPromise = _initializeDatabase();
   try {
-    await phase1Promise;
+    await initPromise;
   } finally {
-    phase1Promise = null;
+    initPromise = null;
   }
 }
 
-async function _initializeDatabasePhase1(): Promise<void> {
+async function _initializeDatabase(): Promise<void> {
   await copyBundledDbIfNeeded();
 
   // Version check: detect stale or corrupt on-device DB and replace with bundled copy.
@@ -290,6 +298,7 @@ async function _initializeDatabasePhase1(): Promise<void> {
   const database = await getDatabase();
 
   // Fast path: if data_version is present, base data is already seeded
+  let needsSeeding = false;
   try {
     const result = await database.getFirstAsync<{ value: string }>(
       'SELECT value FROM sync_metadata WHERE key = ?',
@@ -297,217 +306,193 @@ async function _initializeDatabasePhase1(): Promise<void> {
     );
     if (result?.value) {
       console.log('[Database] Base data already seeded, skipping schema creation');
-      return;
+    } else {
+      needsSeeding = true;
     }
   } catch (error) {
     // sync_metadata doesn't exist yet — first run, fall through to schema creation
+    needsSeeding = true;
   }
 
-  // First run only: create all tables
-  await database.execAsync(`
-    CREATE TABLE IF NOT EXISTS pokemon (
-      id                INTEGER PRIMARY KEY,
-      national_dex      INTEGER NOT NULL,
-      pokeapi_id        INTEGER NOT NULL DEFAULT 0,
-      name              TEXT NOT NULL UNIQUE,
-      display_name      TEXT NOT NULL,
-      form_type         TEXT NOT NULL DEFAULT 'default',
-      form_name         TEXT,
-      primary_type      TEXT NOT NULL,
-      secondary_type    TEXT,
-      hp                INTEGER NOT NULL DEFAULT 0,
-      attack            INTEGER NOT NULL DEFAULT 0,
-      defense           INTEGER NOT NULL DEFAULT 0,
-      special_attack    INTEGER NOT NULL DEFAULT 0,
-      special_defense   INTEGER NOT NULL DEFAULT 0,
-      speed             INTEGER NOT NULL DEFAULT 0,
-      height            REAL,
-      weight            REAL,
-      generation        INTEGER NOT NULL,
-      is_legendary      INTEGER NOT NULL DEFAULT 0,
-      is_mythical       INTEGER NOT NULL DEFAULT 0,
-      sprite_url        TEXT,
-      artwork_url       TEXT,
-      shiny_url         TEXT,
-      shiny_sprite_url  TEXT,
-      cosmetic_variants TEXT DEFAULT '[]',
-      game_exclusivity  TEXT,
-      created_at        TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at        TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+  if (needsSeeding) {
+    // First run only: create all tables
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS pokemon (
+        id                INTEGER PRIMARY KEY,
+        national_dex      INTEGER NOT NULL,
+        pokeapi_id        INTEGER NOT NULL DEFAULT 0,
+        name              TEXT NOT NULL UNIQUE,
+        display_name      TEXT NOT NULL,
+        form_type         TEXT NOT NULL DEFAULT 'default',
+        form_name         TEXT,
+        primary_type      TEXT NOT NULL,
+        secondary_type    TEXT,
+        hp                INTEGER NOT NULL DEFAULT 0,
+        attack            INTEGER NOT NULL DEFAULT 0,
+        defense           INTEGER NOT NULL DEFAULT 0,
+        special_attack    INTEGER NOT NULL DEFAULT 0,
+        special_defense   INTEGER NOT NULL DEFAULT 0,
+        speed             INTEGER NOT NULL DEFAULT 0,
+        height            REAL,
+        weight            REAL,
+        generation        INTEGER NOT NULL,
+        is_legendary      INTEGER NOT NULL DEFAULT 0,
+        is_mythical       INTEGER NOT NULL DEFAULT 0,
+        sprite_url        TEXT,
+        artwork_url       TEXT,
+        shiny_url         TEXT,
+        shiny_sprite_url  TEXT,
+        cosmetic_variants TEXT DEFAULT '[]',
+        game_exclusivity  TEXT,
+        created_at        TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at        TEXT NOT NULL DEFAULT (datetime('now'))
+      );
 
-    CREATE TABLE IF NOT EXISTS abilities (
-      id                INTEGER PRIMARY KEY,
-      name              TEXT NOT NULL UNIQUE,
-      display_name      TEXT NOT NULL,
-      description       TEXT,
-      short_description TEXT,
-      generation        INTEGER NOT NULL,
-      created_at        TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+      CREATE TABLE IF NOT EXISTS abilities (
+        id                INTEGER PRIMARY KEY,
+        name              TEXT NOT NULL UNIQUE,
+        display_name      TEXT NOT NULL,
+        description       TEXT,
+        short_description TEXT,
+        generation        INTEGER NOT NULL,
+        created_at        TEXT NOT NULL DEFAULT (datetime('now'))
+      );
 
-    CREATE TABLE IF NOT EXISTS moves (
-      id                INTEGER PRIMARY KEY,
-      name              TEXT NOT NULL UNIQUE,
-      display_name      TEXT NOT NULL,
-      type              TEXT NOT NULL,
-      category          TEXT NOT NULL,
-      power             INTEGER,
-      accuracy          INTEGER,
-      pp                INTEGER NOT NULL DEFAULT 0,
-      priority          INTEGER NOT NULL DEFAULT 0,
-      description       TEXT,
-      short_description TEXT,
-      generation        INTEGER NOT NULL,
-      makes_contact     INTEGER NOT NULL DEFAULT 0,
-      created_at        TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+      CREATE TABLE IF NOT EXISTS moves (
+        id                INTEGER PRIMARY KEY,
+        name              TEXT NOT NULL UNIQUE,
+        display_name      TEXT NOT NULL,
+        type              TEXT NOT NULL,
+        category          TEXT NOT NULL,
+        power             INTEGER,
+        accuracy          INTEGER,
+        pp                INTEGER NOT NULL DEFAULT 0,
+        priority          INTEGER NOT NULL DEFAULT 0,
+        description       TEXT,
+        short_description TEXT,
+        generation        INTEGER NOT NULL,
+        makes_contact     INTEGER NOT NULL DEFAULT 0,
+        created_at        TEXT NOT NULL DEFAULT (datetime('now'))
+      );
 
-    CREATE TABLE IF NOT EXISTS items (
-      id                INTEGER PRIMARY KEY,
-      name              TEXT NOT NULL UNIQUE,
-      display_name      TEXT NOT NULL,
-      category          TEXT NOT NULL DEFAULT 'other',
-      description       TEXT,
-      short_description TEXT,
-      sprite_url        TEXT,
-      cost              INTEGER,
-      created_at        TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+      CREATE TABLE IF NOT EXISTS items (
+        id                INTEGER PRIMARY KEY,
+        name              TEXT NOT NULL UNIQUE,
+        display_name      TEXT NOT NULL,
+        category          TEXT NOT NULL DEFAULT 'other',
+        description       TEXT,
+        short_description TEXT,
+        sprite_url        TEXT,
+        cost              INTEGER,
+        created_at        TEXT NOT NULL DEFAULT (datetime('now'))
+      );
 
-    CREATE TABLE IF NOT EXISTS pokemon_abilities (
-      pokemon_id  INTEGER NOT NULL REFERENCES pokemon(id) ON DELETE CASCADE,
-      ability_id  INTEGER NOT NULL REFERENCES abilities(id) ON DELETE CASCADE,
-      slot        INTEGER NOT NULL,
-      is_hidden   INTEGER NOT NULL DEFAULT 0,
-      PRIMARY KEY (pokemon_id, ability_id)
-    );
+      CREATE TABLE IF NOT EXISTS pokemon_abilities (
+        pokemon_id  INTEGER NOT NULL REFERENCES pokemon(id) ON DELETE CASCADE,
+        ability_id  INTEGER NOT NULL REFERENCES abilities(id) ON DELETE CASCADE,
+        slot        INTEGER NOT NULL,
+        is_hidden   INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (pokemon_id, ability_id)
+      );
 
-    CREATE TABLE IF NOT EXISTS pokemon_moves (
-      pokemon_id    INTEGER NOT NULL REFERENCES pokemon(id) ON DELETE CASCADE,
-      move_id       INTEGER NOT NULL REFERENCES moves(id) ON DELETE CASCADE,
-      learn_method  TEXT NOT NULL,
-      learn_level   INTEGER,
-      learn_label   TEXT,
-      version_group TEXT NOT NULL DEFAULT '',
-      PRIMARY KEY (pokemon_id, move_id, learn_method, version_group)
-    );
+      CREATE TABLE IF NOT EXISTS pokemon_moves (
+        pokemon_id    INTEGER NOT NULL REFERENCES pokemon(id) ON DELETE CASCADE,
+        move_id       INTEGER NOT NULL REFERENCES moves(id) ON DELETE CASCADE,
+        learn_method  TEXT NOT NULL,
+        learn_level   INTEGER,
+        learn_label   TEXT,
+        version_group TEXT NOT NULL DEFAULT '',
+        PRIMARY KEY (pokemon_id, move_id, learn_method, version_group)
+      );
 
-    CREATE TABLE IF NOT EXISTS teams (
-      id          TEXT PRIMARY KEY,
-      name        TEXT NOT NULL DEFAULT 'My Team',
-      created_at  TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+      CREATE TABLE IF NOT EXISTS teams (
+        id          TEXT PRIMARY KEY,
+        name        TEXT NOT NULL DEFAULT 'My Team',
+        created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+      );
 
-    CREATE TABLE IF NOT EXISTS team_members (
-      id              TEXT PRIMARY KEY,
-      team_id         TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-      slot            INTEGER NOT NULL CHECK (slot BETWEEN 1 AND 6),
-      pokemon_id      INTEGER NOT NULL REFERENCES pokemon(id),
-      nickname        TEXT,
-      ability_id      INTEGER REFERENCES abilities(id),
-      held_item_id    INTEGER REFERENCES items(id),
-      move_1_id       INTEGER REFERENCES moves(id),
-      move_2_id       INTEGER REFERENCES moves(id),
-      move_3_id       INTEGER REFERENCES moves(id),
-      move_4_id       INTEGER REFERENCES moves(id),
-      ev_hp           INTEGER NOT NULL DEFAULT 0,
-      ev_attack       INTEGER NOT NULL DEFAULT 0,
-      ev_defense      INTEGER NOT NULL DEFAULT 0,
-      ev_sp_attack    INTEGER NOT NULL DEFAULT 0,
-      ev_sp_defense   INTEGER NOT NULL DEFAULT 0,
-      ev_speed        INTEGER NOT NULL DEFAULT 0,
-      iv_hp           INTEGER NOT NULL DEFAULT 31,
-      iv_attack       INTEGER NOT NULL DEFAULT 31,
-      iv_defense      INTEGER NOT NULL DEFAULT 31,
-      iv_sp_attack    INTEGER NOT NULL DEFAULT 31,
-      iv_sp_defense   INTEGER NOT NULL DEFAULT 31,
-      iv_speed        INTEGER NOT NULL DEFAULT 31,
-      stat_level      INTEGER NOT NULL DEFAULT 50 CHECK (stat_level IN (50, 100)),
-      nature          TEXT,
-      UNIQUE (team_id, slot)
-    );
+      CREATE TABLE IF NOT EXISTS team_members (
+        id              TEXT PRIMARY KEY,
+        team_id         TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+        slot            INTEGER NOT NULL CHECK (slot BETWEEN 1 AND 6),
+        pokemon_id      INTEGER NOT NULL REFERENCES pokemon(id),
+        nickname        TEXT,
+        ability_id      INTEGER REFERENCES abilities(id),
+        held_item_id    INTEGER REFERENCES items(id),
+        move_1_id       INTEGER REFERENCES moves(id),
+        move_2_id       INTEGER REFERENCES moves(id),
+        move_3_id       INTEGER REFERENCES moves(id),
+        move_4_id       INTEGER REFERENCES moves(id),
+        ev_hp           INTEGER NOT NULL DEFAULT 0,
+        ev_attack       INTEGER NOT NULL DEFAULT 0,
+        ev_defense      INTEGER NOT NULL DEFAULT 0,
+        ev_sp_attack    INTEGER NOT NULL DEFAULT 0,
+        ev_sp_defense   INTEGER NOT NULL DEFAULT 0,
+        ev_speed        INTEGER NOT NULL DEFAULT 0,
+        iv_hp           INTEGER NOT NULL DEFAULT 31,
+        iv_attack       INTEGER NOT NULL DEFAULT 31,
+        iv_defense      INTEGER NOT NULL DEFAULT 31,
+        iv_sp_attack    INTEGER NOT NULL DEFAULT 31,
+        iv_sp_defense   INTEGER NOT NULL DEFAULT 31,
+        iv_speed        INTEGER NOT NULL DEFAULT 31,
+        stat_level      INTEGER NOT NULL DEFAULT 50 CHECK (stat_level IN (50, 100)),
+        nature          TEXT,
+        UNIQUE (team_id, slot)
+      );
 
-    CREATE TABLE IF NOT EXISTS sync_metadata (
-      key         TEXT PRIMARY KEY,
-      value       TEXT NOT NULL,
-      updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+      CREATE TABLE IF NOT EXISTS sync_metadata (
+        key         TEXT PRIMARY KEY,
+        value       TEXT NOT NULL,
+        updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+      );
 
-    CREATE TABLE IF NOT EXISTS pokemon_flavor_text (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      pokemon_id INTEGER NOT NULL,
-      game_version TEXT NOT NULL,
-      flavor_text TEXT NOT NULL,
-      FOREIGN KEY (pokemon_id) REFERENCES pokemon(id),
-      UNIQUE(pokemon_id, game_version)
-    );
+      CREATE TABLE IF NOT EXISTS pokemon_flavor_text (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        pokemon_id INTEGER NOT NULL,
+        game_version TEXT NOT NULL,
+        flavor_text TEXT NOT NULL,
+        FOREIGN KEY (pokemon_id) REFERENCES pokemon(id),
+        UNIQUE(pokemon_id, game_version)
+      );
 
-    CREATE TABLE IF NOT EXISTS pokemon_evolutions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      pokemon_id INTEGER NOT NULL,
-      evolves_to_id INTEGER NOT NULL,
-      method TEXT NOT NULL,
-      condition_value TEXT,
-      FOREIGN KEY (pokemon_id) REFERENCES pokemon(id),
-      FOREIGN KEY (evolves_to_id) REFERENCES pokemon(id),
-      UNIQUE(pokemon_id, evolves_to_id)
-    );
+      CREATE TABLE IF NOT EXISTS pokemon_evolutions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        pokemon_id INTEGER NOT NULL,
+        evolves_to_id INTEGER NOT NULL,
+        method TEXT NOT NULL,
+        condition_value TEXT,
+        FOREIGN KEY (pokemon_id) REFERENCES pokemon(id),
+        FOREIGN KEY (evolves_to_id) REFERENCES pokemon(id),
+        UNIQUE(pokemon_id, evolves_to_id)
+      );
 
-    CREATE TABLE IF NOT EXISTS pokemon_encounter_locations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      pokemon_id INTEGER NOT NULL REFERENCES pokemon(id),
-      game_version TEXT NOT NULL,
-      location_name TEXT NOT NULL,
-      location_area_slug TEXT NOT NULL,
-      encounter_method TEXT NOT NULL,
-      encounter_chance INTEGER NOT NULL,
-      min_level INTEGER,
-      max_level INTEGER
-    );
+      CREATE TABLE IF NOT EXISTS pokemon_encounter_locations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        pokemon_id INTEGER NOT NULL REFERENCES pokemon(id),
+        game_version TEXT NOT NULL,
+        location_name TEXT NOT NULL,
+        location_area_slug TEXT NOT NULL,
+        encounter_method TEXT NOT NULL,
+        encounter_chance INTEGER NOT NULL,
+        min_level INTEGER,
+        max_level INTEGER
+      );
 
-    CREATE INDEX IF NOT EXISTS idx_pokemon_national_dex ON pokemon(national_dex);
-    CREATE INDEX IF NOT EXISTS idx_pokemon_primary_type ON pokemon(primary_type);
-    CREATE INDEX IF NOT EXISTS idx_pokemon_generation ON pokemon(generation);
-    CREATE INDEX IF NOT EXISTS idx_pokemon_form_type ON pokemon(form_type);
-    CREATE INDEX IF NOT EXISTS idx_team_members_team_id ON team_members(team_id);
-    CREATE INDEX IF NOT EXISTS idx_encounter_pokemon_game ON pokemon_encounter_locations(pokemon_id, game_version);
-  `);
+      CREATE INDEX IF NOT EXISTS idx_pokemon_national_dex ON pokemon(national_dex);
+      CREATE INDEX IF NOT EXISTS idx_pokemon_primary_type ON pokemon(primary_type);
+      CREATE INDEX IF NOT EXISTS idx_pokemon_generation ON pokemon(generation);
+      CREATE INDEX IF NOT EXISTS idx_pokemon_form_type ON pokemon(form_type);
+      CREATE INDEX IF NOT EXISTS idx_team_members_team_id ON team_members(team_id);
+      CREATE INDEX IF NOT EXISTS idx_encounter_pokemon_game ON pokemon_encounter_locations(pokemon_id, game_version);
+    `);
 
-  // First run: seed base data (blocking)
-  console.log('[Database] Seeding base data...');
-  const { seedDatabase } = require('./seedDatabase');
-  await seedDatabase(database);
-}
-
-/**
- * Backwards compatibility: initializeDatabase now calls Phase 1 and Phase 2
- * (Phase 2 is fire-and-forget within seedDatabase)
- */
-export async function initializeDatabase(): Promise<void> {
-  if (initPromise) return initPromise;
-  initPromise = _initializeDatabase();
-  try {
-    await initPromise;
-  } finally {
-    initPromise = null;
+    // First run: seed base data (blocking)
+    console.log('[Database] Seeding base data...');
+    const { seedDatabase } = require('./seedDatabase');
+    await seedDatabase(database);
   }
-}
 
-async function _initializeDatabase(): Promise<void> {
-  // Phase 1: blocking schema + base seed
-  await initializeDatabasePhase1();
-  const database = await getDatabase();
-
-  // Phase 2: migrations (fire-and-forget)
-  // seedDatabase already kicks off enrichment internally via startPokeApiEnrichment
-  _initializeDatabasePhase2(database).catch((error) => {
-    console.warn('[Database] Phase 2 error:', error);
-  });
-}
-
-async function _initializeDatabasePhase2(database: SQLite.SQLiteDatabase): Promise<void> {
   // Migrations — safe to run on existing databases (each is idempotent)
   await runMigrations(database);
 }
