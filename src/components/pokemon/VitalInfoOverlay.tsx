@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
   leftBox: {
     backgroundColor: 'transparent',
     paddingHorizontal: 10,
+    paddingTop: 6,
     justifyContent: 'center',
     alignSelf: 'center',
     marginRight: spacing.md,

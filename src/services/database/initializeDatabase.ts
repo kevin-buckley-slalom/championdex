@@ -2,7 +2,7 @@ import * as SQLite from 'expo-sqlite';
 import { seedDatabase } from './seedDatabase';
 import { copyBundledDbIfNeeded, overwriteBundledDb } from './bundledDbService';
 
-const BUNDLED_DATA_VERSION = '1.13.0';
+const BUNDLED_DATA_VERSION = '1.18.0';
 
 async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
 
@@ -285,7 +285,7 @@ async function _initializeDatabase(): Promise<void> {
       `SELECT value FROM sync_metadata WHERE key = 'data_version'`
     );
     const onDeviceVersion = versionResult?.value ?? null;
-    if (onDeviceVersion && onDeviceVersion !== BUNDLED_DATA_VERSION) {
+    if (!onDeviceVersion || onDeviceVersion !== BUNDLED_DATA_VERSION) {
       console.log(`[Database] Stale DB detected (on-device: ${onDeviceVersion}, bundled: ${BUNDLED_DATA_VERSION}). Replacing...`);
       await replaceDb();
     }
@@ -344,6 +344,8 @@ async function _initializeDatabase(): Promise<void> {
         shiny_sprite_url  TEXT,
         cosmetic_variants TEXT DEFAULT '[]',
         game_exclusivity  TEXT,
+        gender_rate       INTEGER DEFAULT -1,
+        species_classification TEXT,
         created_at        TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at        TEXT NOT NULL DEFAULT (datetime('now'))
       );

@@ -15,7 +15,7 @@ const path = require('path');
 const Database = require('better-sqlite3');
 
 const DB_PATH = path.join(__dirname, '../assets/db/championdex.db');
-const DATA_VERSION = '1.12.0';
+const DATA_VERSION = '1.18.0';
 const ENRICH_VERSION = '1.2.0';
 
 // ── Semaphore (10 concurrent PokeAPI requests) ─────────────────────────────
@@ -58,6 +58,11 @@ function generatePokeApiSlug(speciesName, forme = '') {
   if (slug === 'toxtricity-gmax') slug = 'toxtricity-amped-gmax';
   if (slug === 'urshifu-gmax') slug = 'urshifu-single-strike-gmax';
   if (slug === 'zygarde-10%') slug = 'zygarde-10';
+
+  // Ogerpon mask forms need -mask suffix (PokeAPI has them with explicit mask label)
+  if (slug === 'ogerpon-wellspring') slug = 'ogerpon-wellspring-mask';
+  if (slug === 'ogerpon-hearthflame') slug = 'ogerpon-hearthflame-mask';
+  if (slug === 'ogerpon-cornerstone') slug = 'ogerpon-cornerstone-mask';
 
   return slug;
 }
@@ -148,6 +153,7 @@ const FORM_EXCLUSION_SET = new Set([
   'Shellos-East', 'Gastrodon-East', 'Cramorant-Gulping', 'Cramorant-Gorging',
   'Pichu-Spiky-eared', 'Cherrim-Sunshine', 'Magearna-Original', 'Zarude-Dada',
   'Squawkabilly-Blue', 'Squawkabilly-Yellow', 'Squawkabilly-White',
+  'Maushold-Four', 'Dudunsparce-Three-Segment',
   'Poltchageist-Artisan', 'Sinistcha-Masterpiece', 'Sinistea-Antique', 'Polteageist-Antique',
   'Arceus-Bug', 'Arceus-Dark', 'Arceus-Dragon', 'Arceus-Electric', 'Arceus-Fairy',
   'Arceus-Fighting', 'Arceus-Fire', 'Arceus-Flying', 'Arceus-Ghost', 'Arceus-Grass',
@@ -457,6 +463,44 @@ async function main() {
     }
   }
 
+  // Override Meowstic Mega IDs (PokeAPI has separate IDs for these forms)
+  pokeApiIdCache.set('meowsticmmega', 10314);
+  pokeApiIdCache.set('meowsticfmega', 10326);
+
+  // Ogerpon tera forms have no PokeAPI endpoints; map them to their non-tera mask IDs
+  pokeApiIdCache.set('ogerpontealtera', 1017);             // Ogerpon-Teal-Tera → Ogerpon (1017)
+  pokeApiIdCache.set('ogerponcornerstonetera', 10275);     // Ogerpon-Cornerstone-Tera → Ogerpon-Cornerstone-Mask (10275)
+  pokeApiIdCache.set('ogerponhearthflametera', 10274);     // Ogerpon-Hearthflame-Tera → Ogerpon-Hearthflame-Mask (10274)
+  pokeApiIdCache.set('ogerponwellspringtera', 10273);      // Ogerpon-Wellspring-Tera → Ogerpon-Wellspring-Mask (10273)
+
+  // ── Fetch classifications from PokeAPI (species data) ────────────────────
+  console.log(`[GenerateBundledDb] Fetching classifications for ${defaultFormSpecies.length} species...`);
+  const classifications = new Map(); // nationalDex -> classification string
+  let classificationsFetched = 0;
+  for (let i = 0; i < defaultFormSpecies.length; i += BATCH) {
+    const batch = defaultFormSpecies.slice(i, i + BATCH);
+    let hadFetch = false;
+    await Promise.all(batch.map(async species => {
+      try {
+        const data = await pokeApiFetch(`https://pokeapi.co/api/v2/pokemon-species/${species.num}/`);
+        hadFetch = true;
+        classificationsFetched++;
+        // Classification (genus from genera array, English only)
+        const enGenus = data.genera?.find(g => g.language?.name === 'en')?.genus ?? null;
+        if (enGenus) classifications.set(species.num, enGenus);
+      } catch (e) {
+        // Silent skip on fetch failure
+      }
+    }));
+    if (hadFetch) await sleep(50);
+    const batchNum = Math.floor(i / BATCH) + 1;
+    const totalBatches = Math.ceil(defaultFormSpecies.length / BATCH);
+    if (batchNum % 10 === 0 || batchNum === totalBatches) {
+      console.log(`  [Classifications] batch ${batchNum}/${totalBatches} (${classificationsFetched} fetched)`);
+    }
+  }
+  console.log(`  Classifications populated for ${classifications.size} species`);
+
   // ── Seed pokemon base data ────────────────────────────────────────────────
   console.log('[GenerateBundledDb] Seeding pokemon base data...');
   const pokemonStmt = db.prepare(`
@@ -476,19 +520,279 @@ async function main() {
     abilityNameToId.set(row.display_name, row.id);
   }
 
+  // ── Overrides for display_name — keyed by exact species.name from @pkmn/dex
+  const DISPLAY_NAME_OVERRIDES = new Map([
+    ['Necrozma-Ultra', 'Ultra Necrozma'],
+    ['Ursaluna-Bloodmoon', 'Bloodmoon Ursaluna'],
+    ['Eternatus-Eternamax', 'Eternamax Eternatus'],
+    ['Greninja-Ash', 'Greninja'],
+    // Compound regional forms — base regional name without the extra qualifier
+    ['Darmanitan-Galar-Zen', 'Galarian Darmanitan'],
+    ['Tauros-Paldea-Combat', 'Paldean Tauros'],
+    ['Tauros-Paldea-Blaze', 'Paldean Tauros'],
+    ['Tauros-Paldea-Aqua', 'Paldean Tauros'],
+  ]);
+
+  // ── Overrides for form_name — keyed by exact species.name from @pkmn/dex
+  const FORM_NAME_OVERRIDES = new Map([
+    ['Greninja-Ash', 'Ash-Greninja'],
+    ['Greninja-Bond', 'Bond-Greninja'],
+    ['Aegislash-Blade', 'Blade Forme'],
+    ['Zygarde-10', '10%'],
+    ['Zygarde-Complete', 'Complete'],
+    ['Kyurem-Black', 'Black'],
+    ['Kyurem-White', 'White'],
+    ['Necrozma-Ultra', null],
+    ['Ursaluna-Bloodmoon', null],
+    ['Eternatus-Eternamax', null],
+    ['Mimikyu-Busted', 'Busted'],
+    ['Ogerpon-Teal-Tera', 'Teal Mask Tera'],
+    ['Ogerpon-Cornerstone', 'Cornerstone Mask'],
+    ['Ogerpon-Cornerstone-Tera', 'Cornerstone Mask Tera'],
+    ['Ogerpon-Hearthflame', 'Hearthflame Mask'],
+    ['Ogerpon-Hearthflame-Tera', 'Hearthflame Mask Tera'],
+    ['Ogerpon-Wellspring', 'Wellspring Mask'],
+    ['Ogerpon-Wellspring-Tera', 'Wellspring Mask Tera'],
+    ['Zacian-Crowned', 'Crowned Sword'],
+    ['Zamazenta-Crowned', 'Crowned Shield'],
+    ['Necrozma-Dawn-Wings', 'Dawn-Wings'],
+    ['Necrozma-Dusk-Mane', 'Dusk-Mane'],
+    ['Tatsugiri-Droopy', 'Droopy Form'],
+    ['Tatsugiri-Stretchy', 'Stretchy Form'],
+    ['Lycanroc-Dusk', 'Dusk Form'],
+    ['Lycanroc-Midnight', 'Midnight Form'],
+    ['Floette-Eternal', 'Eternal'],
+    ['Rotom-Fan', 'Fan'],
+    ['Rotom-Frost', 'Frost'],
+    ['Rotom-Heat', 'Heat'],
+    ['Rotom-Mow', 'Mow'],
+    ['Rotom-Wash', 'Wash'],
+    ['Morpeko-Hangry', 'Hangry Mode'],
+    ['Palafin-Hero', 'Hero Form'],
+    ['Calyrex-Ice', 'Ice Rider'],
+    ['Calyrex-Shadow', 'Shadow Rider'],
+    ['Pumpkaboo-Small', 'Small Size'],
+    ['Pumpkaboo-Large', 'Large Size'],
+    ['Pumpkaboo-Super', 'Super Size'],
+    ['Gourgeist-Small', 'Small Size'],
+    ['Gourgeist-Large', 'Large Size'],
+    ['Gourgeist-Super', 'Super Size'],
+    ['Eiscue-Noice', 'Noice Face'],
+    ['Dialga-Origin', 'Origin Forme'],
+    ['Palkia-Origin', 'Origin Forme'],
+    ['Giratina-Origin', 'Origin Forme'],
+    ['Oricorio-Pa\'u', "Pa'u Style"],
+    ['Oricorio-Pom-Pom', 'Pom-Pom Style'],
+    ['Oricorio-Sensu', 'Sensu Style'],
+    ['Meloetta-Pirouette', 'Pirouette Forme'],
+    ['Urshifu-Rapid-Strike', 'Rapid-Strike'],
+    ['Keldeo-Resolute', 'Resolute'],
+    ['Gimmighoul-Roaming', 'Roaming'],
+    ['Burmy-Sandy', 'Sandy Cloak'],
+    ['Burmy-Trash', 'Trash Cloak'],
+    ['Wormadam-Sandy', 'Sandy Cloak'],
+    ['Wormadam-Trash', 'Trash Cloak'],
+    ['Wishiwashi-School', 'School Form'],
+    ['Shaymin-Sky', 'Sky Forme'],
+    ['Terapagos-Terastal', 'Terastal Form'],
+    ['Terapagos-Stellar', 'Stellar Form'],
+    ['Landorus-Therian', 'Therian'],
+    ['Thundurus-Therian', 'Therian'],
+    ['Tornadus-Therian', 'Therian'],
+    ['Enamorus-Therian', 'Therian'],
+    ['Hoopa-Unbound', 'Unbound'],
+    ['Darmanitan-Zen', 'Zen Mode'],
+    ['Darmanitan-Galar-Standard', 'Standard Mode'],
+    ['Darmanitan-Galar-Zen', 'Zen Mode'],
+    ['Basculin-Blue-Striped', 'Blue-Striped'],
+    ['Basculin-White-Striped', 'White-Striped'],
+    ['Maushold-Four', null],
+    ['Dudunsparce-Three-Segment', null],
+    ['Rockruff-Dusk', 'Dusk'],
+    ['Toxtricity-Low-Key', 'Low-Key Form'],
+    ['Deoxys-Attack', 'Attack'],
+    ['Deoxys-Defense', 'Defense'],
+    ['Deoxys-Speed', 'Speed'],
+  ]);
+
+  // ── Default form labels (forms with form_type = 'default' that still need labels)
+  const DEFAULT_FORM_LABELS = new Map([
+    ['zygarde', '50%'],
+    ['lycanroc', 'Midday Form'],
+    ['toxtricity', 'Amped Form'],
+    ['eiscue', 'Ice Face'],
+    ['ogerpon', 'Teal Mask'],
+    ['oricorio', 'Baile Style'],
+    ['meloetta', 'Aria Forme'],
+    ['urshifu', 'Single-Strike'],
+    ['burmy', 'Plant Cloak'],
+    ['wormadam', 'Plant Cloak'],
+    ['wishiwashi', 'Solo Form'],
+    ['shaymin', 'Land Forme'],
+    ['palafin', 'Zero Form'],
+    ['pumpkaboo', 'Medium Size'],
+    ['gourgeist', 'Medium Size'],
+    ['hoopa', 'Confined'],
+    ['darmanitan', 'Standard Mode'],
+    ['landorus', 'Incarnate'],
+    ['thundurus', 'Incarnate'],
+    ['tornadus', 'Incarnate'],
+    ['enamorus', 'Incarnate'],
+    ['aegislash', 'Shield Forme'],
+    ['maushold', 'Family-of-Four'],
+    ['dudunsparce', 'Two-Segment'],
+  ]);
+
+  // ── Format display names (human-readable with regional/form prefixes) ──────
+  function formatDisplayName(species, formType) {
+    // Apply display_name overrides first
+    if (DISPLAY_NAME_OVERRIDES.has(species.name)) {
+      const override = DISPLAY_NAME_OVERRIDES.get(species.name);
+      if (override) {
+        console.log(`[DisplayName] "${species.name}" → "${override}" (override)`);
+        return override;
+      }
+    }
+    const name = species.name;
+    const baseName = species.baseSpecies;
+
+    // Handle Nidoran display names (before other checks)
+    if (species.name === 'Nidoran-F') {
+      console.log(`[DisplayName] "${species.name}" → "Nidoran ♀" (nidoran)`);
+      return 'Nidoran ♀';
+    }
+    if (species.name === 'Nidoran-M') {
+      console.log(`[DisplayName] "${species.name}" → "Nidoran ♂" (nidoran)`);
+      return 'Nidoran ♂';
+    }
+
+    if (formType === 'regional') {
+      // Extract regional suffix and map to prefix
+      let regionalSuffix = null;
+      let prefix = null;
+
+      if (name.endsWith('-Alola')) {
+        regionalSuffix = 'Alola';
+        prefix = 'Alolan';
+      } else if (name.endsWith('-Galar')) {
+        regionalSuffix = 'Galar';
+        prefix = 'Galarian';
+      } else if (name.endsWith('-Hisui')) {
+        regionalSuffix = 'Hisui';
+        prefix = 'Hisuian';
+      } else if (name.endsWith('-Paldea')) {
+        regionalSuffix = 'Paldea';
+        prefix = 'Paldean';
+      }
+
+      if (prefix && baseName) {
+        const result = `${prefix} ${baseName}`;
+        console.log(`[DisplayName] "${name}" → "${result}" (regional)`);
+        return result;
+      }
+    } else if (formType === 'mega') {
+      // species.forme contains "Mega", "Mega-X", or "Mega-Y"
+      const forme = species.forme || '';
+      let result;
+      if (forme === 'Mega-X') {
+        result = `Mega ${baseName} X`;
+      } else if (forme === 'Mega-Y') {
+        result = `Mega ${baseName} Y`;
+      } else if (forme === 'Mega-Z') {
+        result = `Mega ${baseName} Z`;
+      } else {
+        result = `Mega ${baseName}`;
+      }
+      console.log(`[DisplayName] "${name}" → "${result}" (mega)`);
+      return result;
+    } else if (formType === 'gigantamax') {
+      const result = `Gigantamax ${baseName}`;
+      console.log(`[DisplayName] "${name}" → "${result}" (gigantamax)`);
+      return result;
+    } else if (formType === 'alternate' && species.forme === 'Primal') {
+      const result = `Primal ${baseName}`;
+      console.log(`[DisplayName] "${name}" → "${result}" (primal)`);
+      return result;
+    } else if (formType === 'cosmetic') {
+      if (species.forme === 'F') {
+        // For other -F forms, return base name without suffix, no log
+        return baseName;
+      }
+      // All other cosmetic forms: return unchanged, no log
+      return name;
+    }
+
+    // alternate (non-Primal): use base species name
+    if (formType === 'alternate') {
+      return baseName;
+    }
+
+    // default: return unchanged
+    return name;
+  }
+
+  // ── Format form name (qualifier or compound forme handler) ──────────────────
+  function formatFormName(species, formType) {
+    // Apply form_name overrides first
+    if (FORM_NAME_OVERRIDES.has(species.name)) {
+      return FORM_NAME_OVERRIDES.get(species.name) ?? null;
+    }
+
+    // Default forms: check for special labels
+    if (formType === 'default') {
+      return DEFAULT_FORM_LABELS.get(species.id) ?? null;
+    }
+
+    // Compound regional forms with qualifier
+    if (formType === 'regional') {
+      const forme = species.forme || null;
+      const REGIONAL_QUALIFIERS = new Map([
+        ['Paldea-Combat', 'Combat Breed'],
+        ['Paldea-Blaze', 'Blaze Breed'],
+        ['Paldea-Aqua', 'Aqua Breed'],
+        ['Galar-Zen', 'Zen Mode'],
+      ]);
+      if (forme && REGIONAL_QUALIFIERS.has(forme)) return REGIONAL_QUALIFIERS.get(forme);
+      return null;
+    }
+
+    const forme = species.forme || null;
+    if (!forme) return null;
+
+    // Mega-Z: keep as-is (display_name already includes "Z", no qualifier label needed)
+    if (forme === 'Mega-Z') return 'Mega-Z';
+
+    // Compound mega: "{Qualifier}-Mega" → store qualifier only
+    if (formType === 'mega' && forme.endsWith('-Mega')) {
+      return forme.slice(0, -5); // strip "-Mega"
+    }
+
+    // Compound gigantamax: "{Qualifier}-Gmax" → store qualifier only
+    if (formType === 'gigantamax' && forme.endsWith('-Gmax')) {
+      return forme.slice(0, -5); // strip "-Gmax"
+    }
+
+    return forme;
+  }
+
   const insertPokemon = db.transaction(() => {
     let nextId = 1;
     for (const species of includedSpecies) {
       const formType = determineFormType(species);
-      const genderRate = species.genderRatio?.female !== undefined
-        ? Math.round((species.genderRatio.female / 100) * 8)
-        : (species.gender === null ? -1 : 0);
+      const genderRate = species.gender === 'N'
+        ? -1
+        : species.genderRatio?.F !== undefined
+          ? Math.round(species.genderRatio.F * 8)
+          : 0;
       let pokeApiId = species.num;
       if (formType !== 'default') pokeApiId = pokeApiIdCache.get(species.id) ?? species.num;
 
+      // Classification from PokeAPI (only set for default forms during fetch, others remain null)
+      const classification = classifications.get(species.num) ?? null;
+
       pokemonStmt.run(
-        nextId, species.num, pokeApiId, species.id, species.name, formType,
-        species.forme || null, species.types[0], species.types[1] || null,
+        nextId, species.num, pokeApiId, species.id, formatDisplayName(species, formType), formType,
+        formatFormName(species, formType), species.types[0], species.types[1] || null,
         species.baseStats.hp, species.baseStats.atk, species.baseStats.def,
         species.baseStats.spa, species.baseStats.spd, species.baseStats.spe,
         species.heightm ?? null, species.weightkg, species.gen,
@@ -496,7 +800,7 @@ async function main() {
         species.tags?.includes('Mythical') ? 1 : 0,
         null, null, null, null, '[]',
         species.isNonstandard === 'Past' ? 'past-gen' : species.isNonstandard === 'LGPE' ? 'lgpe' : null,
-        genderRate, species.category || null
+        genderRate, classification
       );
 
       // Abilities
@@ -529,6 +833,41 @@ async function main() {
   for (const row of db.prepare('SELECT id, national_dex FROM pokemon WHERE form_type = ?').all('default')) {
     nationalDexToDbId.set(row.national_dex, row.id);
   }
+
+  // ── Fetch height from PokeAPI (/pokemon/{pokeapi_id}/) ───────────────────
+  // @pkmn/dex does not provide heightm. PokeAPI returns height in decimeters —
+  // stored as-is; unitConversions.ts converts to ft/in and m for display.
+  // Covers all forms since alt forms (e.g. Alolan Raichu) can have different heights.
+  const allPokemonRows = db.prepare('SELECT id, pokeapi_id FROM pokemon WHERE pokeapi_id IS NOT NULL').all();
+  console.log(`[GenerateBundledDb] Fetching height for ${allPokemonRows.length} pokemon (all forms)...`);
+  const heightData = new Map(); // db id -> height (decimeters)
+  let heightFetched = 0;
+  for (let i = 0; i < allPokemonRows.length; i += BATCH) {
+    const batch = allPokemonRows.slice(i, i + BATCH);
+    let hadFetch = false;
+    await Promise.all(batch.map(async ({ id, pokeapi_id }) => {
+      try {
+        const data = await pokeApiFetch(`https://pokeapi.co/api/v2/pokemon/${pokeapi_id}/`);
+        hadFetch = true;
+        heightFetched++;
+        if (data.height != null) heightData.set(id, data.height);
+      } catch (e) {
+        console.warn(`  [warn] Height fetch failed for pokeapi_id ${pokeapi_id}: ${e.message}`);
+      }
+    }));
+    if (hadFetch) await sleep(50);
+    const batchNum = Math.floor(i / BATCH) + 1;
+    const totalBatches = Math.ceil(allPokemonRows.length / BATCH);
+    if (batchNum % 10 === 0 || batchNum === totalBatches) {
+      console.log(`  [Height] batch ${batchNum}/${totalBatches} (${heightFetched} fetched)`);
+    }
+  }
+  const heightStmt = db.prepare(`UPDATE pokemon SET height = ? WHERE id = ?`);
+  const writeHeight = db.transaction(() => {
+    for (const [id, height] of heightData) heightStmt.run(height, id);
+  });
+  writeHeight();
+  console.log(`  Height populated for ${heightData.size} pokemon`);
 
   // ── Fetch flavor text + evolutions from PokeAPI ───────────────────────────
   console.log(`[GenerateBundledDb] Fetching flavor text + evolutions for ${defaultFormSpecies.length} species...`);

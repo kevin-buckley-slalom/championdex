@@ -243,6 +243,12 @@ export interface PokemonHeroProps {
   shinyArtworkUrl?: string | null;
 
   /**
+   * Stable non-shiny artwork URL used for particle glow masks.
+   * Kept separate from currentArtworkUrl so glow layers never re-render on shiny toggle.
+   */
+  glowArtworkUrl?: string | null;
+
+  /**
    * Pokémon name for display and accessibility
    */
   pokemonName: string;
@@ -376,6 +382,7 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
   pokemonId,
   artworkUrl,
   shinyArtworkUrl,
+  glowArtworkUrl = null,
   pokemonName,
   primaryType,
   nationalDex,
@@ -637,6 +644,7 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
         heroHeight={heroHeight}
         enabled={particlesEnabled}
         artworkUrl={currentArtworkUrl}
+        glowArtworkUrl={glowArtworkUrl}
       />
 
       {/* Layer 4: Artwork Container (0.5x parallax, fades as user scrolls) */}
@@ -836,8 +844,8 @@ const styles = StyleSheet.create({
 
   starButtonWrapper: {
     position: 'absolute',
-    bottom: 0,
-    right: spacing.md,
+    bottom: -4,
+    right: 11,
     width: STAR_BUTTON_SIZE,
     height: 52,
     alignItems: 'center',

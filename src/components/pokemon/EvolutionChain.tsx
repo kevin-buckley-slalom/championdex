@@ -100,7 +100,7 @@ interface ChainNodeProps {
   onPokemonPress: (pokemonId: number) => void;
 }
 
-const ChainNode: React.FC<ChainNodeProps> = ({
+const ChainNode = React.memo<ChainNodeProps>(({
   node,
   currentPokemonId,
   accentColor,
@@ -206,7 +206,7 @@ const ChainNode: React.FC<ChainNodeProps> = ({
       />
     </View>
   );
-};
+});
 
 interface BranchConnectorProps {
   branches: EvolutionStep[];
@@ -220,7 +220,7 @@ interface BranchConnectorProps {
   onPokemonPress: (pokemonId: number) => void;
 }
 
-const BranchConnector: React.FC<BranchConnectorProps> = ({
+const BranchConnector = React.memo<BranchConnectorProps>(({
   branches,
   currentPokemonId,
   accentColor,
@@ -311,7 +311,7 @@ const BranchConnector: React.FC<BranchConnectorProps> = ({
       })}
     </View>
   );
-};
+});
 
 interface PokemonNodeProps {
   pokemon: EvolutionNode;

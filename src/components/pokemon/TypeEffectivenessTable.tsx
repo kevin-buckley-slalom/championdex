@@ -8,6 +8,7 @@ import Animated, {
   withSpring,
   interpolate,
   Extrapolate,
+  runOnJS,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -348,14 +349,8 @@ export const TypeEffectivenessTable: React.FC<TypeEffectivenessTableProps> = ({
   const handleTabPress = (index: number) => {
     if (index === activeTabIndex) return;
 
-    // Fade out
-    tabOpacity.value = withTiming(0, { duration: 150 });
-
-    // Slide out (previous direction)
-    tabSlideX.value = withTiming(index > activeTabIndex ? 20 : -20, { duration: 150 });
-
-    // After fade, change tab
-    setTimeout(() => {
+    // Callback function that runs when fade-out completes
+    const onFadeOutComplete = () => {
       setActiveTabIndex(index);
       setTabChangeIndex(prev => prev + 1);
 
@@ -365,7 +360,15 @@ export const TypeEffectivenessTable: React.FC<TypeEffectivenessTableProps> = ({
       // Fade in
       tabOpacity.value = withTiming(1, { duration: 150 });
       tabSlideX.value = withTiming(0, { duration: 150 });
-    }, 150);
+    };
+
+    // Fade out with completion callback
+    tabOpacity.value = withTiming(0, { duration: 150 }, () => {
+      runOnJS(onFadeOutComplete)();
+    });
+
+    // Slide out (previous direction)
+    tabSlideX.value = withTiming(index > activeTabIndex ? 20 : -20, { duration: 150 });
   };
 
   const gridAnimStyle = useAnimatedStyle(() => ({

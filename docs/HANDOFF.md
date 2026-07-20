@@ -1,5 +1,5 @@
 # ChampionDex — Session Handoff Notes
-**Updated:** 2026-07-17 | Fixed app launch crash from orphan index corruption. Database initialization now verifies integrity and safely recovers from corrupt DB state. Detail view UI polish at ~95% complete.
+**Updated:** 2026-07-20 | DB v1.18.0. Form display names fully corrected. Android fresh install fixed (withSQLiteFsync plugin registered in app.json). Ogerpon PokeAPI IDs fixed. 279 unit tests passing. Not yet device-verified.
 
 ---
 
@@ -25,25 +25,65 @@ Fixed — warm launches are clean. See Known Issues section at bottom for resolu
 
 ---
 
-## Architecture: Data Loading (DATA_VERSION: '1.12.0')
+## ✅ CURRENT STATE — DEVICE-VERIFIED (as of 2026-07-20)
+
+DB v1.18.0. 279 unit tests pass. All changes below confirmed on device.
+
+### Changes since last device-verified state (v1.15.0 → v1.18.0):
+
+1. **CREATE TABLE fix** (`initializeDatabase.ts`) — `gender_rate` and `species_classification` columns present in CREATE TABLE block (not just ALTER TABLE).
+
+2. **Form display names fully corrected** (`generateBundledDb.js` + `pokemonUtils.ts` + `[id].tsx`):
+   - `computeFormLabel` now returns `formName` for `default` form_type when set (Lycanroc → "Midday Form", Aegislash → "Shield Forme", Zygarde → "50%", etc.)
+   - Regional: `"Alolan Vulpix"` with no form label; compound regionals (Galarian Darmanitan, Paldean Tauros) use `DISPLAY_NAME_OVERRIDES` for display_name, qualifier as form_name
+   - Mega: `"Mega Charizard X"` with no form label; Mega-Z same pattern; "Female" label if form_name='F'
+   - Gigantamax: `"Gigantamax Venusaur"` with no form label
+   - Primal: `"Primal Kyogre"` with no form label (alternate form_type, form_name='Primal' suppressed in computeFormLabel)
+   - Cosmetic F: display_name = base species, form label = "Female" (except Nidoran ♀/♂ which have symbols in display_name — no label)
+   - Alternate: `"Calyrex"` + `"Ice Rider"`, `"Ogerpon"` + `"Cornerstone Mask"`, etc. (baseName as display_name)
+   - Ogerpon form_names use spaces: `"Cornerstone Mask"` not `"Cornerstone-Mask"`; Oricorio-Pa'u override key fixed (apostrophe)
+   - Maushold-Four and Dudunsparce-Three-Segment **excluded from DB** (added to FORM_EXCLUSION_SET)
+   - classification row placed below form label, above type chips
+
+3. **Android fresh install fix** — `withSQLiteFsync` config plugin at `plugins/withSQLiteFsync.ts` was created in a prior session but never registered in `app.json`. Added `"./plugins/withSQLiteFsync"` to the plugins array. Plugin patches `SQLiteModule.kt` at Android build time to call `fsync()` after `importDatabaseFromAssetAsync`'s file copy. **Requires a dev build** (`npx expo run:android`) — Expo Go is insufficient.
+
+4. **Ogerpon PokeAPI IDs fixed** — All 8 Ogerpon forms previously had `pokeapi_id=1017` due to wrong PokeAPI slugs. `generatePokeApiSlug` now appends `-mask` for the three non-tera mask forms (`ogerpon-wellspring-mask` etc.). Tera forms use hardcoded overrides: wellspring=10273, hearthflame=10274, cornerstone=10275, teal-tera=1017.
+
+5. **Slug validation tests added** — `src/utils/__tests__/generatePokeApiSlug.test.ts` (34 tests). These guard against future slug regressions before they reach the DB.
+
+6. **Unit tests** — 279 tests total: `pokemonUtils.test.ts` (44) + `formData.test.ts` (107) + `generatePokeApiSlug.test.ts` (34) + existing (94).
+
+7. **Bundled DB at v1.18.0** — `BUNDLED_DATA_VERSION` and `DATA_VERSION` bumped to force DB replacement on device.
+
+**Device verification completed 2026-07-20:**
+1. ✅ Android fresh install: loads without "database disk image is malformed"
+2. ✅ All form label categories: default-with-label, regional, mega, compound regional, gigantamax, primal, cosmetic-F, Nidoran, alternate — all correct
+3. ✅ Ogerpon: all 8 forms navigate to detail screen without crash
+4. ✅ Classification displays below form label, above type chips
+
+---
+
+## Architecture: Data Loading (DATA_VERSION: '1.18.0')
 
 ### Bundled DB Strategy (improved 2026-07-17 with integrity verification)
-- `assets/db/championdex.db` (~44 MB) — pre-built SQLite DB committed to git, contains all Pokémon with 5-column `pokemon_moves` schema
+- `assets/db/championdex.db` (~44 MB) — pre-built SQLite DB committed to git, contains all Pokémon with 5-column `pokemon_moves` schema + height data (decimeters)
 - Fresh install: `importDatabaseFromAssetAsync` (expo-sqlite) copies DB on first launch (~2.8s one-time copy); no PokeAPI fetches on first run
 - Warm launch: version check + **integrity verification** → if healthy, returns immediately (~50ms); if corrupt, force-overwrites
 - Artwork/encounters enrichment runs fire-and-forget in Phase 2 (background, non-blocking)
 - List uses `useInfiniteQuery` with page size 50 — first 50 rows render immediately
 - Phase 1 (`initializeDatabasePhase1`) blocks render; Phase 2 (`initializeDatabase`) is fire-and-forget after setIsReady
+- Height data: fetched from PokeAPI `/pokemon/{pokeapi_id}/` for all forms during DB generation, stored in decimeters; `unitConversions.ts` converts to ft/in and m for display — **verified working on device in bundled DB v1.13.0**
 - **To rebuild bundled DB:** `node scripts/generateBundledDb.js` → commit `assets/db/championdex.db` → bump `DATA_VERSION`
+- **IMPORTANT — Code Preservation Rule:** Never delete or revert code in `generateBundledDb.js` that you did not write. This script has accumulated sections added by different tasks (height fetch, form exclusion, move pool updates, etc.). All sections are load-bearing. If reverting a recent change, preserve sections from earlier work.
 
 ### Database Initialization Flow (with version-based overwrite)
 
 ```
-app/_layout.tsx → initializeDatabasePhase1()  [blocks render]
+app/_layout.tsx → initializeDatabase()  [blocks render, single promise guard prevents double-run]
   → copyBundledDbIfNeeded()              [import if missing]
   → getDatabase()                        ← openDatabaseAsync('championdex.db')
   → Version check: SELECT data_version FROM sync_metadata
-      ← Compare on-device version with BUNDLED_DATA_VERSION ('1.12.0')
+      ← Compare on-device version with BUNDLED_DATA_VERSION ('1.15.0')
       ← If mismatch OR DB corrupt/malformed → replaceDb():
           ├─ Close cached connection (db = null)
           ├─ deleteDatabaseAsync('championdex.db') — removes main + WAL/SHM atomically
@@ -53,21 +93,20 @@ app/_layout.tsx → initializeDatabasePhase1()  [blocks render]
   → SELECT data_version FROM sync_metadata (second call via getDatabase())
       if present → return                 ← base data seeded
       if missing → CREATE TABLE IF NOT EXISTS × 12 + seedDatabase(db)  ← fresh install only
-→ setIsReady(true) → app renders
-
-app/_layout.tsx → initializeDatabase()  [fire-and-forget after render]
   → runMigrations()                      ← schema migrations + one-time pruning
   → startPokeApiEnrichment(db, dex)      ← fire-and-forget enrichment streams
+→ setIsReady(true) → app renders
+→ startArtworkPrefetch()                 ← fire-and-forget artwork prefetch
 ```
 
-**Key Fix (2026-07-17):** The orphan index crash was caused by partial imports where the sentinel was written before verifying the DB was healthy. Now:
+**Key Fix (2026-07-17):** Database initialization consolidated from Phase 1/2 split to single `initializeDatabase()` function with one promise guard preventing double-run. Initialization now blocks render (guaranteed DB ready before app displays). The orphan index crash was caused by partial imports where the sentinel was written before verifying the DB was healthy. Now:
 - Pre-import integrity check detects and recovers from corrupt DB (same version, corrupt file)
 - Post-import verification ensures the import succeeded before writing sentinel
 - Orphan index errors are caught early and trigger automatic recovery
 
 **Version constants:**
-- `DATA_VERSION = '1.12.0'` — bumped for machine move labels (`learn_label` TEXT column in `pokemon_moves`)
-- `BUNDLED_DATA_VERSION = '1.12.0'` — tracks bundled DB installation; triggers version-check overwrite on mismatch
+- `DATA_VERSION = '1.18.0'` — form display names corrected, Ogerpon IDs fixed, Maushold/Dudunsparce excluded
+- `BUNDLED_DATA_VERSION = '1.18.0'` — tracks bundled DB installation; triggers version-check overwrite on mismatch
 - `ENRICH_VERSION = '1.2.0'` — independent; only bump if PokeAPI data needs re-fetch
 
 **Critical constraint:** ALL network calls must happen BEFORE `withTransactionAsync`.
@@ -191,7 +230,7 @@ New UI sections spec'd in `docs/DETAIL_VIEWS_SPEC.md` section 2.10:
   - DEFENSE label: left-aligned (textAlign: 'left')
   - All other labels: right-aligned within fixed DEFENSE label width
   - Fixed width measured from DEFENSE label via onLayout
-- **Bar gradient**: full-width slice from container, gradient colors `['#8B2A2A','#B85C1A','#C8A020','#96E040','#00FF7F','#00FFFF']` at locations `[0, 0.118, 0.235, 0.353, 0.471, 0.784]`
+- **Bar gradient**: slice of gradient clipped to `barTrackWidth` (not `containerWidth` — accounts for label + value columns); colors `['#A71D1D','#FF7D2A','#FFC629','#90D440','#4CAF50','#00BCD4']` at locations `[0, 0.167, 0.306, 0.472, 0.667, 1.0]` — stops anchored to stat thresholds <30 / ≥30 / ≥55 / ≥85 / ≥120
 - **Numeric stat value**: width 30px, fontSize 15, fontWeight 700, textAlign right, fontFamily Menlo, accentColor
 - **Animations**: bar width/opacity interpolate from 0 per-row (60ms stagger)
 - File: `src/components/pokemon/StatChart.tsx`
@@ -309,7 +348,13 @@ No batch logs, no network activity. Species counts confirmed: 1025 enriched, 2 n
     - **Electric ✅ COMPLETE** — 3 randomised lightning bolts, 4-layer volumetric render (atmospheric glow + outer shell + mid-band + hot core), per-bolt `useAnimatedReaction` + `runOnJS` path cycling, `boltDebounce0/1/2` shared values, `FLASH_IN=40ms, FLASH_DROP=240ms, DECAY=1400ms, PEAK_OP=0.65, DIM_OP=0.20`, gaps 3200/5500/4200ms, bolt height 0.8× heroHeight
     - **Flying ✅ COMPLETE** — 4 wind streaks, two-layer SVG (8px halo σ=6 + 2px core σ=3), sine-wave path (60 pts, amplitude 7/10/13/16px, frequency 1.5), right-to-left travel via `strokeDashoffset` animation, `AnimatedPath` + `useAnimatedProps`
     - **Bug ✅ COMPLETE** — 6 spores, `rgba(168,140,100,0.72)`, 8×8dp circles, large-amplitude incommensurate x/y oscillation (swayHalfPeriod 5500–8800ms, ratio 1.47), dark gap `duration×0.9` gives teleport appearance, distinct starting origins spread across hero
-    - **Mega ✅ COMPLETE** — SVG `<Mask>` + `<Image href>` silhouette masking; 6 static ROYGBIV `LinearGradient` layers at 0°/60°/120°/180°/240°/300° angles, each masked to Pokémon silhouette (1.08× scale); `FeGaussianBlur stdDeviation=64` inside `<Mask>` for diffuse feathered edges; per-layer `useAnimatedStyle` opacity cycling at incommensurate durations (4200–7300ms), staggered delays; peak opacity 0.92, fade-out 25% of cycle (fast), loop gap-free; dark navy base shadow (tintColor `#1a1a2e`, 1.01× scale); tight black contrast mask above aura (tintColor `rgba(0,0,0,0.85)`, 1.015× scale); whole container fades in on mount over 800ms via `megaGradRot` shared value (repurposed as fade-in driver); SVG canvas 2.0× artwork size (560dp) for blur room. Spec: `docs/MEGA_AURA_GRADIENT_SPEC.md`
+    - **Mega ✅ COMPLETE (with known perf work pending)** — SVG `<Mask>` + `<Image href>` silhouette masking; 6 static ROYGBIV `LinearGradient` layers at 0°/60°/120°/180°/240°/300° angles, each masked to Pokémon silhouette (1.08× scale); `FeGaussianBlur stdDeviation=64` inside `<Mask>` for diffuse feathered edges; per-layer `useAnimatedStyle` opacity cycling at incommensurate durations (4200–7300ms), staggered delays; peak opacity 0.92, fade-out 25% of cycle (fast), loop gap-free; dark navy base shadow (tintColor `#1a1a2e`, 1.01× scale); tight black contrast mask above aura (tintColor `rgba(0,0,0,0.85)`, 1.015× scale); whole container fades in on mount over 800ms via `megaGradRot` shared value (repurposed as fade-in driver); SVG canvas 2.0× artwork size (560dp) for blur room. Spec: `docs/MEGA_AURA_GRADIENT_SPEC.md`
+    - **Mega — shiny toggle hitch FIXED (2026-07-20)** — `glowArtworkUrl` (stable non-shiny URL) threaded from `[id].tsx` → `PokemonHero` → `BackdropParticleLayer` → `MegaParticles`. `MegaParticles` wrapped in `React.memo` with custom comparator `(prev, next) => prev.artworkUrl === next.artworkUrl && prev.heroHeight === next.heroHeight`. The 6 SVG mask layers never re-render on shiny toggle. `currentArtworkUrl` (which switches on shiny toggle) still drives the hero image correctly.
+    - **Mega — initial mount spike PENDING EXPERIMENT (2026-07-20)** — mounting all 6 SVG layers simultaneously causes ~800ms JS reconciliation spike; workaround is `particlesReady` deferred 1100ms after navigation. Plan: **progressive rendering** — stagger layer mounts via `visibleLayerCount` state (0→6), incrementing at 100ms intervals inside a `useEffect` triggered by `imageReady`. Each layer mounts one at a time (~130ms reconciliation each) instead of all 6 at once (~800ms spike). The existing 400ms `fadeInOpacity` fade-in provides invisible cover — all layers mount at opacity 0 before the aura becomes visible. Expected outcome: 1100ms `particlesReady` delay reducible significantly or eliminated. **Gotchas for the implementing developer:**
+      - All 6 `megaAOp*` shared values must still be declared unconditionally at top level (Rules of Hooks) — do NOT gate declarations on `visibleLayerCount`
+      - The `useEffect` that kicks off the 6 aura opacity animations must gate on `visibleLayerCount === 6` (all layers mounted), not on `imageReady` — otherwise animations run for unmounted layers
+      - The stagger `useEffect` must return a cleanup that clears all 5 timers (unmount during stagger is possible on fast back-navigation)
+      - After validating on device: if spike is gone, reduce `particlesReady` timeout in `[id].tsx` (currently 1100ms) and measure — target is the minimum that keeps navigation transition smooth
     - **Fairy ✅ COMPLETE** — 5 radial-gradient soft-glow circles (pure white center → transparent pink edge); dedicated early-return render with `startX`/`startY` as base position; teleport to random hero position on each cycle via `useAnimatedReaction` + `runOnJS` (`fairyTeleport0–4` callbacks, fire when `op` crosses below 0.02); clean 600ms fade-in / 600ms fade-out, no pulse; incommensurate cycle durations 2200–3400ms, stagger 450ms; peak opacity 1.0; 13dp SVG canvas with `RadialGradient`
     - **Pending**: psychic, ghost, dark, dragon, steel, poison, normal, ground (rock/fighting skipped)
     - Design spec (UI designer) in `docs/CUSTOM_BACKDROPS.md` § Backdrop Particle Effects
@@ -324,11 +369,39 @@ No batch logs, no network activity. Species counts confirmed: 1025 enriched, 2 n
       - **Each particle type is its own sub-component** (`GrassParticles`, `FireParticles`, etc.) mounted via a `switch` in the outer `BackdropParticleLayer` — only the active type's hooks run
 
 9. **Visual quality, responsiveness & validation** (REQ-032, spec 2.14)
-   - Form-switch animation (fade + scale on artwork/stats/badges); type badge contrast audit; layout at 320–430px; full functional + accessibility checklist
+   - Type badge contrast audit; layout at 320–430px; full functional + accessibility checklist
+   - Form-switch animation: ~~OBSOLETE~~ — `router.push()` is accepted behavior; OS stack transition is sufficient (2026-07-20)
 
 ### DEFERRED (Team Builder phase)
 - REQ-030: Team membership badge overlay on hero (spec 2.12)
 - REQ-031: Battle Teams section at bottom of detail screen (spec 2.13)
+
+### App Requires Dev Build (Not Expo Go)
+
+As of 2026-07-17, ChampionDex uses a custom Expo config plugin (`plugins/withSQLiteFsync.ts`) to patch expo-sqlite's Android native module. This plugin calls `FileDescriptor.sync()` after `File.copyTo()` during DB import, fixing the "disk image is malformed" error on version replacement. 
+
+**Development setup required:**
+- `npx expo run:android` or `npx expo run:ios` (dev builds)
+- Expo Go is no longer sufficient
+- JDK 17 required: `brew install openjdk@17` on macOS
+- Android SDK and emulator via Android Studio
+- The plugin is registered in `app.json` and runs automatically on dev builds
+
+### TODO: Patch DB Script Before Next Data Update
+
+The `scripts/generateBundledDb.js` script re-fetches all Pokémon data from PokeAPI even when updating a single field (e.g. height or a move pool). For the next maintenance update, create a targeted patch script (`scripts/patchDb.js`) that:
+- Takes a JSON file specifying which Pokémon/forms need updates and what fields changed (target rows, column names, new values)
+- Queries only those specific PokeAPI endpoints (avoid full 1025-Pokémon re-fetch)
+- Applies surgical SQL UPDATEs to only affected rows
+- Optionally bumps `DATA_VERSION` if the patch should trigger device-side replacement
+- Can be run before bundling — doesn't require full-DB regeneration
+
+Benefits:
+- Reduces update time from ~3–5 minutes (full generator) to <30 seconds for targeted changes (height column fix, move pool update, encounter data backfill, etc.)
+- Keeps `generateBundledDb.js` reserved for fresh builds or schema changes only
+- Allows parallel work on different data fields without code conflicts
+
+Example patch invocation: `node scripts/patchDb.js --target championdex.db --patch height-fix-gen9.json`
 
 ### KNOWN DEVIATIONS from spec
 - **StatChart**: implemented as animated bar chart, not hexagon/radar SVG. Spec updated in section 10.1.
@@ -387,7 +460,7 @@ Known incomplete data in the live PokeAPI (https://pokeapi.co/api/v2/):
 A data researcher investigation is in progress this session to confirm the exact state of the API and whether the GitHub repo has unpublished data.
 
 ### Enrichment behaviour (current steady state)
-`ENRICH_VERSION = '1.2.0'`, `DATA_VERSION = '1.12.0'`, `BUNDLED_DATA_VERSION = '1.12.0'`. All enrichment data is fully populated. Warm launches produce exactly:
+`ENRICH_VERSION = '1.2.0'`, `DATA_VERSION = '1.15.0'`, `BUNDLED_DATA_VERSION = '1.15.0'`. All enrichment data is fully populated. Warm launches produce exactly:
 ```
 [Database] Base data already seeded, skipping schema creation
 [Database] Starting enrichment streams concurrently...
@@ -490,6 +563,18 @@ docs/
 ### Files Changed
 - `src/components/pokemon/EvolutionChain.tsx` — complete rewrite
 - `app/(main)/(pokedex)/[id].tsx` — removed duplicate `<Text>Evolution</Text>` label (component renders its own header internally)
+
+---
+
+## ✅ RESOLVED — Pokéball Artwork Fallback (2026-07-17)
+
+When `artworkUrl` is null or the artwork image fails to load (`onError` event), `PokemonHero.tsx` renders an inline SVG Pokéball placeholder instead of nothing. Asset saved at `assets/images/pokeball-placeholder.svg` (CC0 public domain, by Ana., OpenClipart). Fallback handles both missing data and broken image URLs gracefully.
+
+---
+
+## ✅ RESOLVED — Type Badge Text Color Contrast (2026-07-17)
+
+`src/constants/colors.ts` updated with `typeTextColors` map. 13 light-background types now use warm `#1A1815` instead of pure black. 5 dark-background types (fighting, poison, ghost, dragon, dark) use `#FFFFFF`. All combinations pass WCAG AA 4.5:1 contrast ratio.
 
 ---
 

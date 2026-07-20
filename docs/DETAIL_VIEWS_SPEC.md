@@ -11,6 +11,7 @@
 
 | Date | Version | Change |
 |------|---------|--------|
+| 2026-07-20 | 0.8 | Form label display architecture documented (section 2.1a); DB v1.18.0; Android fresh install fix; Ogerpon IDs corrected; 279 tests |
 | 2026-07-14 | 0.7 | Z-A mega forms (49 forms) marked complete — FUTURE_FORM_ALLOWLIST, DATA_VERSION 1.10.0, za_forms_enrichment_v1 backfill; section 14 updated; requirements traceability updated |
 | 2026-07-14 | 0.6 | REQ-029 marked complete; HANDOFF and section 14 updated; PokeAPI data gap noted |
 | 2026-07-14 | 0.5 | Corrected stale state: REQ-026/027 marked complete; section 2.11 enrichment instruction updated to sync_metadata key pattern (not ENRICH_VERSION bump); hook signature corrected; layout updated (grid not carousel); design token values corrected; section ordering updated; section 14 rewritten to reflect only REQ-029 + REQ-032 remaining |
@@ -141,6 +142,40 @@ Detail Views is the natural next phase after the list screens (Pokemon, Moves, A
 │ "Rain Team"                  │
 └──────────────────────────────┘
 ```
+
+### 2.1a Form Label Display Architecture
+
+Form labels appear as a secondary row **below** the Pokémon name, **above** the classification, **above** type chips. Implemented in `[id].tsx`; logic in `computeFormLabel` (`src/utils/pokemonUtils.ts`).
+
+**Rules by `form_type`:**
+
+| form_type | form_name value | Displayed label |
+|-----------|----------------|-----------------|
+| `default` | set (e.g. `"Midday Form"`) | show form_name |
+| `default` | null | no label |
+| `regional` | null | no label (region baked into display_name: "Alolan Vulpix") |
+| `regional` | set (compound: e.g. `"Combat Breed"`) | show form_name |
+| `mega` | `Mega` / `Mega-X` / `Mega-Y` / `Mega-Z` / `M` / `Primal` | no label |
+| `mega` | `F` | "Female" |
+| `mega` | other | show form_name |
+| `gigantamax` | `Gmax` | no label |
+| `gigantamax` | other | show form_name (e.g. "Low Key" for Toxtricity) |
+| `cosmetic` | `F` + display_name has no ♀/♂ | "Female" |
+| `cosmetic` | any (display_name has ♀/♂) | no label |
+| `alternate` | null or `Primal` | no label |
+| `alternate` | other | show form_name (e.g. "Ice Rider", "Cornerstone Mask") |
+
+**Primal forms:** `form_type = 'alternate'`, `form_name = 'Primal'`. Label suppressed — "Primal" is already in `display_name` ("Primal Kyogre"). Same treatment for Mega — "Mega" is in display_name.
+
+**Nidoran:** `display_name = "Nidoran ♀"` / `"Nidoran ♂"`. The ♀/♂ check in `computeFormLabel` suppresses the form label so the symbol isn't shown twice.
+
+**Typography:**
+- Form label: `fontSize: 17, fontWeight: '600'`
+- Classification: `fontSize: 13, fontWeight: '400', fontStyle: 'italic', color: textMuted`
+- Classification always below form label
+
+**Key `form_name` DB values for default forms (v1.18.0):**
+Lycanroc → `"Midday Form"`, Aegislash → `"Shield Forme"`, Zygarde → `"50%"`, Ogerpon → `"Teal Mask"`, Eiscue → `"Ice Face"`, Palafin → `"Zero Form"`, Hoopa → `"Confined"`, Urshifu → `"Single-Strike"`, Wishiwashi → `"Solo Form"`, Shaymin → `"Land Forme"`, Oricorio → `"Baile Style"`, Meloetta → `"Aria Forme"`, Darmanitan → `"Standard Mode"`, Landorus/Thundurus/Tornadus/Enamorus → `"Incarnate"`, Pumpkaboo/Gourgeist → `"Medium Size"`, Toxtricity → `"Amped Form"`, Burmy/Wormadam → `"Plant Cloak"`
 
 **Data Requirements:**
 - Official artwork URL (high-res image)
@@ -558,13 +593,10 @@ Battle Teams
 
 #### Animations & Form Toggle Transitions
 
-**Current state:** Form switches (tapping a related form) cause a hard navigation push with no visual continuity.
+**Accepted behavior (2026-07-20):** Tapping a related form card uses `router.push()` — standard Expo Router stack navigation with the OS default transition. This is intentional: form navigation is navigation, not an in-screen state swap. No fade+scale animation on the outgoing screen is required. The OS transition provides sufficient visual continuity.
 
-**Required enhancements:**
-- **Shared element transition (aspirational):** If React Navigation or Expo Router supports shared element transitions by the time this is implemented, use a crossfade or scale-up on the artwork between forms
-- **Minimum viable:** When switching forms via the RelatedFormsSection carousel, the artwork, stat bars, and type badges should animate out (fade + slight scale down, 150ms) before the new form's data fades in (150ms). Do not animate layout/text — only the visually prominent elements (artwork, stat bars, type badges).
-- **Shiny toggle:** Already specified (200ms cross-fade) — ensure this works correctly when form also changes
-- **Stat bar fill:** When first entering the screen, bars should animate from 0 to their target value over 400ms (staggered by 50ms per row). Already partially implemented in StatChart; validate it fires on every navigation to the screen, not just the first mount.
+- **Shiny toggle:** 200ms cross-fade as specified — ensure this works correctly when form also changes.
+- **Stat bar fill:** When first entering the screen, bars animate from 0 to their target value over 400ms (staggered by 50ms per row). Already implemented in StatChart; validate it fires on every navigation to the screen, not just the first mount.
 
 #### Component Validation Checklist
 
@@ -983,6 +1015,11 @@ showValues?: boolean
 valueFormat?: 'raw' | 'percentage'
 onStatTap?: (statName: string) => void
 ```
+
+**Bar gradient (finalised 2026-07-20):** Tier-anchored gradient, stops positioned at stat/180 thresholds:
+- Colors: `['#A71D1D', '#FF7D2A', '#FFC629', '#90D440', '#4CAF50', '#00BCD4']`
+- Locations: `[0, 0.167, 0.306, 0.472, 0.667, 1.0]` — thresholds: <30 red / ≥30 orange / ≥55 yellow / ≥85 lime / ≥120 green / outliers cyan
+- Gradient width: `barTrackWidth` (screen width minus label column, value column, and gaps) — not `containerWidth`
 
 **Future:** Stat morphing animation (team builder context, spec 6.3) not yet implemented — planned for Team Builder phase.
 

@@ -3,7 +3,7 @@ import { FormType, Pokemon, Move, Ability, Item } from '@/types';
 import { withSemaphore } from './enrichmentSemaphore';
 
 // Tracks @pkmn/dex base data (stats, abilities, moves, items). Bump when bundled data changes.
-const DATA_VERSION = '1.12.0';
+const DATA_VERSION = '1.18.0';
 // Tracks PokeAPI enrichment (flavor text, evolution chains). Independent of DATA_VERSION.
 // Only bump this if PokeAPI data itself needs to be re-fetched (e.g. a known bad fetch pass).
 // Under normal circumstances this should almost never change — the data is permanent.

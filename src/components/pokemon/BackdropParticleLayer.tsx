@@ -34,6 +34,7 @@ interface BackdropParticleLayerProps {
   heroHeight: number;
   enabled?: boolean;
   artworkUrl?: string | null;
+  glowArtworkUrl?: string | null;
 }
 
 const PARTICLE_CONFIGS: Record<string, boolean> = {
@@ -77,6 +78,7 @@ export const BackdropParticleLayer: React.FC<BackdropParticleLayerProps> = ({
   heroHeight,
   enabled = true,
   artworkUrl = null,
+  glowArtworkUrl = null,
 }) => {
   if (!enabled || !PARTICLE_CONFIGS[backdropKey]) return null;
 
@@ -100,7 +102,7 @@ export const BackdropParticleLayer: React.FC<BackdropParticleLayerProps> = ({
     case 'fairy':
       return <FairyParticles heroHeight={heroHeight} />;
     case 'mega':
-      return <MegaParticles heroHeight={heroHeight} artworkUrl={artworkUrl} />;
+      return <MegaParticles heroHeight={heroHeight} artworkUrl={glowArtworkUrl ?? artworkUrl} />;
     default:
       return null;
   }
@@ -1079,133 +1081,138 @@ const FairyParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) => {
 };
 
 // ========== MEGA PARTICLES SUB-COMPONENT ==========
-const MegaParticles: React.FC<{ heroHeight: number; artworkUrl?: string | null }> = ({ heroHeight, artworkUrl }) => {
-  const { width: screenWidth } = useWindowDimensions();
-  const [imageReady, setImageReady] = useState(false);
-  const fadeInOpacity = useSharedValue(0);
-  const megaGradRot = useSharedValue(0);
-  const megaAOp0 = useSharedValue(0), megaAOp1 = useSharedValue(0), megaAOp2 = useSharedValue(0);
-  const megaAOp3 = useSharedValue(0), megaAOp4 = useSharedValue(0), megaAOp5 = useSharedValue(0);
+const MegaParticles = React.memo(
+  ({ heroHeight, artworkUrl }: { heroHeight: number; artworkUrl?: string | null }) => {
+    const { width: screenWidth } = useWindowDimensions();
+    const [imageReady, setImageReady] = useState(false);
+    const fadeInOpacity = useSharedValue(0);
+    const megaGradRot = useSharedValue(0);
+    const megaAOp0 = useSharedValue(0), megaAOp1 = useSharedValue(0), megaAOp2 = useSharedValue(0);
+    const megaAOp3 = useSharedValue(0), megaAOp4 = useSharedValue(0), megaAOp5 = useSharedValue(0);
 
-  useEffect(() => {
-    if (!artworkUrl) return;
-    Image.prefetch(artworkUrl)
-      .then(() => setImageReady(true))
-      .catch(() => setImageReady(true));
-  }, [artworkUrl]);
+    useEffect(() => {
+      if (!artworkUrl) return;
+      Image.prefetch(artworkUrl)
+        .then(() => setImageReady(true))
+        .catch(() => setImageReady(true));
+    }, [artworkUrl]);
 
-  useEffect(() => {
-    if (!imageReady) return;
-    fadeInOpacity.value = withTiming(1, { duration: 400, easing: Easing.inOut(Easing.quad) });
-  }, [imageReady]);
+    useEffect(() => {
+      if (!imageReady) return;
+      fadeInOpacity.value = withTiming(1, { duration: 400, easing: Easing.inOut(Easing.quad) });
+    }, [imageReady]);
 
-  useEffect(() => {
-    megaGradRot.value = 0;
-    megaGradRot.value = withTiming(1, { duration: 800, easing: Easing.inOut(Easing.sin) });
-
-    megaAOp0.value = withDelay(0, withRepeat(withSequence(
-      withTiming(0.92, { duration: 5000 * 0.35, easing: Easing.inOut(Easing.sin) }),
-      withTiming(0.92, { duration: 5000 * 0.10 }),
-      withTiming(0.0, { duration: 5000 * 0.25, easing: Easing.inOut(Easing.sin) }),
-    ), -1, false));
-
-    megaAOp1.value = withDelay(800, withRepeat(withSequence(
-      withTiming(0.92, { duration: 6500 * 0.35, easing: Easing.inOut(Easing.sin) }),
-      withTiming(0.92, { duration: 6500 * 0.10 }),
-      withTiming(0.0, { duration: 6500 * 0.25, easing: Easing.inOut(Easing.sin) }),
-    ), -1, false));
-
-    megaAOp2.value = withDelay(1600, withRepeat(withSequence(
-      withTiming(0.92, { duration: 4200 * 0.35, easing: Easing.inOut(Easing.sin) }),
-      withTiming(0.92, { duration: 4200 * 0.10 }),
-      withTiming(0.0, { duration: 4200 * 0.25, easing: Easing.inOut(Easing.sin) }),
-    ), -1, false));
-
-    megaAOp3.value = withDelay(400, withRepeat(withSequence(
-      withTiming(0.92, { duration: 7300 * 0.35, easing: Easing.inOut(Easing.sin) }),
-      withTiming(0.92, { duration: 7300 * 0.10 }),
-      withTiming(0.0, { duration: 7300 * 0.25, easing: Easing.inOut(Easing.sin) }),
-    ), -1, false));
-
-    megaAOp4.value = withDelay(1200, withRepeat(withSequence(
-      withTiming(0.92, { duration: 5800 * 0.35, easing: Easing.inOut(Easing.sin) }),
-      withTiming(0.92, { duration: 5800 * 0.10 }),
-      withTiming(0.0, { duration: 5800 * 0.25, easing: Easing.inOut(Easing.sin) }),
-    ), -1, false));
-
-    megaAOp5.value = withDelay(2000, withRepeat(withSequence(
-      withTiming(0.92, { duration: 6100 * 0.35, easing: Easing.inOut(Easing.sin) }),
-      withTiming(0.92, { duration: 6100 * 0.10 }),
-      withTiming(0.0, { duration: 6100 * 0.25, easing: Easing.inOut(Easing.sin) }),
-    ), -1, false));
-
-    return () => {
-      [megaGradRot, megaAOp0, megaAOp1, megaAOp2, megaAOp3, megaAOp4, megaAOp5].forEach((v) => cancelAnimation(v));
+    useEffect(() => {
       megaGradRot.value = 0;
+      megaGradRot.value = withTiming(1, { duration: 800, easing: Easing.inOut(Easing.sin) });
+
+      megaAOp0.value = withDelay(0, withRepeat(withSequence(
+        withTiming(0.92, { duration: 5000 * 0.35, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.92, { duration: 5000 * 0.10 }),
+        withTiming(0.0, { duration: 5000 * 0.25, easing: Easing.inOut(Easing.sin) }),
+      ), -1, false));
+
+      megaAOp1.value = withDelay(800, withRepeat(withSequence(
+        withTiming(0.92, { duration: 6500 * 0.35, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.92, { duration: 6500 * 0.10 }),
+        withTiming(0.0, { duration: 6500 * 0.25, easing: Easing.inOut(Easing.sin) }),
+      ), -1, false));
+
+      megaAOp2.value = withDelay(1600, withRepeat(withSequence(
+        withTiming(0.92, { duration: 4200 * 0.35, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.92, { duration: 4200 * 0.10 }),
+        withTiming(0.0, { duration: 4200 * 0.25, easing: Easing.inOut(Easing.sin) }),
+      ), -1, false));
+
+      megaAOp3.value = withDelay(400, withRepeat(withSequence(
+        withTiming(0.92, { duration: 7300 * 0.35, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.92, { duration: 7300 * 0.10 }),
+        withTiming(0.0, { duration: 7300 * 0.25, easing: Easing.inOut(Easing.sin) }),
+      ), -1, false));
+
+      megaAOp4.value = withDelay(1200, withRepeat(withSequence(
+        withTiming(0.92, { duration: 5800 * 0.35, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.92, { duration: 5800 * 0.10 }),
+        withTiming(0.0, { duration: 5800 * 0.25, easing: Easing.inOut(Easing.sin) }),
+      ), -1, false));
+
+      megaAOp5.value = withDelay(2000, withRepeat(withSequence(
+        withTiming(0.92, { duration: 6100 * 0.35, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.92, { duration: 6100 * 0.10 }),
+        withTiming(0.0, { duration: 6100 * 0.25, easing: Easing.inOut(Easing.sin) }),
+      ), -1, false));
+
+      return () => {
+        [megaGradRot, megaAOp0, megaAOp1, megaAOp2, megaAOp3, megaAOp4, megaAOp5].forEach((v) => cancelAnimation(v));
+        megaGradRot.value = 0;
+      };
+    }, []);
+
+    const megaGradRotStyle = useAnimatedStyle(() => ({
+      opacity: megaGradRot.value * fadeInOpacity.value
+    }));
+    const megaAStyle0 = useAnimatedStyle(() => ({ opacity: megaAOp0.value }));
+    const megaAStyle1 = useAnimatedStyle(() => ({ opacity: megaAOp1.value }));
+    const megaAStyle2 = useAnimatedStyle(() => ({ opacity: megaAOp2.value }));
+    const megaAStyle3 = useAnimatedStyle(() => ({ opacity: megaAOp3.value }));
+    const megaAStyle4 = useAnimatedStyle(() => ({ opacity: megaAOp4.value }));
+    const megaAStyle5 = useAnimatedStyle(() => ({ opacity: megaAOp5.value }));
+
+    if (!artworkUrl) return null;
+
+    const SVG_SIZE = ARTWORK_SIZE * 2.0, cx = SVG_SIZE / 2, cy = SVG_SIZE / 2, svgLeft = (screenWidth - SVG_SIZE) / 2;
+    const svgPositionStyle = { position: 'absolute' as const, left: svgLeft, top: '50%' as const, marginTop: -SVG_SIZE / 2 };
+    const shadowStyle = { position: 'absolute' as const, width: ARTWORK_SIZE * 1.01, height: ARTWORK_SIZE * 1.01, alignSelf: 'center' as const, top: '50%' as const, marginTop: -(ARTWORK_SIZE * 1.01) / 2, opacity: 0.7 };
+
+    const renderMegaLayer = (layerIdx: number, x1: string, y1: string, x2: string, y2: string, animatedStyle: any) => {
+      const maskId = `mgMask${layerIdx}`, gradIdFull = `mgGrad${layerIdx}_g`, filterId = `mgMaskBlur${layerIdx}`;
+      return (
+        <Animated.View key={`mega-aura-${layerIdx}`} style={[svgPositionStyle, animatedStyle]} pointerEvents="none">
+          <Svg width={SVG_SIZE} height={SVG_SIZE}>
+            <Defs>
+              <SvgLinearGradient id={gradIdFull} x1={x1} y1={y1} x2={x2} y2={y2}>
+                <Stop offset="0%" stopColor="#FF0000" stopOpacity="0" />
+                <Stop offset="10%" stopColor="#FF0000" stopOpacity="0.85" />
+                <Stop offset="14.3%" stopColor="#FF7F00" stopOpacity="1" />
+                <Stop offset="28.6%" stopColor="#FFFF00" stopOpacity="1" />
+                <Stop offset="42.9%" stopColor="#00FF00" stopOpacity="1" />
+                <Stop offset="57.1%" stopColor="#0000FF" stopOpacity="1" />
+                <Stop offset="71.4%" stopColor="#4B0082" stopOpacity="1" />
+                <Stop offset="85.7%" stopColor="#9400D3" stopOpacity="0.85" />
+                <Stop offset="90%" stopColor="#FF0000" stopOpacity="0.85" />
+                <Stop offset="100%" stopColor="#FF0000" stopOpacity="0" />
+              </SvgLinearGradient>
+              <Filter id={filterId} x="-60%" y="-60%" width="220%" height="220%">
+                <FeGaussianBlur stdDeviation="32" />
+              </Filter>
+              <Mask id={maskId}>
+                <SvgImage href={artworkUrl} x={cx - (ARTWORK_SIZE * 1.08) / 2} y={cy - (ARTWORK_SIZE * 1.08) / 2} width={ARTWORK_SIZE * 1.08} height={ARTWORK_SIZE * 1.08} preserveAspectRatio="xMidYMid meet" filter={`url(#${filterId})`} />
+              </Mask>
+            </Defs>
+            <Rect x={0} y={0} width={SVG_SIZE} height={SVG_SIZE} fill={`url(#${gradIdFull})`} mask={`url(#${maskId})`} opacity={1} />
+          </Svg>
+        </Animated.View>
+      );
     };
-  }, []);
 
-  const megaGradRotStyle = useAnimatedStyle(() => ({
-    opacity: megaGradRot.value * fadeInOpacity.value
-  }));
-  const megaAStyle0 = useAnimatedStyle(() => ({ opacity: megaAOp0.value }));
-  const megaAStyle1 = useAnimatedStyle(() => ({ opacity: megaAOp1.value }));
-  const megaAStyle2 = useAnimatedStyle(() => ({ opacity: megaAOp2.value }));
-  const megaAStyle3 = useAnimatedStyle(() => ({ opacity: megaAOp3.value }));
-  const megaAStyle4 = useAnimatedStyle(() => ({ opacity: megaAOp4.value }));
-  const megaAStyle5 = useAnimatedStyle(() => ({ opacity: megaAOp5.value }));
-
-  if (!artworkUrl) return null;
-
-  const SVG_SIZE = ARTWORK_SIZE * 2.0, cx = SVG_SIZE / 2, cy = SVG_SIZE / 2, svgLeft = (screenWidth - SVG_SIZE) / 2;
-  const svgPositionStyle = { position: 'absolute' as const, left: svgLeft, top: '50%' as const, marginTop: -SVG_SIZE / 2 };
-  const shadowStyle = { position: 'absolute' as const, width: ARTWORK_SIZE * 1.01, height: ARTWORK_SIZE * 1.01, alignSelf: 'center' as const, top: '50%' as const, marginTop: -(ARTWORK_SIZE * 1.01) / 2, opacity: 0.7 };
-
-  const renderMegaLayer = (layerIdx: number, x1: string, y1: string, x2: string, y2: string, animatedStyle: any) => {
-    const maskId = `mgMask${layerIdx}`, gradIdFull = `mgGrad${layerIdx}_g`, filterId = `mgMaskBlur${layerIdx}`;
     return (
-      <Animated.View key={`mega-aura-${layerIdx}`} style={[svgPositionStyle, animatedStyle]} pointerEvents="none">
-        <Svg width={SVG_SIZE} height={SVG_SIZE}>
-          <Defs>
-            <SvgLinearGradient id={gradIdFull} x1={x1} y1={y1} x2={x2} y2={y2}>
-              <Stop offset="0%" stopColor="#FF0000" stopOpacity="0" />
-              <Stop offset="10%" stopColor="#FF0000" stopOpacity="0.85" />
-              <Stop offset="14.3%" stopColor="#FF7F00" stopOpacity="1" />
-              <Stop offset="28.6%" stopColor="#FFFF00" stopOpacity="1" />
-              <Stop offset="42.9%" stopColor="#00FF00" stopOpacity="1" />
-              <Stop offset="57.1%" stopColor="#0000FF" stopOpacity="1" />
-              <Stop offset="71.4%" stopColor="#4B0082" stopOpacity="1" />
-              <Stop offset="85.7%" stopColor="#9400D3" stopOpacity="0.85" />
-              <Stop offset="90%" stopColor="#FF0000" stopOpacity="0.85" />
-              <Stop offset="100%" stopColor="#FF0000" stopOpacity="0" />
-            </SvgLinearGradient>
-            <Filter id={filterId} x="-60%" y="-60%" width="220%" height="220%">
-              <FeGaussianBlur stdDeviation="32" />
-            </Filter>
-            <Mask id={maskId}>
-              <SvgImage href={artworkUrl} x={cx - (ARTWORK_SIZE * 1.08) / 2} y={cy - (ARTWORK_SIZE * 1.08) / 2} width={ARTWORK_SIZE * 1.08} height={ARTWORK_SIZE * 1.08} preserveAspectRatio="xMidYMid meet" filter={`url(#${filterId})`} />
-            </Mask>
-          </Defs>
-          <Rect x={0} y={0} width={SVG_SIZE} height={SVG_SIZE} fill={`url(#${gradIdFull})`} mask={`url(#${maskId})`} opacity={1} />
-        </Svg>
+      <Animated.View style={[StyleSheet.absoluteFill, megaGradRotStyle]} pointerEvents="none">
+        <View style={shadowStyle} pointerEvents="none">
+          <Image source={{ uri: artworkUrl }} style={{ flex: 1, width: '100%', height: '100%' }} contentFit="contain" tintColor="#1a1a2e" cachePolicy="memory-disk" />
+        </View>
+        {imageReady && renderMegaLayer(0, '0', '0.5', '1', '0.5', megaAStyle0)}
+        {imageReady && renderMegaLayer(1, '0', '1', '1', '0', megaAStyle1)}
+        {imageReady && renderMegaLayer(2, '0', '0', '1', '1', megaAStyle2)}
+        {imageReady && renderMegaLayer(3, '1', '0.5', '0', '0.5', megaAStyle3)}
+        {imageReady && renderMegaLayer(4, '1', '0', '0', '1', megaAStyle4)}
+        {imageReady && renderMegaLayer(5, '1', '1', '0', '0', megaAStyle5)}
+        <View style={{ position: 'absolute', width: ARTWORK_SIZE * 1.015, height: ARTWORK_SIZE * 1.015, alignSelf: 'center', top: '50%', marginTop: -(ARTWORK_SIZE * 1.015) / 2 }} pointerEvents="none">
+          <Image source={{ uri: artworkUrl }} style={{ flex: 1, width: '100%', height: '100%' }} contentFit="contain" tintColor="rgba(0,0,0,0.85)" cachePolicy="memory-disk" />
+        </View>
       </Animated.View>
     );
-  };
-
-  return (
-    <Animated.View style={[StyleSheet.absoluteFill, megaGradRotStyle]} pointerEvents="none">
-      <View style={shadowStyle} pointerEvents="none">
-        <Image source={{ uri: artworkUrl }} style={{ flex: 1, width: '100%', height: '100%' }} contentFit="contain" tintColor="#1a1a2e" cachePolicy="memory-disk" />
-      </View>
-      {imageReady && renderMegaLayer(0, '0', '0.5', '1', '0.5', megaAStyle0)}
-      {imageReady && renderMegaLayer(1, '0', '1', '1', '0', megaAStyle1)}
-      {imageReady && renderMegaLayer(2, '0', '0', '1', '1', megaAStyle2)}
-      {imageReady && renderMegaLayer(3, '1', '0.5', '0', '0.5', megaAStyle3)}
-      {imageReady && renderMegaLayer(4, '1', '0', '0', '1', megaAStyle4)}
-      {imageReady && renderMegaLayer(5, '1', '1', '0', '0', megaAStyle5)}
-      <View style={{ position: 'absolute', width: ARTWORK_SIZE * 1.015, height: ARTWORK_SIZE * 1.015, alignSelf: 'center', top: '50%', marginTop: -(ARTWORK_SIZE * 1.015) / 2 }} pointerEvents="none">
-        <Image source={{ uri: artworkUrl }} style={{ flex: 1, width: '100%', height: '100%' }} contentFit="contain" tintColor="rgba(0,0,0,0.85)" cachePolicy="memory-disk" />
-      </View>
-    </Animated.View>
-  );
-};
+  },
+  (prev, next) =>
+    prev.artworkUrl === next.artworkUrl &&
+    prev.heroHeight === next.heroHeight,
+);

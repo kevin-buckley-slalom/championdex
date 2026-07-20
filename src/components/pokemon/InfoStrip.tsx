@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
+import { Svg, Polygon } from 'react-native-svg';
 import { colors } from '@/constants/colors';
 import { spacing } from '@/constants/spacing';
 import {
@@ -61,6 +62,7 @@ export const InfoStrip: React.FC<InfoStripProps> = ({
 }) => {
   const { malePercent, femalePercent, isGenderless } = parseGenderRate(genderRate);
   const genRoman = getRomanNumeral(generation);
+  const [genderBarWidth, setGenderBarWidth] = useState<number>(0);
 
   const metricHeight = toMetricHeight(height) ?? '—';
   const imperialHeight = toImperialHeight(height) ?? '—';
@@ -70,6 +72,50 @@ export const InfoStrip: React.FC<InfoStripProps> = ({
   const genderPercentageText = isGenderless
     ? 'Genderless'
     : `♂ ${Math.round(malePercent)}%  ♀ ${Math.round(femalePercent)}%`;
+
+  const renderGenderBar = () => {
+    if (isGenderless) {
+      return <View style={[styles.genderBar, styles.genderBarNeutral]} />;
+    }
+
+    // Edge cases: 100% male or 100% female (no diagonal needed)
+    if (malePercent === 100) {
+      return (
+        <View style={{ width: '100%', height: '100%', backgroundColor: '#6890F0' }} />
+      );
+    }
+
+    if (femalePercent === 100) {
+      return (
+        <View style={{ width: '100%', height: '100%', backgroundColor: '#D47A8A' }} />
+      );
+    }
+
+    // Standard case: diagonal divider with SVG
+    if (genderBarWidth === 0) {
+      // Placeholder until layout is measured
+      return <View style={styles.genderBar} />;
+    }
+
+    const barHeight = 6;
+    const diagonalOffset = barHeight;
+    const splitX = (genderBarWidth * malePercent) / 100;
+
+    return (
+      <Svg width={genderBarWidth} height={barHeight} style={styles.genderSvg}>
+        {/* Male polygon (blue) */}
+        <Polygon
+          points={`0,0 ${splitX + diagonalOffset},0 ${splitX},${barHeight} 0,${barHeight}`}
+          fill="#6890F0"
+        />
+        {/* Female polygon (rose) */}
+        <Polygon
+          points={`${splitX + diagonalOffset},0 ${genderBarWidth},0 ${genderBarWidth},${barHeight} ${splitX},${barHeight}`}
+          fill="#D47A8A"
+        />
+      </Svg>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -98,19 +144,25 @@ export const InfoStrip: React.FC<InfoStripProps> = ({
       <View style={styles.allColumnsRow}>
         <View style={styles.dimensionColumn}>
           <Text style={styles.dimensionLabel}>HEIGHT</Text>
-          <Text style={styles.dimensionPrimary}>{imperialHeight}</Text>
+          <View style={styles.primarySlot}>
+            <Text style={styles.dimensionPrimary}>{imperialHeight}</Text>
+          </View>
           <Text style={styles.dimensionSecondary}>{metricHeight}</Text>
         </View>
 
         <View style={styles.dimensionColumn}>
           <Text style={styles.dimensionLabel}>WEIGHT</Text>
-          <Text style={styles.dimensionPrimary}>{imperialWeight}</Text>
+          <View style={styles.primarySlot}>
+            <Text style={styles.dimensionPrimary}>{imperialWeight}</Text>
+          </View>
           <Text style={styles.dimensionSecondary}>{metricWeight}</Text>
         </View>
 
         <View style={styles.dimensionGenColumn}>
           <Text style={styles.dimensionLabel}>GEN</Text>
-          <Text style={styles.dimensionPrimary}>{genRoman}</Text>
+          <View style={styles.primarySlot}>
+            <Text style={styles.dimensionPrimary}>{genRoman}</Text>
+          </View>
           <Text style={styles.dimensionSecondary}> </Text>
         </View>
 
@@ -118,28 +170,27 @@ export const InfoStrip: React.FC<InfoStripProps> = ({
           <Text style={styles.dimensionLabel}>GENDER</Text>
           {isGenderless ? (
             <>
-              <View style={[styles.genderBar, styles.genderBarNeutral]} />
-              <Text style={styles.genderCaption}>Genderless</Text>
+              <View style={styles.primarySlot}>
+                <View style={[styles.genderBar, styles.genderBarNeutral]} />
+              </View>
+              <Text style={styles.dimensionSecondary}>Genderless</Text>
             </>
           ) : (
             <>
-              <View style={styles.genderBar}>
+              <View style={styles.primarySlot}>
                 <View
-                  style={[
-                    styles.genderSegment,
-                    { flex: malePercent, backgroundColor: '#6890F0' },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.genderSegment,
-                    { flex: femalePercent, backgroundColor: '#FF6FA0' },
-                  ]}
-                />
+                  style={styles.genderBar}
+                  onLayout={(event) => {
+                    const { width } = event.nativeEvent.layout;
+                    setGenderBarWidth(width);
+                  }}
+                >
+                  {renderGenderBar()}
+                </View>
               </View>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
-                <Text style={styles.genderCaption}>♂ {Math.round(malePercent)}%</Text>
-                <Text style={styles.genderCaption}>♀ {Math.round(femalePercent)}%</Text>
+                <Text style={styles.dimensionSecondary}>♂ {Math.round(malePercent)}%</Text>
+                <Text style={styles.dimensionSecondary}>♀ {Math.round(femalePercent)}%</Text>
               </View>
             </>
           )}
@@ -178,23 +229,26 @@ const styles = StyleSheet.create({
   /* All four columns in one row */
   allColumnsRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'stretch',
     gap: 16,
   },
 
   dimensionColumn: {
     flex: 2,
     alignItems: 'flex-start',
+    justifyContent: 'space-between',
   },
 
   dimensionGenColumn: {
     flex: 1,
-    alignItems: 'flex-start'
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
   },
 
   dimensionGenderColumn: {
     flex: 3,
-    alignItems: 'flex-start'
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
   },
 
   dimensionLabel: {
@@ -211,7 +265,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: 2,
   },
 
   dimensionSecondary: {
@@ -220,29 +273,27 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
 
+  primarySlot: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+  },
+
   genderBar: {
     alignSelf: 'stretch',
+    width: '100%',
     height: 6,
     borderRadius: 3,
     overflow: 'hidden',
-    flexDirection: 'row',
-    marginTop: 12,
-    marginBottom: 4,
   },
 
   genderBarNeutral: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
 
-  genderSegment: {
+  genderSvg: {
+    width: '100%',
     height: '100%',
-  },
-
-  genderCaption: {
-    fontSize: 11,
-    fontWeight: '400',
-    color: colors.textMuted,
-    opacity: 0.7,
   },
 
 });

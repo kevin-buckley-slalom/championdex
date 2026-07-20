@@ -15,6 +15,7 @@ import { prefetchShinyArtwork, isImageCached, getShinyHomeRenderUrl } from '@/se
 import { EmptyState } from '@/components/common/EmptyState';
 import { TypeBadge } from '@/components/common/TypeBadge';
 import { PokemonHero } from '@/components/pokemon/PokemonHero';
+import { computeFormLabel } from '@/utils/pokemonUtils';
 
 import { StatChart } from '@/components/pokemon/StatChart';
 import { TypeEffectivenessTable } from '@/components/pokemon/TypeEffectivenessTable';
@@ -95,6 +96,12 @@ export default function PokemonDetailScreen() {
   const pokemonId = parseInt(id ?? '0', 10);
 
   const { data: pokemon, isLoading, error } = usePokemonDetail(pokemonId);
+
+  // Compute form label once, memoized
+  const formLabel = useMemo(() => {
+    if (!pokemon) return null;
+    return computeFormLabel(pokemon.formType, pokemon.formName, pokemon.displayName, pokemon.name);
+  }, [pokemon?.formType, pokemon?.formName, pokemon?.displayName, pokemon?.name]);
 
   // Shiny artwork prefetch state
   const [shinyReady, setShinyReady] = useState(false);
@@ -236,6 +243,7 @@ export default function PokemonDetailScreen() {
           accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
           artworkUrl={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pokemon.pokeApiId}.png`}
           shinyArtworkUrl={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/${pokemon.pokeApiId}.png`}
+          glowArtworkUrl={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pokemon.pokeApiId}.png`}
           scrollAnimatedValue={scrollOffset}
           shinyReady={shinyReady}
           cardSurfaceColor={cardSurfaceColor}
@@ -247,19 +255,35 @@ export default function PokemonDetailScreen() {
         {/* Left accent bar wrapper — contains all info sections below hero */}
         <View style={styles.accentBarWrapper}>
 
-          {/* Name + Classification inline */}
+          {/* Name Row */}
           <View style={styles.nameClassificationRow}>
-            <Text style={styles.pokemonName}>{pokemon.displayName}</Text>
-            {speciesData?.classification && (
-              <Text style={styles.classification}>{speciesData.classification}</Text>
-            )}
+            <View style={styles.nameRow}>
+              {formLabel?.isPrimal ? (
+                <>
+                  <Text style={styles.primalPrefix}>Primal </Text>
+                  <Text style={styles.pokemonName}>{formLabel.baseName}</Text>
+                </>
+              ) : (
+                <Text style={styles.pokemonName}>{pokemon.displayName}</Text>
+              )}
+            </View>
           </View>
 
-          {/* Types */}
+          {/* Form Label Row */}
+          {formLabel?.label && (
+            <View style={styles.formLabelRow}>
+              <Text style={styles.formLabel}>{formLabel.label}</Text>
+            </View>
+          )}
+
+          {/* Types + Classification */}
           <View style={styles.typeRow}>
             <TypeBadge type={pokemon.primaryType} size="md" width="fixed" />
             {pokemon.secondaryType && (
               <TypeBadge type={pokemon.secondaryType} size="md" width="fixed" />
+            )}
+            {speciesData?.classification && (
+              <Text style={styles.classification}>{speciesData.classification}</Text>
             )}
           </View>
 
@@ -403,10 +427,15 @@ const styles = StyleSheet.create({
   },
   nameClassificationRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'flex-start',
     paddingHorizontal: spacing.lg,
     marginTop: 6,
     marginBottom: spacing.xs,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: spacing.xs
   },
   pokemonName: {
     fontSize: 36,
@@ -414,19 +443,36 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 0,
   },
-  typeRow: {
-    flexDirection: 'row',
-    marginBottom: spacing.sm,
+  primalPrefix: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: colors.text,
+    marginRight: spacing.xs,
+  },
+  formLabelRow: {
     paddingHorizontal: spacing.lg,
-    gap: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  formLabel: {
+    fontSize: fontSize.xl,
+    fontWeight: '400',
+    color: colors.textSecondary,
   },
   classification: {
     fontSize: fontSize.md,
-    color: colors.textMuted,
     fontStyle: 'italic',
-    marginLeft: spacing.sm,
-    flex: 1,
+    color: colors.textMuted,
+    marginLeft: 'auto',
     textAlign: 'right',
+    flexShrink: 1,
+  },
+  typeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    gap: spacing.sm,
   },
   artworkContainer: {
     backgroundColor: colors.surface,

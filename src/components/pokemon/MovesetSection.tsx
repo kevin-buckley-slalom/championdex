@@ -335,7 +335,12 @@ export function MovesetSection({ pokemonId, pokemonName }: MovesetSectionProps) 
     }
 
     // Sort each group
-    result.levelUp.sort((a, b) => (a.learnLevel ?? Infinity) - (b.learnLevel ?? Infinity));
+    result.levelUp.sort((a, b) => {
+      if (a.learnLevel === null && b.learnLevel === null) return a.displayName.localeCompare(b.displayName);
+      if (a.learnLevel === null) return -1;
+      if (b.learnLevel === null) return 1;
+      return a.learnLevel - b.learnLevel;
+    });
     result.tmHm.sort((a, b) => a.displayName.localeCompare(b.displayName));
     result.egg.sort((a, b) => a.displayName.localeCompare(b.displayName));
     result.tutor.sort((a, b) => a.displayName.localeCompare(b.displayName));
@@ -575,6 +580,7 @@ function MoveRow({ move, showLevelBadge = false, showTmBadge = false }: MoveRowP
         pressed && styles.moveRowPressed,
       ]}
       onPress={() => router.push(`/(main)/(pokedex)/moves/${move.id}`)}
+      hitSlop={8}
     >
       <View style={styles.leftColumn}>
         {/* Row 1: Level badge + TM badge + Move name */}
@@ -626,7 +632,7 @@ function MoveRow({ move, showLevelBadge = false, showTmBadge = false }: MoveRowP
 
 const styles = StyleSheet.create({
   sectionHeader: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.md,
     fontWeight: '600',
     color: colors.textMuted,
     textTransform: 'uppercase',
@@ -762,6 +768,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.text,
     flex: 1,
+    marginLeft: spacing.xs,
   },
   statsRow: {
     flexDirection: 'row',

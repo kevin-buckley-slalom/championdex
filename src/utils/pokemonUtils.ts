@@ -86,3 +86,76 @@ export function formatWeight(weightKg: number | null | undefined): string {
   const lbs = (weightKg * 2.20462).toFixed(1);
   return `${weightKg.toFixed(1)}kg / ${lbs}lbs`;
 }
+
+export interface FormLabelResult {
+  label: string | null;
+  isPrimal: boolean;
+  primalPrefix?: string;
+  baseName?: string;
+}
+
+/**
+ * Computes the form label to display below the Pokémon name based on form type and name.
+ * Implements complex rules for default, regional, mega, gigantamax, cosmetic, and alternate forms.
+ * Special handling for Primal forms and Ogerpon Tera forms.
+ *
+ * @param formType The form type (default, regional, mega, gigantamax, cosmetic, alternate)
+ * @param formName The form name (e.g., "Female", "Primal", "Wellspring-Tera")
+ * @param displayName The display name (e.g., "Alolan Vulpix", "Mega Charizard X")
+ * @param pokemonName The pokemon slug/name (e.g., "vulpix", "ogerpon")
+ * @returns Object with label (null if no label), isPrimal flag, and optional primal components
+ */
+export function computeFormLabel(
+  formType: string,
+  formName: string | null,
+  displayName: string,
+  pokemonName: string,
+): FormLabelResult {
+  // Default: show label only if DB has a form_name (e.g. Lycanroc Midday, Toxtricity Amped)
+  if (formType === 'default') {
+    if (formName) return { label: formName, isPrimal: false };
+    return { label: null, isPrimal: false };
+  }
+
+  // Regional: form_name is already set in DB if needed
+  if (formType === 'regional') {
+    if (formName) return { label: formName, isPrimal: false };
+    return { label: null, isPrimal: false };
+  }
+
+  if (formType === 'mega') {
+    // Standard suffixes already in display_name — no label
+    if (!formName || formName === 'Mega' || formName === 'Mega-X' || formName === 'Mega-Y' || formName === 'Mega-Z') {
+      return { label: null, isPrimal: false };
+    }
+    if (formName === 'F') return { label: 'Female', isPrimal: false };
+    if (formName === 'M') return { label: null, isPrimal: false };
+    if (formName === 'Primal') return { label: null, isPrimal: false };
+    return { label: formName, isPrimal: false };
+  }
+
+  if (formType === 'gigantamax') {
+    if (!formName || formName === 'Gmax') return { label: null, isPrimal: false };
+    return { label: formName, isPrimal: false };
+  }
+
+  // Cosmetic forms: show label only for Female; skip Nidoran♂/♀
+  if (formType === 'cosmetic') {
+    if (displayName.includes('♂') || displayName.includes('♀')) {
+      return { label: null, isPrimal: false };
+    }
+    if (formName === 'F') {
+      return { label: 'Female', isPrimal: false };
+    }
+    // Male or unknown: no label
+    return { label: null, isPrimal: false };
+  }
+
+  // Alternate forms: form_name is already set correctly in DB
+  if (formType === 'alternate') {
+    if (!formName || formName === 'Primal') return { label: null, isPrimal: false };
+    return { label: formName, isPrimal: false };
+  }
+
+  return { label: null, isPrimal: false };
+}

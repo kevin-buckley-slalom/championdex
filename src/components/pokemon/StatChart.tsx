@@ -55,7 +55,7 @@ const STAT_ROWS: Array<{ name: StatType; label: string }> = [
 ];
 
 
-const StatBar: React.FC<{
+const StatBar = React.memo<{
   stat: StatRow;
   maxStatValue: number;
   accentColor: string;
@@ -64,10 +64,10 @@ const StatBar: React.FC<{
   showValues: boolean;
   valueFormat: 'raw' | 'percentage';
   onPress?: () => void;
-  containerWidth: number;
+  barTrackWidth: number;
   defLabelWidth: number;
   onDefLabelLayout?: (w: number) => void;
-}> = ({
+}>(({
   stat,
   maxStatValue,
   accentColor,
@@ -76,7 +76,7 @@ const StatBar: React.FC<{
   showValues,
   valueFormat,
   onPress,
-  containerWidth,
+  barTrackWidth,
   defLabelWidth,
   onDefLabelLayout,
 }) => {
@@ -99,7 +99,7 @@ const StatBar: React.FC<{
     }
   }, [animated, delay, progress]);
 
-  const barWidth = (stat.value / maxStatValue) * 100;
+  const barWidth = Math.min(100, Math.max(0, (stat.value / maxStatValue) * 100));
   const percentage = Math.round((stat.value / maxStatValue) * 100);
 
   const animatedBarStyle = useAnimatedStyle(() => ({
@@ -150,11 +150,11 @@ const StatBar: React.FC<{
           <Animated.View style={[styles.barFill, animatedBarStyle]}>
             {/* Full-width gradient rendered inside the clip — uses containerWidth to appear as a slice */}
             <LinearGradient
-              colors={['#8B2A2A', '#B85C1A', '#C8A020', '#96E040', '#00FF7F', '#00FFFF']}
-              locations={[0, 0.118, 0.235, 0.353, 0.471, 0.784]}
+              colors={['#A71D1D', '#FF7D2A', '#FFC629', '#90D440', '#4CAF50', '#00BCD4']}
+              locations={[0, 0.167, 0.306, 0.472, 0.667, 1.0]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={[styles.barGradient, { width: containerWidth }]}
+              style={[styles.barGradient, { width: barTrackWidth }]}
             />
             <View style={styles.barGlowOverlay} />
           </Animated.View>
@@ -164,7 +164,7 @@ const StatBar: React.FC<{
       {showValues && <Text style={[styles.value, { color: accentColor }]}>{displayValue}</Text>}
     </Pressable>
   );
-};
+});
 
 export const StatChart: React.FC<StatChartProps> = ({
   stats,
@@ -207,6 +207,7 @@ export const StatChart: React.FC<StatChartProps> = ({
   );
 
   const containerWidth = screenWidth - 2 * spacing.lg;
+  const barTrackWidth = containerWidth - defLabelWidth - 30 - spacing.md * 2;
 
   return (
     <View style={[styles.container, height ? { height } : {}]}>
@@ -223,7 +224,7 @@ export const StatChart: React.FC<StatChartProps> = ({
           showValues={showValues}
           valueFormat={valueFormat}
           onPress={() => handleStatTap(stat.name)}
-          containerWidth={containerWidth}
+          barTrackWidth={barTrackWidth}
           defLabelWidth={defLabelWidth}
           onDefLabelLayout={setDefLabelWidth}
         />
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 1.5,
-    marginBottom: 6,
+    marginBottom: spacing.md,
   },
   row: {
     flexDirection: 'row',
@@ -325,7 +326,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   totalValue: {
-    fontSize: 15,
+    fontSize: fontSize.lg,
     fontWeight: '700',
     fontFamily: 'Menlo',
   },

@@ -37,7 +37,8 @@
         }
       ],
       "expo-image",
-      "expo-secure-store"
+      "expo-secure-store",
+      "./plugins/withSQLiteFsync"
     ],
     "experiments": {
       "typedRoutes": true
