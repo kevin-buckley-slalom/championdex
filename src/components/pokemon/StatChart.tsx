@@ -246,7 +246,7 @@ export const StatChart: React.FC<StatChartProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: spacing.lg,
+    paddingVertical: spacing.sm,
     gap: spacing.sm,
     backgroundColor: 'transparent',
   },

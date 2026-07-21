@@ -12,7 +12,6 @@ interface AbilitiesSectionProps {
 const styles = StyleSheet.create({
   columnsContainer: {
     flexDirection: 'row',
-    // gap: 16,
   },
   column: {
     flex: 1,

@@ -639,13 +639,16 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
       <View style={styles.vignetteScrim} />
 
       {/* Layer 3b: Environmental Particle Layer (behind artwork, above backdrop) */}
-      <BackdropParticleLayer
-        backdropKey={backdropKey}
-        heroHeight={heroHeight}
-        enabled={particlesEnabled}
-        artworkUrl={currentArtworkUrl}
-        glowArtworkUrl={glowArtworkUrl}
-      />
+      {/* Shares artwork parallax transform so Mega aura tracks the Pokemon exactly */}
+      <Animated.View style={[StyleSheet.absoluteFill, artworkAnimatedStyle]} pointerEvents="none">
+        <BackdropParticleLayer
+          backdropKey={backdropKey}
+          heroHeight={heroHeight}
+          enabled={particlesEnabled}
+          artworkUrl={currentArtworkUrl}
+          glowArtworkUrl={glowArtworkUrl}
+        />
+      </Animated.View>
 
       {/* Layer 4: Artwork Container (0.5x parallax, fades as user scrolls) */}
       <Animated.View

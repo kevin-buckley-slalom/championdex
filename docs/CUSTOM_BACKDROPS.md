@@ -299,11 +299,12 @@ Ambient looping particles layered behind Pokémon artwork. Always behind the art
 - Layer opacity cycles independently at incommensurate durations (4200–7300ms), staggered delays
 - Peak opacity 0.92, fully transparent between pulses, fast fade-out (25% of cycle)
 - Dark navy base shadow (1.01×, `#1a1a2e`) + tight black contrast mask above aura (1.015×, `rgba(0,0,0,0.85)`)
-- On mount: `Image.prefetch(artworkUrl)` fires once; all 6 SVG layers hidden behind `imageReady` state until prefetch resolves — prevents 6× independent cold-decode of the artwork via react-native-svg
-- `fadeInOpacity` shared value animates 0→1 over 400ms when `imageReady` flips — prevents pop-in when layers appear
-- `megaGradRot` drives initial container fade-in (0→1 over 800ms on first mount)
+- On mount: `Image.prefetch(artworkUrl)` fires once; layers mount progressively via `visibleLayerCount` state (0→6) — prevents 6× independent cold-decode and eliminates the ~800ms reconciliation spike from simultaneous mount
+- `visibleLayerCount` increments: layer 0 mounts immediately when `imageReady` fires, layers 1–5 mount at +100ms intervals (timers cleaned up on unmount); aura opacity animations gate on `visibleLayerCount === 6`
+- `fadeInOpacity` shared value animates 0→1 over 400ms when `imageReady` flips — provides invisible cover while layers mount progressively
+- `megaGradRot` drives initial container fade-in (0→1 over 800ms on first mount, own `useEffect([])`)
 - SVG canvas 2.0× artwork (560dp); all 6 SVGs separate Animated.View wrappers for GPU-composited opacity
-- Mounts at 1100ms after navigation (gated by `particlesReady` in detail screen) to avoid reconciliation spike during stat bar animations; fully visible ~1500ms after navigation
+- Currently mounts at 1100ms after navigation (gated by `particlesReady` in detail screen); with progressive rendering the spike is gone — `particlesReady` timeout can likely be reduced to ~400ms after device measurement
 - Full spec: `docs/MEGA_AURA_GRADIENT_SPEC.md`
 
 ## ⏳ Pending Backdrops

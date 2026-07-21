@@ -1085,6 +1085,7 @@ const MegaParticles = React.memo(
   ({ heroHeight, artworkUrl }: { heroHeight: number; artworkUrl?: string | null }) => {
     const { width: screenWidth } = useWindowDimensions();
     const [imageReady, setImageReady] = useState(false);
+    const [visibleLayerCount, setVisibleLayerCount] = useState(0);
     const fadeInOpacity = useSharedValue(0);
     const megaGradRot = useSharedValue(0);
     const megaAOp0 = useSharedValue(0), megaAOp1 = useSharedValue(0), megaAOp2 = useSharedValue(0);
@@ -1099,12 +1100,27 @@ const MegaParticles = React.memo(
 
     useEffect(() => {
       if (!imageReady) return;
+      setVisibleLayerCount(1);
+      const timers: ReturnType<typeof setTimeout>[] = [];
+      for (let i = 1; i < 6; i++) {
+        timers.push(setTimeout(() => setVisibleLayerCount(i + 1), i * 100));
+      }
       fadeInOpacity.value = withTiming(1, { duration: 400, easing: Easing.inOut(Easing.quad) });
+      return () => timers.forEach(clearTimeout);
     }, [imageReady]);
 
     useEffect(() => {
       megaGradRot.value = 0;
       megaGradRot.value = withTiming(1, { duration: 800, easing: Easing.inOut(Easing.sin) });
+
+      return () => {
+        cancelAnimation(megaGradRot);
+        megaGradRot.value = 0;
+      };
+    }, []);
+
+    useEffect(() => {
+      if (visibleLayerCount < 6) return;
 
       megaAOp0.value = withDelay(0, withRepeat(withSequence(
         withTiming(0.92, { duration: 5000 * 0.35, easing: Easing.inOut(Easing.sin) }),
@@ -1143,10 +1159,9 @@ const MegaParticles = React.memo(
       ), -1, false));
 
       return () => {
-        [megaGradRot, megaAOp0, megaAOp1, megaAOp2, megaAOp3, megaAOp4, megaAOp5].forEach((v) => cancelAnimation(v));
-        megaGradRot.value = 0;
+        [megaAOp0, megaAOp1, megaAOp2, megaAOp3, megaAOp4, megaAOp5].forEach((v) => cancelAnimation(v));
       };
-    }, []);
+    }, [visibleLayerCount]);
 
     const megaGradRotStyle = useAnimatedStyle(() => ({
       opacity: megaGradRot.value * fadeInOpacity.value
@@ -1200,12 +1215,12 @@ const MegaParticles = React.memo(
         <View style={shadowStyle} pointerEvents="none">
           <Image source={{ uri: artworkUrl }} style={{ flex: 1, width: '100%', height: '100%' }} contentFit="contain" tintColor="#1a1a2e" cachePolicy="memory-disk" />
         </View>
-        {imageReady && renderMegaLayer(0, '0', '0.5', '1', '0.5', megaAStyle0)}
-        {imageReady && renderMegaLayer(1, '0', '1', '1', '0', megaAStyle1)}
-        {imageReady && renderMegaLayer(2, '0', '0', '1', '1', megaAStyle2)}
-        {imageReady && renderMegaLayer(3, '1', '0.5', '0', '0.5', megaAStyle3)}
-        {imageReady && renderMegaLayer(4, '1', '0', '0', '1', megaAStyle4)}
-        {imageReady && renderMegaLayer(5, '1', '1', '0', '0', megaAStyle5)}
+        {visibleLayerCount > 0 && renderMegaLayer(0, '0', '0.5', '1', '0.5', megaAStyle0)}
+        {visibleLayerCount > 1 && renderMegaLayer(1, '0', '1', '1', '0', megaAStyle1)}
+        {visibleLayerCount > 2 && renderMegaLayer(2, '0', '0', '1', '1', megaAStyle2)}
+        {visibleLayerCount > 3 && renderMegaLayer(3, '1', '0.5', '0', '0.5', megaAStyle3)}
+        {visibleLayerCount > 4 && renderMegaLayer(4, '1', '0', '0', '1', megaAStyle4)}
+        {visibleLayerCount > 5 && renderMegaLayer(5, '1', '1', '0', '0', megaAStyle5)}
         <View style={{ position: 'absolute', width: ARTWORK_SIZE * 1.015, height: ARTWORK_SIZE * 1.015, alignSelf: 'center', top: '50%', marginTop: -(ARTWORK_SIZE * 1.015) / 2 }} pointerEvents="none">
           <Image source={{ uri: artworkUrl }} style={{ flex: 1, width: '100%', height: '100%' }} contentFit="contain" tintColor="rgba(0,0,0,0.85)" cachePolicy="memory-disk" />
         </View>

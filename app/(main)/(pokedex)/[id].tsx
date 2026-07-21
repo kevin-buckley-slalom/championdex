@@ -116,7 +116,7 @@ export default function PokemonDetailScreen() {
 
   useEffect(() => {
     const belowFoldId = setTimeout(() => setBelowFoldReady(true), 650);
-    const particlesId = setTimeout(() => setParticlesReady(true), 1100);
+    const particlesId = setTimeout(() => setParticlesReady(true), 500);
     return () => {
       clearTimeout(belowFoldId);
       clearTimeout(particlesId);
