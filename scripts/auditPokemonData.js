@@ -27,13 +27,6 @@ const DB_PATH = path.join(__dirname, '../assets/db/championdex.db');
 const OUTPUT_DIR = path.join(__dirname, 'output');
 const OUTPUT_FILE = path.join(OUTPUT_DIR, 'pokemon_data_audit.json');
 
-// Single-stage Pokemon that shouldn't have evolution data
-// (Only include truly obvious single-stage; don't try to enumerate all)
-const KNOWN_SINGLE_STAGE = new Set([
-  1, // Bulbasaur (wait, this evolves)
-  4, // Charmander (this evolves)
-  7, // Squirtle (this evolves)
-]);
 
 // ============================================================================
 // MAIN AUDIT CLASS
@@ -70,6 +63,32 @@ class PokemonDataAuditor {
             WHERE el.pokemon_id = pokemon.id
           )
       `).all().map(r => r.national_dex)
+    );
+
+    // Build set of regional-form pokemon_ids with no encounter rows.
+    // These are evolution-only regional forms (e.g. Alolan Ninetales, Galarian Slowbro)
+    // handled by the smart empty state in the UI — not a data gap.
+    this.knownNoEncounterRegional = new Set(
+      this.db.prepare(`
+        SELECT id FROM pokemon
+        WHERE form_type = 'regional'
+          AND NOT EXISTS (
+            SELECT 1 FROM pokemon_encounter_locations el
+            WHERE el.pokemon_id = pokemon.id
+          )
+      `).all().map(r => r.id)
+    );
+
+    // Build set of pokemon_ids that have NO rows in pokemon_evolutions on either side.
+    // These are legitimately single-stage Pokémon — flagging them is a false positive.
+    this.knownNoEvolution = new Set(
+      this.db.prepare(`
+        SELECT id FROM pokemon
+        WHERE NOT EXISTS (
+          SELECT 1 FROM pokemon_evolutions ev
+          WHERE ev.pokemon_id = pokemon.id OR ev.evolves_to_id = pokemon.id
+        )
+      `).all().map(r => r.id)
     );
   }
 
@@ -338,14 +357,18 @@ class PokemonDataAuditor {
 
     // 8. Check encounter locations
     if (!this.hasPokemonEncounters(pokemon.id)) {
-      // Skip if this is a known-clean default form (evolution-only, fossil, starter, etc.)
+      // Skip known-clean default forms (evolution-only, fossil, starter, etc.)
       const isKnownClean = pokemon.form_type === 'default'
         && pokemon.generation < 9
         && pokemon.is_legendary === 0
         && pokemon.is_mythical === 0
         && this.knownNoEncounterDex.has(pokemon.national_dex);
 
-      if (!isKnownClean) {
+      // Skip regional forms with no encounter rows — these are evolution-only regionals
+      // (e.g. Alolan Ninetales, Galarian Slowbro) handled by the UI smart empty state.
+      const isKnownCleanRegional = this.knownNoEncounterRegional.has(pokemon.id);
+
+      if (!isKnownClean && !isKnownCleanRegional) {
         missing.push({
           field: 'encounter_locations',
           reason: this.generateReason(pokemon, 'encounter_locations').join('; '),
@@ -356,8 +379,7 @@ class PokemonDataAuditor {
 
     // 9. Check evolution chain
     if (!this.appearsInEvolutionChain(pokemon.id) &&
-        pokemon.is_legendary === 0 && pokemon.is_mythical === 0 &&
-        !KNOWN_SINGLE_STAGE.has(pokemon.national_dex)) {
+        !this.knownNoEvolution.has(pokemon.id)) {
       missing.push({
         field: 'evolution_chain',
         reason: this.generateReason(pokemon, 'evolution_chain').join('; '),

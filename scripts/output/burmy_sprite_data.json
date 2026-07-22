@@ -1,0 +1,28 @@
+[
+  {
+    "species_id": "burmysandy",
+    "national_dex": 412,
+    "display_name": "Burmy Sandy",
+    "form_name": "Sandy",
+    "pokeapi_form_id": null,
+    "source_url": "https://static.pokepc.net/images/pokemon/home3d-icon-xl/regular/0412-sandy.webp?v=20260515",
+    "source_site": "pokepc.net",
+    "local_asset": "assets/images/sprites/burmy-sandy.webp",
+    "size_bytes": 37888,
+    "strategy": "local-asset",
+    "notes": "No PokeAPI home sprite exists for this form. Source URL verified HTTP 200 (37KB WebP, home-quality render). Downloaded as local asset to avoid third-party CDN dependency. Reference via require('@assets/images/sprites/burmy-sandy.webp') in useFormVariants.ts."
+  },
+  {
+    "species_id": "burmytrash",
+    "national_dex": 412,
+    "display_name": "Burmy Trash",
+    "form_name": "Trash",
+    "pokeapi_form_id": null,
+    "source_url": "https://static.pokepc.net/images/pokemon/home3d-icon-xl/regular/0412-trash.webp?v=20260515",
+    "source_site": "pokepc.net",
+    "local_asset": "assets/images/sprites/burmy-trash.webp",
+    "size_bytes": 36864,
+    "strategy": "local-asset",
+    "notes": "No PokeAPI home sprite exists for this form. Source URL verified HTTP 200 (36KB WebP, home-quality render). Downloaded as local asset to avoid third-party CDN dependency. Reference via require('@assets/images/sprites/burmy-trash.webp') in useFormVariants.ts."
+  }
+]

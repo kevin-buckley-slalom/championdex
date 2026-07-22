@@ -6,6 +6,7 @@ import { spacing, fontSize } from '@/constants/spacing';
 import { TypeBadge } from '@/components/common/TypeBadge';
 import { PokemonListItem } from '@/types';
 import { PokemonSortBy } from '@/hooks/queries/usePokemonList';
+import { getHomeRenderUrl } from '@/services/prefetch/artworkPrefetchService';
 
 const STAT_LABEL: Partial<Record<PokemonSortBy, string>> = {
   total: 'BST',
@@ -43,10 +44,13 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onPress, sort
   const statLabel = STAT_LABEL[displayStatKey] ?? 'BST';
   const statNum = statValue[displayStatKey];
 
+  const artworkUrl = getHomeRenderUrl(pokemon.pokeApiId, pokemon.id);
+  const imageSource = typeof artworkUrl === 'number' ? artworkUrl : { uri: artworkUrl };
+
   return (
     <Pressable style={({ pressed }) => [styles.card, pressed && styles.pressed]} onPress={onPress}>
       <Image
-        source={{ uri: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pokemon.pokeApiId}.png` }}
+        source={imageSource}
         placeholder={require('../../../assets/placeholder-pokemon.png')}
         style={styles.sprite}
         contentFit="contain"

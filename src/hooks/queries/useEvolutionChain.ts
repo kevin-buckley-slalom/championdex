@@ -3,7 +3,7 @@ import { getEvolutionChain, EvolutionNode } from '@/services/database/pokemonSpe
 
 export function useEvolutionChain(pokemonId: number) {
   return useQuery({
-    queryKey: ['pokemon', 'evolution-chain', pokemonId],
+    queryKey: ['pokemon', 'evolution-chain', 'v2', pokemonId],
     queryFn: () => getEvolutionChain(pokemonId),
     staleTime: Infinity,
     enabled: pokemonId > 0,

@@ -13,7 +13,7 @@ export interface CosmeticAlternatesSectionProps {
   alternates: Array<{
     id: string;
     name: string;
-    spriteUrl: string;
+    spriteUrl: string | number;
   }>;
 }
 
@@ -21,7 +21,7 @@ interface AlternateCardProps {
   alternate: {
     id: string;
     name: string;
-    spriteUrl: string;
+    spriteUrl: string | number;
   };
   cardWidth: number;
 }
@@ -42,7 +42,7 @@ const AlternateCard: React.FC<AlternateCardProps> = ({ alternate, cardWidth }) =
       <View style={[styles.spriteContainer, { width: SPRITE_SIZE, height: SPRITE_SIZE }]}>
         {alternate.spriteUrl ? (
           <ExpoImage
-            source={{ uri: alternate.spriteUrl }}
+            source={typeof alternate.spriteUrl === 'number' ? alternate.spriteUrl : { uri: alternate.spriteUrl }}
             style={[styles.sprite, { width: SPRITE_SIZE, height: SPRITE_SIZE }]}
             contentFit="contain"
             cachePolicy="memory-disk"

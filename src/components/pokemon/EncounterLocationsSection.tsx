@@ -147,7 +147,9 @@ interface Props {
 }
 
 export function EncounterLocationsSection({ pokemonId, pokemonName, obtainMethod, formType = 'default', nationalDex = 0 }: Props) {
-  const isNonDefault = formType !== 'default';
+  // Regional forms have their own encounter data — query them directly.
+  // Other non-default forms (mega, gmax, alternate, cosmetic) inherit from base form.
+  const isNonDefault = formType !== 'default' && formType !== 'regional';
   const { data: defaultFormId } = useDefaultFormId(nationalDex, formType);
   const resolvedId = isNonDefault ? (defaultFormId ?? null) : pokemonId;
 
@@ -301,7 +303,7 @@ export function EncounterLocationsSection({ pokemonId, pokemonName, obtainMethod
                 <Text style={styles.locationName}>{formatSlug(locationName)}</Text>
                 {rows.map((enc, idx) => (
                   <Text key={idx} style={styles.encounterRow}>
-                    {formatSlug(enc.encounterMethod)} · {enc.encounterChance}%
+                    {formatSlug(enc.encounterMethod)}{enc.encounterChance !== null ? ` · ${enc.encounterChance}%` : ''}
                     {enc.minLevel !== null && enc.maxLevel !== null
                       ? ` · Lv. ${enc.minLevel}–${enc.maxLevel}`
                       : enc.minLevel !== null

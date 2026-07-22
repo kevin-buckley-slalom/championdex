@@ -233,20 +233,23 @@ export interface PokemonHeroProps {
 
   /**
    * Official artwork URL (high-res PNG, transparent background)
+   * Can be a string URI, number (Metro require() result), or null
    */
-  artworkUrl: string | null;
+  artworkUrl: string | number | null;
 
   /**
    * Official shiny artwork URL (alternative variant)
+   * Can be a string URI, number (Metro require() result), or null
    * If undefined or null, "Shiny" toggle is disabled
    */
-  shinyArtworkUrl?: string | null;
+  shinyArtworkUrl?: string | number | null;
 
   /**
    * Stable non-shiny artwork URL used for particle glow masks.
    * Kept separate from currentArtworkUrl so glow layers never re-render on shiny toggle.
+   * Can be a string URI, number (Metro require() result), or null
    */
-  glowArtworkUrl?: string | null;
+  glowArtworkUrl?: string | number | null;
 
   /**
    * Pokémon name for display and accessibility
@@ -417,6 +420,12 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
 
   // Ref to hold the burst trigger function from StarBurstParticles sub-component
   const burstTriggerRef = React.useRef<(() => void) | null>(null);
+
+  // Helper function to convert string URIs or numeric require() results to Image source format
+  const toImageSource = (url: string | number | null | undefined) => {
+    if (url == null) return null;
+    return typeof url === 'number' ? url : { uri: url };
+  };
 
   // Current artwork URL based on shiny state
   const currentArtworkUrl = useMemo(
@@ -662,7 +671,7 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
         accessibilityRole="image"
       >
         <Image
-          source={currentArtworkUrl ? { uri: currentArtworkUrl } : (isShiny ? PLACEHOLDER_ARTWORK_SHINY : PLACEHOLDER_ARTWORK)}
+          source={currentArtworkUrl != null ? toImageSource(currentArtworkUrl)! : (isShiny ? PLACEHOLDER_ARTWORK_SHINY : PLACEHOLDER_ARTWORK)}
           placeholder={isShiny ? PLACEHOLDER_ARTWORK_SHINY : PLACEHOLDER_ARTWORK}
           style={styles.artwork}
           contentFit="contain"
@@ -675,7 +684,7 @@ export const PokemonHero: React.FC<PokemonHeroProps> = ({
           pointerEvents="none"
         >
           <Image
-            source={currentArtworkUrl ? { uri: currentArtworkUrl } : (isShiny ? PLACEHOLDER_ARTWORK_SHINY : PLACEHOLDER_ARTWORK)}
+            source={currentArtworkUrl != null ? toImageSource(currentArtworkUrl)! : (isShiny ? PLACEHOLDER_ARTWORK_SHINY : PLACEHOLDER_ARTWORK)}
             style={styles.artwork}
             contentFit="contain"
             tintColor="white"

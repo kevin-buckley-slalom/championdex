@@ -245,6 +245,86 @@ function patchEvolutionChains(db) {
     [1278, 1282, 'battle', 'Terastallize'],
     [1279, 1283, 'battle', 'Terastallize'],
     [1280, 1284, 'battle', 'Terastallize'],
+    // Burmy alternate cloaks → cloak-matched Wormadam, and Mothim (male)
+    // (Plant Burmy id=526 → Plant Wormadam id=529 and Mothim id=532 already exist in DB)
+    [527, 530, 'level-up', '20'],   // Burmy Sandy → Wormadam Sandy
+    [527, 532, 'level-up', '20'],   // Burmy Sandy → Mothim (male)
+    [528, 531, 'level-up', '20'],   // Burmy Trash → Wormadam Trash
+    [528, 532, 'level-up', '20'],   // Burmy Trash → Mothim (male)
+    // Aegislash: Doublade → Blade Forme (Shield Forme row 857→858 already seeded)
+    [857, 859, 'use-item', 'Dusk Stone, Attacking'],   // Doublade → Aegislash Blade
+    // Kyurem fusions
+    [808, 809, 'other', 'DNA Splicers'],   // Kyurem → Black Kyurem
+    [808, 810, 'other', 'DNA Splicers'],   // Kyurem → White Kyurem
+    // Pumpkaboo → Gourgeist (size-matched only; Medium id=894→898 already exists in DB)
+    [895, 899, 'trade', null],   // Pumpkaboo Small → Gourgeist Small
+    [896, 900, 'trade', null],   // Pumpkaboo Large → Gourgeist Large
+    [897, 901, 'trade', null],   // Pumpkaboo Super → Gourgeist Super
+    // Calyrex riders
+    [1142, 1143, 'other', 'Reins of Unity'],   // Calyrex → Ice Rider
+    [1142, 1144, 'other', 'Reins of Unity'],   // Calyrex → Shadow Rider
+    // Gimmighoul Roaming → Gholdengo (Chest form id=1258→1260 already exists in DB)
+    [1259, 1260, 'gimmighoul-coins', null],   // Gimmighoul Roaming → Gholdengo
+  ];
+
+  const FORM_TRANSFORMATIONS = [
+    // Shaymin Land → Sky
+    [628, 629, 'use-item', 'Gracidea'],
+    // Forces of Nature: Incarnate → Therian (Reveal Glass)
+    [800, 801, 'use-item', 'Reveal Glass'],
+    [802, 803, 'use-item', 'Reveal Glass'],
+    [806, 807, 'use-item', 'Reveal Glass'],
+    [1153, 1154, 'use-item', 'Reveal Glass'],
+    // Keldeo → Resolute
+    [811, 812, 'know-move', 'Secret Sword'],
+    // Meloetta → Pirouette
+    [813, 814, 'battle', 'Relic Song'],
+    // Greninja Bond → Ash-Greninja
+    [827, 828, 'battle', 'Battle Bond KO'],
+    // (Aegislash handled via ALTERNATE_EVOLUTIONS: Doublade → Shield and Blade)
+    // Hoopa → Unbound
+    [915, 916, 'use-item', 'Prison Bottle'],
+    // Oricorio: each form can transform to any other via nectar
+    [939, 940, 'use-item', 'Yellow Nectar'],
+    [939, 941, 'use-item', 'Pink Nectar'],
+    [939, 942, 'use-item', 'Purple Nectar'],
+    [940, 939, 'use-item', 'Red Nectar'],
+    [940, 941, 'use-item', 'Pink Nectar'],
+    [940, 942, 'use-item', 'Purple Nectar'],
+    [941, 939, 'use-item', 'Red Nectar'],
+    [941, 940, 'use-item', 'Yellow Nectar'],
+    [941, 942, 'use-item', 'Purple Nectar'],
+    [942, 939, 'use-item', 'Red Nectar'],
+    [942, 940, 'use-item', 'Yellow Nectar'],
+    [942, 941, 'use-item', 'Pink Nectar'],
+    // Terapagos Normal → Terastal → Stellar
+    [1291, 1292, 'battle', null],
+    [1292, 1293, 'battle', 'Terastallize'],
+    // Eternatus → Eternamax
+    [1130, 1131, 'gigantamax', 'gigantamax-factor'],
+    // Deoxys — all 4 forms fully interconnected via Meteorite
+    [496, 497, 'use-item', 'Meteorite'],   // Normal → Attack
+    [496, 498, 'use-item', 'Meteorite'],   // Normal → Defense
+    [496, 499, 'use-item', 'Meteorite'],   // Normal → Speed
+    [497, 496, 'use-item', 'Meteorite'],   // Attack → Normal
+    [497, 498, 'use-item', 'Meteorite'],   // Attack → Defense
+    [497, 499, 'use-item', 'Meteorite'],   // Attack → Speed
+    [498, 496, 'use-item', 'Meteorite'],   // Defense → Normal
+    [498, 497, 'use-item', 'Meteorite'],   // Defense → Attack
+    [498, 499, 'use-item', 'Meteorite'],   // Defense → Speed
+    [499, 496, 'use-item', 'Meteorite'],   // Speed → Normal
+    [499, 497, 'use-item', 'Meteorite'],   // Speed → Attack
+    [499, 498, 'use-item', 'Meteorite'],   // Speed → Defense
+    // Rotom — base only → each appliance form via Rotom Catalog
+    [605, 606, 'use-item', 'Rotom Catalog'],   // Rotom → Heat
+    [605, 607, 'use-item', 'Rotom Catalog'],   // Rotom → Wash
+    [605, 608, 'use-item', 'Rotom Catalog'],   // Rotom → Frost
+    [605, 609, 'use-item', 'Rotom Catalog'],   // Rotom → Fan
+    [605, 610, 'use-item', 'Rotom Catalog'],   // Rotom → Mow
+    // Dialga / Palkia / Giratina — base → Origin forme
+    [614, 615, 'use-item', 'Adamant Crystal'],   // Dialga → Origin
+    [616, 617, 'use-item', 'Lustrous Globe'],    // Palkia → Origin
+    [621, 622, 'use-item', 'Griseous Orb'],      // Giratina → Origin
   ];
 
   const REGIONAL_EVOLUTIONS = [
@@ -289,6 +369,8 @@ function patchEvolutionChains(db) {
     [902, 904, 'level-up', '28'],
     [919, 921, 'level-up', '36'],
     [268, 1238, 'level-up', '20'],
+    [701, 702, 'battle', 'Zen Mode'],          // Darmanitan → Darmanitan Zen
+    [703, 704, 'battle', 'Zen Mode'],          // Galarian Darmanitan → Galarian Darmanitan Zen
   ];
 
   const COSMETIC_EVOLUTIONS = [
@@ -308,6 +390,7 @@ function patchEvolutionChains(db) {
   let megaCount = 0;
   let gmaxCount = 0;
   let alternateCount = 0;
+  let formTransformCount = 0;
   let regionalCount = 0;
   let cosmeticCount = 0;
 
@@ -329,6 +412,12 @@ function patchEvolutionChains(db) {
     if (result.changes > 0) alternateCount += result.changes;
   }
 
+  // Insert form transformations
+  for (const [baseId, formId, method, condition] of FORM_TRANSFORMATIONS) {
+    const result = insertEvolution.run(baseId, formId, method, condition);
+    if (result.changes > 0) formTransformCount += result.changes;
+  }
+
   // Insert regional form evolutions (skip null evolves_to_id)
   for (const [baseId, evolvesToId, method, condition] of REGIONAL_EVOLUTIONS) {
     if (evolvesToId === null) continue;
@@ -342,8 +431,8 @@ function patchEvolutionChains(db) {
     if (result.changes > 0) cosmeticCount += result.changes;
   }
 
-  const totalEvolutions = megaCount + gmaxCount + alternateCount + regionalCount + cosmeticCount;
-  console.log(`[PatchDb] Evolution chains: inserted ${megaCount} mega + ${gmaxCount} gigantamax + ${alternateCount} alternate + ${regionalCount} regional + ${cosmeticCount} cosmetic rows (${totalEvolutions} total new rows)`);
+  const totalEvolutions = megaCount + gmaxCount + alternateCount + formTransformCount + regionalCount + cosmeticCount;
+  console.log(`[PatchDb] Evolution chains: inserted ${megaCount} mega + ${gmaxCount} gigantamax + ${alternateCount} alternate + ${formTransformCount} form-transform + ${regionalCount} regional + ${cosmeticCount} cosmetic rows (${totalEvolutions} total new rows)`);
 }
 
 async function fetchRegionalEncounters(db) {
@@ -1165,6 +1254,100 @@ function patchEvolutionConditionValues(db) {
   console.log(`[patchEvolutionConditionValues] Updated ${totalRows} evolution rows with corrected methods and condition_values`);
 }
 
+function patchRegionalEncounterLocations(db) {
+  // encounter_chance was declared NOT NULL in the original schema.
+  // Bulbapedia-sourced rows have no rate data, so we must relax that constraint first.
+  // SQLite can't ALTER a column constraint, so we rebuild the table preserving all existing rows.
+  const migrateNullableChance = db.transaction(() => {
+    const existing = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='pokemon_encounter_locations'").get();
+    if (existing && existing.sql.includes('encounter_chance INTEGER NOT NULL')) {
+      db.prepare('ALTER TABLE pokemon_encounter_locations RENAME TO pokemon_encounter_locations_old').run();
+      db.prepare(`
+        CREATE TABLE pokemon_encounter_locations (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          pokemon_id INTEGER NOT NULL REFERENCES pokemon(id),
+          game_version TEXT NOT NULL,
+          location_name TEXT NOT NULL,
+          location_area_slug TEXT NOT NULL,
+          encounter_method TEXT NOT NULL,
+          encounter_chance INTEGER,
+          min_level INTEGER,
+          max_level INTEGER,
+          UNIQUE(pokemon_id, game_version, location_name, location_area_slug, encounter_method, encounter_chance, min_level, max_level)
+        )
+      `).run();
+      const copied = db.prepare('INSERT INTO pokemon_encounter_locations SELECT * FROM pokemon_encounter_locations_old').run();
+      db.prepare('DROP TABLE pokemon_encounter_locations_old').run();
+      console.log(`[patchRegionalEncounterLocations] Migrated encounter_chance to nullable, preserved ${copied.changes} existing rows`);
+    } else {
+      console.log(`[patchRegionalEncounterLocations] encounter_chance already nullable, skipping migration`);
+    }
+  });
+  migrateNullableChance();
+
+  const rows = require('./output/regional_encounter_data.json');
+
+  const insert = db.prepare(`
+    INSERT OR IGNORE INTO pokemon_encounter_locations
+      (pokemon_id, game_version, location_name, location_area_slug, encounter_method, encounter_chance, min_level, max_level)
+    VALUES
+      (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  const patch = db.transaction(() => {
+    let inserted = 0;
+    for (const r of rows) {
+      const result = insert.run(
+        r.pokemon_id,
+        r.game_version,
+        r.location_name,
+        r.location_area_slug,
+        r.encounter_method,
+        r.encounter_chance,
+        r.min_level,
+        r.max_level
+      );
+      inserted += result.changes;
+    }
+    return inserted;
+  });
+
+  const inserted = patch();
+  console.log(`[patchRegionalEncounterLocations] Inserted ${inserted} of ${rows.length} rows (duplicates skipped via INSERT OR IGNORE)`);
+}
+
+function patchGen9EncounterLocations(db) {
+  const rows = require('./output/gen9_encounter_data.json');
+
+  const insert = db.prepare(`
+    INSERT OR IGNORE INTO pokemon_encounter_locations
+      (pokemon_id, game_version, location_name, location_area_slug, encounter_method, encounter_chance, min_level, max_level)
+    VALUES
+      (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  const patch = db.transaction(() => {
+    let inserted = 0;
+    for (const r of rows) {
+      const result = insert.run(
+        r.pokemon_id,
+        r.game_version,
+        r.location_name,
+        r.location_area_slug,
+        r.encounter_method,
+        r.encounter_chance,
+        r.min_level,
+        r.max_level
+      );
+      inserted += result.changes;
+    }
+    return inserted;
+  });
+
+  const inserted = patch();
+  console.log(`[patchGen9EncounterLocations] Inserted ${inserted} of ${rows.length} rows (duplicates skipped via INSERT OR IGNORE)`);
+}
+
 function printRowCounts(db) {
   const tables = ['abilities', 'pokemon_abilities', 'pokemon_evolutions'];
   console.log('\n[PatchDb] Row counts:');
@@ -1208,6 +1391,8 @@ async function main() {
   patchEvolutionConditionValues(db);
   deduplicateEncounterLocations(db);
   migrateEncounterLocationsAddUniqueConstraint(db);
+  patchRegionalEncounterLocations(db);
+  patchGen9EncounterLocations(db);
 
   printRowCounts(db);
   db.pragma('wal_checkpoint(TRUNCATE)');

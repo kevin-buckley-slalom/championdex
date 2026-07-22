@@ -172,12 +172,16 @@ export async function getEvolutionChain(pokemonId: number): Promise<EvolutionNod
     return getRootPokemon(predecessor.pokemon_id, depth + 1);
   };
 
-  const buildEvolutionTree = async (id: number, depth: number = 0): Promise<EvolutionNode | null> => {
-    if (depth > 4) return null;
+  const visited = new Set<number>();
+
+  const buildEvolutionTree = async (id: number, depth: number = 0, maxDepth: number = 4): Promise<EvolutionNode | null> => {
+    if (depth > maxDepth) return null;
+    if (visited.has(id)) return null;
+    visited.add(id);
 
     const pokemon = await db.getFirstAsync<any>(
       `SELECT id, national_dex, display_name, primary_type, pokeapi_id FROM pokemon
-       WHERE id = ? AND form_type IN ('default', 'cosmetic', 'alternate', 'regional')`,
+       WHERE id = ?`,
       [id]
     );
 
@@ -186,7 +190,7 @@ export async function getEvolutionChain(pokemonId: number): Promise<EvolutionNod
     const evolutions = await db.getAllAsync<any>(
       `SELECT pe.method, pe.condition_value, pe.evolves_to_id, p.id, p.national_dex, p.display_name, p.primary_type, p.pokeapi_id
        FROM pokemon_evolutions pe
-       JOIN pokemon p ON p.id = pe.evolves_to_id AND p.form_type IN ('default', 'cosmetic', 'alternate', 'regional')
+       JOIN pokemon p ON p.id = pe.evolves_to_id
        WHERE pe.pokemon_id = ?`,
       [id]
     );
@@ -194,7 +198,8 @@ export async function getEvolutionChain(pokemonId: number): Promise<EvolutionNod
     const evolvesTo: EvolutionStep[] = [];
 
     for (const evo of evolutions) {
-      const nextNode = await buildEvolutionTree(evo.evolves_to_id, depth + 1);
+      if (visited.has(evo.evolves_to_id)) continue;
+      const nextNode = await buildEvolutionTree(evo.evolves_to_id, depth + 1, maxDepth);
       if (nextNode) {
         evolvesTo.push({
           method: evo.method,
@@ -214,6 +219,67 @@ export async function getEvolutionChain(pokemonId: number): Promise<EvolutionNod
     };
   };
 
-  const rootId = await getRootPokemon(pokemonId);
-  return buildEvolutionTree(rootId);
+  // Get form_type of the current Pokémon
+  const pokemon = await db.getFirstAsync<{ form_type: string }>(
+    `SELECT form_type FROM pokemon WHERE id = ?`,
+    [pokemonId]
+  );
+
+  let rootId = pokemonId;
+  let cyclicWeb = false;
+
+  if (pokemon) {
+    const formType = pokemon.form_type;
+
+    if (formType === 'mega' || formType === 'gigantamax') {
+      const predecessor = await db.getFirstAsync<{ pokemon_id: number }>(
+        `SELECT pokemon_id FROM pokemon_evolutions
+         WHERE evolves_to_id = ? AND pokemon_id IN (
+           SELECT id FROM pokemon WHERE form_type IN ('default', 'cosmetic', 'alternate', 'regional')
+         )
+         LIMIT 1`,
+        [pokemonId]
+      );
+      rootId = predecessor ? predecessor.pokemon_id : pokemonId;
+    } else if (formType === 'alternate') {
+      const incomingEvolution = await db.getFirstAsync<{ pokemon_id: number }>(
+        `SELECT pokemon_id FROM pokemon_evolutions
+         WHERE evolves_to_id = ? LIMIT 1`,
+        [pokemonId]
+      );
+      if (incomingEvolution) {
+        const backEdge = await db.getFirstAsync<{ id: number }>(
+          `SELECT id FROM pokemon_evolutions
+           WHERE pokemon_id = ? AND evolves_to_id = ? LIMIT 1`,
+          [pokemonId, incomingEvolution.pokemon_id]
+        );
+        if (backEdge) {
+          // Cyclic web (Oricorio, Deoxys) — root at current form, children are leaves only
+          rootId = pokemonId;
+          cyclicWeb = true;
+        } else {
+          // Linear alternate (Aegislash Blade, Terapagos Stellar) — walk to true root
+          rootId = await getRootPokemon(pokemonId);
+        }
+      } else {
+        rootId = await getRootPokemon(pokemonId);
+      }
+    } else {
+      // For default/cosmetic/regional, check if any outgoing evolution points back to us (cyclic web)
+      const outgoingCycleCheck = await db.getFirstAsync<{ id: number }>(
+        `SELECT pe1.id FROM pokemon_evolutions pe1
+         JOIN pokemon_evolutions pe2 ON pe2.pokemon_id = pe1.evolves_to_id AND pe2.evolves_to_id = ?
+         WHERE pe1.pokemon_id = ? LIMIT 1`,
+        [pokemonId, pokemonId]
+      );
+      if (outgoingCycleCheck) {
+        rootId = pokemonId;
+        cyclicWeb = true;
+      } else {
+        rootId = await getRootPokemon(pokemonId);
+      }
+    }
+  }
+
+  return buildEvolutionTree(rootId, 0, cyclicWeb ? 1 : 4);
 }

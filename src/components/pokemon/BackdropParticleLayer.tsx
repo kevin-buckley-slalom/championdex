@@ -33,8 +33,8 @@ interface BackdropParticleLayerProps {
   backdropKey: string;
   heroHeight: number;
   enabled?: boolean;
-  artworkUrl?: string | null;
-  glowArtworkUrl?: string | null;
+  artworkUrl?: string | number | null;
+  glowArtworkUrl?: string | number | null;
 }
 
 const PARTICLE_CONFIGS: Record<string, boolean> = {
@@ -1082,7 +1082,7 @@ const FairyParticles: React.FC<{ heroHeight: number }> = ({ heroHeight }) => {
 
 // ========== MEGA PARTICLES SUB-COMPONENT ==========
 const MegaParticles = React.memo(
-  ({ heroHeight, artworkUrl }: { heroHeight: number; artworkUrl?: string | null }) => {
+  ({ heroHeight, artworkUrl }: { heroHeight: number; artworkUrl?: string | number | null }) => {
     const { width: screenWidth } = useWindowDimensions();
     const [imageReady, setImageReady] = useState(false);
     const [visibleLayerCount, setVisibleLayerCount] = useState(0);
@@ -1091,11 +1091,25 @@ const MegaParticles = React.memo(
     const megaAOp0 = useSharedValue(0), megaAOp1 = useSharedValue(0), megaAOp2 = useSharedValue(0);
     const megaAOp3 = useSharedValue(0), megaAOp4 = useSharedValue(0), megaAOp5 = useSharedValue(0);
 
+    // Convert string URIs or numeric require() to appropriate source format
+    const getImageSource = (url: string | number | null | undefined) => {
+      if (url == null) return null;
+      return typeof url === 'number' ? url : { uri: url };
+    };
+
     useEffect(() => {
       if (!artworkUrl) return;
-      Image.prefetch(artworkUrl)
-        .then(() => setImageReady(true))
-        .catch(() => setImageReady(true));
+      const source = getImageSource(artworkUrl);
+      if (!source) return;
+      if (typeof source === 'number') {
+        // Local require() — mark as immediately ready
+        setImageReady(true);
+      } else {
+        // String URI — prefetch
+        Image.prefetch(source.uri)
+          .then(() => setImageReady(true))
+          .catch(() => setImageReady(true));
+      }
     }, [artworkUrl]);
 
     useEffect(() => {
@@ -1181,6 +1195,9 @@ const MegaParticles = React.memo(
 
     const renderMegaLayer = (layerIdx: number, x1: string, y1: string, x2: string, y2: string, animatedStyle: any) => {
       const maskId = `mgMask${layerIdx}`, gradIdFull = `mgGrad${layerIdx}_g`, filterId = `mgMaskBlur${layerIdx}`;
+      const imageSource = getImageSource(artworkUrl);
+      // SVG href only accepts string URIs, not numeric require() results
+      const hrefValue = typeof imageSource === 'string' ? imageSource : imageSource?.uri ?? '';
       return (
         <Animated.View key={`mega-aura-${layerIdx}`} style={[svgPositionStyle, animatedStyle]} pointerEvents="none">
           <Svg width={SVG_SIZE} height={SVG_SIZE}>
@@ -1201,7 +1218,7 @@ const MegaParticles = React.memo(
                 <FeGaussianBlur stdDeviation="32" />
               </Filter>
               <Mask id={maskId}>
-                <SvgImage href={artworkUrl} x={cx - (ARTWORK_SIZE * 1.08) / 2} y={cy - (ARTWORK_SIZE * 1.08) / 2} width={ARTWORK_SIZE * 1.08} height={ARTWORK_SIZE * 1.08} preserveAspectRatio="xMidYMid meet" filter={`url(#${filterId})`} />
+                <SvgImage href={hrefValue} x={cx - (ARTWORK_SIZE * 1.08) / 2} y={cy - (ARTWORK_SIZE * 1.08) / 2} width={ARTWORK_SIZE * 1.08} height={ARTWORK_SIZE * 1.08} preserveAspectRatio="xMidYMid meet" filter={`url(#${filterId})`} />
               </Mask>
             </Defs>
             <Rect x={0} y={0} width={SVG_SIZE} height={SVG_SIZE} fill={`url(#${gradIdFull})`} mask={`url(#${maskId})`} opacity={1} />
@@ -1213,7 +1230,7 @@ const MegaParticles = React.memo(
     return (
       <Animated.View style={[StyleSheet.absoluteFill, megaGradRotStyle]} pointerEvents="none">
         <View style={shadowStyle} pointerEvents="none">
-          <Image source={{ uri: artworkUrl }} style={{ flex: 1, width: '100%', height: '100%' }} contentFit="contain" tintColor="#1a1a2e" cachePolicy="memory-disk" />
+          <Image source={getImageSource(artworkUrl)!} style={{ flex: 1, width: '100%', height: '100%' }} contentFit="contain" tintColor="#1a1a2e" cachePolicy="memory-disk" />
         </View>
         {visibleLayerCount > 0 && renderMegaLayer(0, '0', '0.5', '1', '0.5', megaAStyle0)}
         {visibleLayerCount > 1 && renderMegaLayer(1, '0', '1', '1', '0', megaAStyle1)}
@@ -1222,7 +1239,7 @@ const MegaParticles = React.memo(
         {visibleLayerCount > 4 && renderMegaLayer(4, '1', '0', '0', '1', megaAStyle4)}
         {visibleLayerCount > 5 && renderMegaLayer(5, '1', '1', '0', '0', megaAStyle5)}
         <View style={{ position: 'absolute', width: ARTWORK_SIZE * 1.015, height: ARTWORK_SIZE * 1.015, alignSelf: 'center', top: '50%', marginTop: -(ARTWORK_SIZE * 1.015) / 2 }} pointerEvents="none">
-          <Image source={{ uri: artworkUrl }} style={{ flex: 1, width: '100%', height: '100%' }} contentFit="contain" tintColor="rgba(0,0,0,0.85)" cachePolicy="memory-disk" />
+          <Image source={getImageSource(artworkUrl)!} style={{ flex: 1, width: '100%', height: '100%' }} contentFit="contain" tintColor="rgba(0,0,0,0.85)" cachePolicy="memory-disk" />
         </View>
       </Animated.View>
     );

@@ -8,6 +8,7 @@ import { useEvolutionChain } from '@/hooks/queries/useEvolutionChain';
 import { formatSlug } from '@/utils/pokemonUtils';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EvolutionNode, EvolutionStep } from '@/services/database/pokemonSpeciesRepository';
+import { getHomeRenderUrl } from '@/services/prefetch/artworkPrefetchService';
 
 interface EvolutionChainProps {
   pokemonId: number;
@@ -203,6 +204,7 @@ const ChainNode = React.memo<ChainNodeProps>(({
         arrowWidth={arrowWidth}
         containerWidth={containerWidth}
         branchDepth={branchDepth}
+        maxPerRow={node.evolvesTo.length === 5 ? 5 : 4}
         onPokemonPress={onPokemonPress}
       />
     </View>
@@ -218,6 +220,7 @@ interface BranchConnectorProps {
   containerWidth: number;
   parentCenterX?: number;
   branchDepth?: number;
+  maxPerRow?: number;
   onPokemonPress: (pokemonId: number) => void;
 }
 
@@ -230,10 +233,11 @@ const BranchConnector = React.memo<BranchConnectorProps>(({
   containerWidth,
   parentCenterX,
   branchDepth = 0,
+  maxPerRow = 4,
   onPokemonPress,
 }) => {
   const CONNECTOR_HEIGHT = 24;
-  const MAX_PER_ROW = 4;
+  const MAX_PER_ROW = maxPerRow;
 
   // Keep branchCount and slotWidth for sub-chain rendering (lines ~286+)
   const branchCount = branches.length;
@@ -408,9 +412,10 @@ const PokemonNode: React.FC<PokemonNodeProps> = ({
 
         {/* Artwork */}
         <Image
-          source={{
-            uri: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pokemon.pokeApiId}.png`,
-          }}
+          source={(() => {
+            const src = getHomeRenderUrl(pokemon.pokeApiId, pokemon.pokemonId);
+            return typeof src === 'number' ? src : { uri: src };
+          })()}
           style={[styles.artwork, { width: discSize, height: discSize }]}
           contentFit="contain"
           cachePolicy="memory-disk"
@@ -531,13 +536,16 @@ function formatMethod(method: string, conditionValue: string | null): string {
   if (method === 'tower-of-waters') return 'Tower of Waters';
   if (method === 'three-critical-hits') return '3 Critical Hits';
   if (method === 'take-damage') return 'Take 49+ Damage, Dusty Bowl Arch';
-  if (method === 'other' && conditionValue) return `Lv. ${conditionValue} (1% three-member)`;
+  if (method === 'other' && conditionValue) return conditionValue;
+  if (method === 'battle') return conditionValue ?? 'Battle';
   if (method === 'agile-style-move') return conditionValue ? `Agile Style: ${formatSlug(conditionValue)}` : 'Agile Style Move';
   if (method === 'strong-style-move') return conditionValue ? `Lv. 20 w/ ${conditionValue}` : 'Strong Style Move';
   if (method === 'recoil-damage') return '294 Recoil Damage + Lv. Up';
   if (method === 'use-move') return conditionValue ? `Use ${formatSlug(conditionValue)} ×20` : 'Use Move ×20';
   if (method === 'three-defeated-bisharp') return "Defeat 3 Leader's Crest Bisharp";
   if (method === 'gimmighoul-coins') return '999 Coins + Lv. Up';
+  if (method === 'know-move') return conditionValue ? `Know ${formatSlug(conditionValue)}` : 'Know Move';
+  if (method === 'primal-reversion') return conditionValue ? formatSlug(conditionValue) : 'Primal Reversion';
   return conditionValue ? formatSlug(conditionValue) : 'Evolution';
 }
 

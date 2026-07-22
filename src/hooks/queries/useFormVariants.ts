@@ -3,13 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 interface CosmeticAlternate {
   id: string;
   name: string;
-  spriteUrl: string;
+  spriteUrl: string | number;
 }
 
 interface TypeVariant {
   id: string;
   name: string;
-  spriteUrl: string;
+  spriteUrl: string | number;
   typePrimary: string;
   typeSecondary?: string;
 }
@@ -25,7 +25,7 @@ export function useFormVariants(nationalDex: number): {
   isLoading: boolean;
 } {
   const query = useQuery({
-    queryKey: ['pokemon', 'form-variants', 'v5', nationalDex],
+    queryKey: ['pokemon', 'form-variants', 'v6', nationalDex],
     queryFn: (): FormVariants => {
       const { Dex } = require('@pkmn/dex');
 
@@ -63,6 +63,11 @@ export function useFormVariants(nationalDex: number): {
         ['alcremierubyswirl',     'ruby-swirl-strawberry-sweet'],
         ['alcremiecaramelswirl',  'caramel-swirl-strawberry-sweet'],
         ['alcremierainbowswirl',  'rainbow-swirl-strawberry-sweet'],
+      ]);
+
+      const FORM_LOCAL_ASSETS = new Map<string, any>([
+        ['burmysandy', require('@assets/images/sprites/burmy-sandy.webp')],
+        ['burmytrash', require('@assets/images/sprites/burmy-trash.webp')],
       ]);
 
       // Cosmetic alternates: species that are in FORM_EXCLUSION_SET
@@ -120,9 +125,12 @@ export function useFormVariants(nationalDex: number): {
         if (species.isNonstandard === 'CAP' || species.isNonstandard === 'Future' || species.isNonstandard === 'Custom') continue;
         if (!species.exists) continue;
 
+        const localAsset = FORM_LOCAL_ASSETS.get(species.id);
         const pokeApiId = FORM_POKEAPI_IDS.get(species.id);
-        let spriteUrl: string;
-        if (pokeApiId !== undefined) {
+        let spriteUrl: string | number;
+        if (localAsset !== undefined) {
+          spriteUrl = localAsset;
+        } else if (pokeApiId !== undefined) {
           spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pokeApiId}.png`;
         } else {
           const slugOverride = FORM_SLUG_OVERRIDES.get(species.id);

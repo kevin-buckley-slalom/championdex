@@ -5,7 +5,7 @@ export interface EncounterLocation {
   locationName: string;
   locationAreaSlug: string;
   encounterMethod: string;
-  encounterChance: number;
+  encounterChance: number | null;
   minLevel: number | null;
   maxLevel: number | null;
 }
@@ -20,7 +20,7 @@ export function useEncounterLocations(pokemonId: number, gameVersion: string | n
         location_name: string;
         location_area_slug: string;
         encounter_method: string;
-        encounter_chance: number;
+        encounter_chance: number | null;
         min_level: number | null;
         max_level: number | null;
       }>(
@@ -55,7 +55,7 @@ export function useEncounterGameVersions(pokemonId: number) {
       const db = await getDatabase();
       const rows = await db.getAllAsync<{ game_version: string }>(
         `SELECT DISTINCT game_version FROM pokemon_encounter_locations
-         WHERE pokemon_id = ? AND encounter_chance > 0
+         WHERE pokemon_id = ?
          ORDER BY game_version`,
         [pokemonId]
       );

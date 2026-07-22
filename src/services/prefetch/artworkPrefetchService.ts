@@ -21,16 +21,36 @@ const BATCH_SIZE = 10;
 const BASE_URL = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home';
 
 /**
+ * Map of DB pokemon ids to local artwork assets for forms without PokeAPI home renders.
+ * Keyed by DB pokemon id (not pokeapi_id).
+ */
+const LOCAL_ARTWORK_OVERRIDES = new Map<number, number>([
+  [527, require('@assets/images/sprites/burmy-sandy.webp')],
+  [528, require('@assets/images/sprites/burmy-trash.webp')],
+]);
+
+const LOCAL_SHINY_OVERRIDES = new Map<number, number>([
+  [527, require('@assets/images/sprites/burmy-sandy-shiny.webp')],
+  [528, require('@assets/images/sprites/burmy-trash-shiny.webp')],
+]);
+
+/**
  * Get the normal (non-shiny) home render URL for a Pokémon
  */
-export function getHomeRenderUrl(dex: number): string {
+export function getHomeRenderUrl(dex: number, pokemonId?: number): string | number {
+  if (pokemonId !== undefined && LOCAL_ARTWORK_OVERRIDES.has(pokemonId)) {
+    return LOCAL_ARTWORK_OVERRIDES.get(pokemonId)!;
+  }
   return `${BASE_URL}/${dex}.png`;
 }
 
 /**
  * Get the shiny home render URL for a Pokémon
  */
-export function getShinyHomeRenderUrl(dex: number): string {
+export function getShinyHomeRenderUrl(dex: number, pokemonId?: number): string | number {
+  if (pokemonId !== undefined && LOCAL_SHINY_OVERRIDES.has(pokemonId)) {
+    return LOCAL_SHINY_OVERRIDES.get(pokemonId)!;
+  }
   return `${BASE_URL}/shiny/${dex}.png`;
 }
 

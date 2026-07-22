@@ -2,7 +2,7 @@ import * as SQLite from 'expo-sqlite';
 import { seedDatabase } from './seedDatabase';
 import { copyBundledDbIfNeeded, overwriteBundledDb } from './bundledDbService';
 
-const BUNDLED_DATA_VERSION = '1.28.0';
+const BUNDLED_DATA_VERSION = '1.33.0';
 
 async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
 
@@ -133,7 +133,7 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       location_name TEXT NOT NULL,
       location_area_slug TEXT NOT NULL,
       encounter_method TEXT NOT NULL,
-      encounter_chance INTEGER NOT NULL,
+      encounter_chance INTEGER,
       min_level INTEGER,
       max_level INTEGER
     );
@@ -476,7 +476,7 @@ async function _initializeDatabase(): Promise<void> {
         location_name TEXT NOT NULL,
         location_area_slug TEXT NOT NULL,
         encounter_method TEXT NOT NULL,
-        encounter_chance INTEGER NOT NULL,
+        encounter_chance INTEGER,
         min_level INTEGER,
         max_level INTEGER
       );

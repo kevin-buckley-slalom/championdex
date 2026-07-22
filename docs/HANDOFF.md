@@ -1,5 +1,5 @@
 # ChampionDex — Session Handoff Notes
-**Updated:** 2026-07-22 | DB v1.28.0 committed. Phase 5 data gap remediation complete and device-verified. Remaining deferred items: Burmy Sandy/Trash sprites (no PokeAPI sprites exist — manual source needed), Z-A mega move data (~5 forms, blocked until PokeAPI updates), regional encounter locations for Hisuian/Paldean forms (PokeAPI returns empty — correct empty state shown).
+**Updated:** 2026-07-22 | DB v1.33.0 device-verified ✅. This session: Gen 9 default encounter locations complete — 477 records across 108 default-form Gen 9 Pokémon, device-verified. Full data gap audit run; all 235 flagged forms are expected/accounted for (megas/GMax inherit from base, alternates share encounters, 24 default forms are legitimately no-encounter). Pre-production review documented in PHASE_5_DATA_GAP_SPEC.md §6. Phase 5 data gap remediation fully complete. DB commit pending explicit user approval.
 
 ---
 
@@ -105,8 +105,8 @@ app/_layout.tsx → initializeDatabase()  [blocks render, single promise guard p
 - Orphan index errors are caught early and trigger automatic recovery
 
 **Version constants:**
-- `DATA_VERSION = '1.28.0'` — Phase 5 complete; all regional/alternate/female form Pokédex entries seeded; evolution condition_values filled; encounter duplicate constraint added
-- `BUNDLED_DATA_VERSION = '1.28.0'` — tracks bundled DB installation; triggers version-check overwrite on mismatch
+- `DATA_VERSION = '1.32.0'` — alternate/form-transform evolution rows complete; Aegislash Blade via Doublade; all form transformation chains seeded
+- `BUNDLED_DATA_VERSION = '1.32.0'` — tracks bundled DB installation; triggers version-check overwrite on mismatch
 - `ENRICH_VERSION = '1.2.0'` — independent; only bump if PokeAPI data needs re-fetch
 
 **Critical constraint:** ALL network calls must happen BEFORE `withTransactionAsync`.
@@ -505,14 +505,37 @@ scripts/
 
 ### Data Gap Remediation Status (2026-07-22)
 
-Phase 5 complete. All Pokédex entries, evolution chains, and encounter data gaps addressed. See `docs/PHASE_5_DATA_GAP_SPEC.md` for full detail. DB v1.28.0 device-verified.
-
+Phase 5 complete. All Pokédex entries, evolution chains, encounter data gaps, and sprite gaps addressed. Z-A mega move data is deferred (blocked on PokeAPI — 18 of 44 base forms have no Champions data yet). Full audit run 2026-07-22; all 235 flagged forms are expected and accounted for. Pre-production review checklist in `docs/PHASE_5_DATA_GAP_SPEC.md` §6c. See that doc for full detail.
 
 **Current status (2026-07-22):**
-- Phase 5 data gap remediation complete and device-verified
-- `assets/db/championdex.db` at v1.28.0 — **awaiting commit approval**
-- `DATA_VERSION` and `BUNDLED_DATA_VERSION` at `'1.28.0'`
+- `assets/db/championdex.db` at v1.33.0 — **device-verified ✅ — awaiting commit approval**
+- `BUNDLED_DATA_VERSION` in `initializeDatabase.ts` set to `'1.33.0'`
+- `data_version` in DB sync_metadata set to `1.33.0`
+- Gen 9 encounter data: `scripts/output/gen9_encounter_data.json` is the permanent record (477 rows, 108 default-form IDs)
+- All code changes uncommitted; DB not staged
 
+**What was completed this session (DB v1.32.0 → v1.33.0):**
+- **Gen 9 default encounter locations**: 477 rows inserted via `patchGen9EncounterLocations` in `patchBundledDb.js`, covering 100 actionable forms (108 default-form IDs, some with multiple locations/versions). Sourced from Bulbapedia. No-encounter list corrected: 12 forms (added Archaludon — evolution only, not 11). Full form-by-form tracking list in `docs/PHASE_5_DATA_GAP_SPEC.md` §2b — all ✅.
+
+**What was completed previous session (DB v1.28.0 → v1.32.0):**
+- Regional encounter locations: 29 rows across 21 forms, Bulbapedia-sourced, `scripts/output/regional_encounter_data.json` as permanent record
+- `encounter_chance` column made nullable in DB + `initializeDatabase.ts` schema (both CREATE TABLE blocks)
+- `EncounterLocationsSection.tsx`: regional forms now query their own `pokemonId` directly (not base form fallback)
+- `useEncounterLocations.ts`: `encounterChance` type is now `number | null`; version query no longer filters on `encounter_chance > 0`
+- Darmanitan Zen evolution rows: `701→702` and `703→704`, method=`battle`, condition=`Zen Mode`
+- Audit script: `knownNoEvolution` set eliminates ~151 evolution_chain false positives; `knownNoEncounterRegional` set eliminates 5 regional encounter false positives
+- **Alternate/form-transform evolution rows: 58 new rows** (full detail in PHASE_5_DATA_GAP_SPEC.md §4c):
+  - ALTERNATE_EVOLUTIONS (12 rows): Burmy Sandy/Trash → cloak-matched Wormadam + Mothim, Kyurem fusions, Pumpkaboo size-matched, Calyrex riders, Gimmighoul Roaming
+  - FORM_TRANSFORMATIONS (46 rows): Shaymin, Forces of Nature, Keldeo, Meloetta, Ash-Greninja, Aegislash (Doublade→Blade), Hoopa, Oricorio (12 nectar pairs), Terapagos chain, Eternamax, Deoxys (12 Meteorite pairs), Rotom (5 appliances), Dialga/Palkia/Giratina Origin
+- **EvolutionChain UI overhauled** (`pokemonSpeciesRepository.ts`, `EvolutionChain.tsx`, `useEvolutionChain.ts`):
+  - Mega/GMax: roots at direct predecessor — shows predecessor→form only (not full base tree)
+  - Cyclic-web detection via SQL back-edge check — covers both `alternate` and `default` form_types; roots at current form with `maxDepth=1`; current form on top row, other forms as leaves below
+  - Linear alternates (Aegislash Blade, Terapagos Stellar, Ash-Greninja): walk to true chain root via `getRootPokemon`
+  - `BranchConnector` accepts `maxPerRow` prop; passed as 5 when branch count === 5 (Rotom — all appliances in one row)
+  - `formatMethod`: `other` returns conditionValue directly (fixes Kyurem/Calyrex); `battle` returns `conditionValue ?? 'Battle'` (fixes Terapagos); added `know-move`, `primal-reversion` cases
+  - React Query cache key bumped to `v2`
+
+**What was completed in Phase 5 (DB v1.27.x → v1.28.0):**
 **What was completed in Phase 5 (DB v1.27.x → v1.28.0):**
 - Pokédex entries: all 58 regional forms ✅, all 76 alternate forms ✅, all 6 cosmetic female forms ✅ (female-specific text for Meowstic, Indeedee, Basculegion, Oinkologne)
 - Evolution chain display: regional forms now included in chain (form_type filter expanded to include 'regional')
@@ -522,12 +545,11 @@ Phase 5 complete. All Pokédex entries, evolution chains, and encounter data gap
 - Encounter location duplicates: 3,852 duplicate rows removed; UNIQUE constraint added to pokemon_encounter_locations table
 - Generation filter: 11 missing game version slugs added to GAME_GENERATION_MAP (Crown Tundra, Isle of Armor DLC → Gen VIII; Teal Mask, Indigo Disk DLC → Gen IX; Japan originals → Gen I) — "Other" bucket now unreachable
 
-**Remaining deferred items:**
-- Burmy Sandy/Trash sprites — no PokeAPI home sprites exist; shows Plant-form fallback
-- Z-A mega move data — ~5 forms blocked until PokeAPI updates
-- Regional encounter locations — Hisuian/Paldean forms return empty from PokeAPI; correct empty state shown
-- Evolution chain: Galarian Darmanitan Zen mode battle-form row still needs insertion (pokemon_evolutions id=703→704)
-- Audit script false positive fix — single-stage Pokémon still flagged by auditPokemonData.js
+**Remaining deferred items (priority order):**
+1. **Z-A mega move data** — audited 2026-07-22. 26 of 44 base forms already have Champions data in DB. 18 base forms have 0 Champions moves in PokeAPI (not in Champions mode or data not yet added). UI falls back to base form moves for megas with 0 PokeAPI moves — acceptable. Full audit + methodology in `docs/PHASE_5_DATA_GAP_SPEC.md` §3d. Re-check trigger: PokeAPI adds Champions data for the 18 missing base forms.
+2. **Full-roster Champions audit** — future pass across all ~1,000 default-form Pokémon to catch any that gained Champions data in PokeAPI since the DB was generated. Query + methodology in `docs/PHASE_5_DATA_GAP_SPEC.md` §3e.
+
+All other Phase 5 data gaps are resolved. See `docs/PHASE_5_DATA_GAP_SPEC.md` for full detail.
 
 ---
 
@@ -537,8 +559,8 @@ app/
 
 src/
   services/database/
-    initializeDatabase.ts             — schema + migrations; BUNDLED_DATA_VERSION 1.28.0
-    seedDatabase.ts                   — DATA_VERSION 1.28.0 / ENRICH_VERSION 1.2.0; 2-phase seed
+    initializeDatabase.ts             — schema + migrations; BUNDLED_DATA_VERSION 1.33.0
+    seedDatabase.ts                   — DATA_VERSION 1.32.0 / ENRICH_VERSION 1.2.0; 2-phase seed
   components/pokemon/
     PokemonHero.tsx                   — parallax hero, shiny toggle, VitalInfoBorder, particle burst
     InfoStrip.tsx                     — 4-column info row (height/weight/gen/gender), legendary/mythical badge
@@ -557,10 +579,11 @@ src/
   hooks/queries/
     useEncounterLocations.ts          — useEncounterLocations(pokemonId, gameVersion) + useEncounterGameVersions(pokemonId)
   services/prefetch/
-    artworkPrefetchService.ts         — bulk artwork prefetch; fire-and-forget; checkpoint resume
+    artworkPrefetchService.ts         — bulk artwork prefetch; fire-and-forget; checkpoint resume; LOCAL_ARTWORK_OVERRIDES + LOCAL_SHINY_OVERRIDES maps for forms without PokeAPI home sprites (currently Burmy Sandy id=527, Burmy Trash id=528); getHomeRenderUrl/getShinyHomeRenderUrl return string|number
 
 assets/
   images/backdrops/                   — 25 type + special backdrop PNGs (moved from existing-assets/ 2026-07-15)
+  images/sprites/                     — local sprite overrides: burmy-sandy.webp, burmy-sandy-shiny.webp, burmy-trash.webp, burmy-trash-shiny.webp (sourced from pokepc.net)
   icons/types/                        — 18 type icon PNGs
 
 docs/

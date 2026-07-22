@@ -73,10 +73,12 @@ export default function PokedexScreen() {
           staleTime: Infinity,
         });
 
-        const cached = queryClient.getQueryData<{ pokeApiId?: number }>(['pokemon', 'detail', pokemonId]);
+        const cached = queryClient.getQueryData<{ pokeApiId?: number; id?: number }>(['pokemon', 'detail', pokemonId]);
         if (cached?.pokeApiId) {
-          const artworkUrl = getHomeRenderUrl(cached.pokeApiId);
-          await Image.prefetch(artworkUrl);
+          const artworkUrl = getHomeRenderUrl(cached.pokeApiId, cached.id);
+          if (typeof artworkUrl === 'string') {
+            await Image.prefetch(artworkUrl);
+          }
         }
       } catch (error) {
         console.warn('[Pokedex] Prefetch error:', error);

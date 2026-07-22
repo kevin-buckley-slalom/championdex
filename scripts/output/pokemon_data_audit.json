@@ -1,19 +1,19 @@
 {
-  "generated": "2026-07-21T19:31:01.471Z",
+  "generated": "2026-07-22T20:12:51.536Z",
   "db_path": "/Users/kevin.buckley/Library/CloudStorage/OneDrive-Slalom/Documents/Projects/championdex/assets/db/championdex.db",
   "total_forms": 1294,
-  "forms_with_issues": 516,
-  "forms_clean": 778,
+  "forms_with_issues": 235,
+  "forms_clean": 1059,
   "issues_by_category": {
     "stats": 0,
     "height_weight": 0,
     "species_classification": 0,
     "gender_rate": 0,
     "abilities": 0,
-    "moves": 138,
-    "pokedex_entries": 271,
-    "encounter_locations": 371,
-    "evolution_chain": 202,
+    "moves": 131,
+    "pokedex_entries": 131,
+    "encounter_locations": 235,
+    "evolution_chain": 0,
     "pokeapi_id": 0
   },
   "forms": [
@@ -258,38 +258,6 @@
       ]
     },
     {
-      "id": 30,
-      "national_dex": 19,
-      "name": "rattataalola",
-      "display_name": "Alolan Rattata",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 32,
-      "national_dex": 20,
-      "name": "raticatealola",
-      "display_name": "Alolan Raticate",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
       "id": 38,
       "national_dex": 25,
       "name": "pikachugmax",
@@ -310,22 +278,6 @@
         {
           "field": "encounter_locations",
           "reason": "Gigantamax forms share species data with base; no separate PokeAPI species entry"
-        }
-      ]
-    },
-    {
-      "id": 40,
-      "national_dex": 26,
-      "name": "raichualola",
-      "display_name": "Alolan Raichu",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
         }
       ]
     },
@@ -378,86 +330,6 @@
       ]
     },
     {
-      "id": 44,
-      "national_dex": 27,
-      "name": "sandshrewalola",
-      "display_name": "Alolan Sandshrew",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 46,
-      "national_dex": 28,
-      "name": "sandslashalola",
-      "display_name": "Alolan Sandslash",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 47,
-      "national_dex": 29,
-      "name": "nidoranf",
-      "display_name": "Nidoran ♀",
-      "form_type": "cosmetic",
-      "generation": 1,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "moves",
-          "reason": "Cosmetic form — no independent move data expected"
-        },
-        {
-          "field": "pokedex_entries",
-          "reason": "Cosmetic form — no independent data expected"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Cosmetic form — no independent data expected"
-        }
-      ]
-    },
-    {
-      "id": 50,
-      "national_dex": 32,
-      "name": "nidoranm",
-      "display_name": "Nidoran ♂",
-      "form_type": "cosmetic",
-      "generation": 1,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "moves",
-          "reason": "Cosmetic form — no independent move data expected"
-        },
-        {
-          "field": "pokedex_entries",
-          "reason": "Cosmetic form — no independent data expected"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Cosmetic form — no independent data expected"
-        }
-      ]
-    },
-    {
       "id": 55,
       "national_dex": 36,
       "name": "clefablemega",
@@ -482,106 +354,6 @@
       ]
     },
     {
-      "id": 57,
-      "national_dex": 37,
-      "name": "vulpixalola",
-      "display_name": "Alolan Vulpix",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 59,
-      "national_dex": 38,
-      "name": "ninetalesalola",
-      "display_name": "Alolan Ninetales",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 72,
-      "national_dex": 50,
-      "name": "diglettalola",
-      "display_name": "Alolan Diglett",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 74,
-      "national_dex": 51,
-      "name": "dugtrioalola",
-      "display_name": "Alolan Dugtrio",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 76,
-      "national_dex": 52,
-      "name": "meowthalola",
-      "display_name": "Alolan Meowth",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 77,
-      "national_dex": 52,
-      "name": "meowthgalar",
-      "display_name": "Galarian Meowth",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
       "id": 78,
       "national_dex": 52,
       "name": "meowthgmax",
@@ -602,62 +374,6 @@
         {
           "field": "encounter_locations",
           "reason": "Gigantamax forms share species data with base; no separate PokeAPI species entry"
-        }
-      ]
-    },
-    {
-      "id": 80,
-      "national_dex": 53,
-      "name": "persianalola",
-      "display_name": "Alolan Persian",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 86,
-      "national_dex": 58,
-      "name": "growlithehisui",
-      "display_name": "Hisuian Growlithe",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 88,
-      "national_dex": 59,
-      "name": "arcaninehisui",
-      "display_name": "Hisuian Arcanine",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
         }
       ]
     },
@@ -734,106 +450,6 @@
       ]
     },
     {
-      "id": 107,
-      "national_dex": 74,
-      "name": "geodudealola",
-      "display_name": "Alolan Geodude",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 109,
-      "national_dex": 75,
-      "name": "graveleralola",
-      "display_name": "Alolan Graveler",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 111,
-      "national_dex": 76,
-      "name": "golemalola",
-      "display_name": "Alolan Golem",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 113,
-      "national_dex": 77,
-      "name": "ponytagalar",
-      "display_name": "Galarian Ponyta",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 115,
-      "national_dex": 78,
-      "name": "rapidashgalar",
-      "display_name": "Galarian Rapidash",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 117,
-      "national_dex": 79,
-      "name": "slowpokegalar",
-      "display_name": "Galarian Slowpoke",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
       "id": 119,
       "national_dex": 80,
       "name": "slowbromega",
@@ -854,78 +470,6 @@
         {
           "field": "encounter_locations",
           "reason": "Mega evolutions inherit species data from base form; PokeAPI does not provide separate flavor text or encounter data for megas"
-        }
-      ]
-    },
-    {
-      "id": 120,
-      "national_dex": 80,
-      "name": "slowbrogalar",
-      "display_name": "Galarian Slowbro",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 124,
-      "national_dex": 83,
-      "name": "farfetchdgalar",
-      "display_name": "Galarian Farfetch’d",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 130,
-      "national_dex": 88,
-      "name": "grimeralola",
-      "display_name": "Alolan Grimer",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 132,
-      "national_dex": 89,
-      "name": "mukalola",
-      "display_name": "Alolan Muk",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
         }
       ]
     },
@@ -1002,94 +546,6 @@
       ]
     },
     {
-      "id": 147,
-      "national_dex": 100,
-      "name": "voltorbhisui",
-      "display_name": "Hisuian Voltorb",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 149,
-      "national_dex": 101,
-      "name": "electrodehisui",
-      "display_name": "Hisuian Electrode",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 152,
-      "national_dex": 103,
-      "name": "exeggutoralola",
-      "display_name": "Alolan Exeggutor",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 155,
-      "national_dex": 105,
-      "name": "marowakalola",
-      "display_name": "Alolan Marowak",
-      "form_type": "regional",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 161,
-      "national_dex": 110,
-      "name": "weezinggalar",
-      "display_name": "Galarian Weezing",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
       "id": 167,
       "national_dex": 115,
       "name": "kangaskhanmega",
@@ -1138,22 +594,6 @@
       ]
     },
     {
-      "id": 176,
-      "national_dex": 122,
-      "name": "mrmimegalar",
-      "display_name": "Galarian Mr. Mime",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
       "id": 182,
       "national_dex": 127,
       "name": "pinsirmega",
@@ -1174,94 +614,6 @@
         {
           "field": "encounter_locations",
           "reason": "Mega evolutions inherit species data from base form; PokeAPI does not provide separate flavor text or encounter data for megas"
-        }
-      ]
-    },
-    {
-      "id": 183,
-      "national_dex": 128,
-      "name": "tauros",
-      "display_name": "Tauros",
-      "form_type": "default",
-      "generation": 1,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 184,
-      "national_dex": 128,
-      "name": "taurospaldeacombat",
-      "display_name": "Paldean Tauros",
-      "form_type": "regional",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment; Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 185,
-      "national_dex": 128,
-      "name": "taurospaldeablaze",
-      "display_name": "Paldean Tauros",
-      "form_type": "regional",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment; Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 186,
-      "national_dex": 128,
-      "name": "taurospaldeaaqua",
-      "display_name": "Paldean Tauros",
-      "form_type": "regional",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment; Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -1310,22 +662,6 @@
         {
           "field": "encounter_locations",
           "reason": "Gigantamax forms share species data with base; no separate PokeAPI species entry"
-        }
-      ]
-    },
-    {
-      "id": 192,
-      "national_dex": 132,
-      "name": "ditto",
-      "display_name": "Ditto",
-      "form_type": "default",
-      "generation": 1,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -1398,114 +734,6 @@
         {
           "field": "encounter_locations",
           "reason": "Gigantamax forms share species data with base; no separate PokeAPI species entry"
-        }
-      ]
-    },
-    {
-      "id": 207,
-      "national_dex": 144,
-      "name": "articuno",
-      "display_name": "Articuno",
-      "form_type": "default",
-      "generation": 1,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 208,
-      "national_dex": 144,
-      "name": "articunogalar",
-      "display_name": "Galarian Articuno",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 209,
-      "national_dex": 145,
-      "name": "zapdos",
-      "display_name": "Zapdos",
-      "form_type": "default",
-      "generation": 1,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 210,
-      "national_dex": 145,
-      "name": "zapdosgalar",
-      "display_name": "Galarian Zapdos",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 211,
-      "national_dex": 146,
-      "name": "moltres",
-      "display_name": "Moltres",
-      "form_type": "default",
-      "generation": 1,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 212,
-      "national_dex": 146,
-      "name": "moltresgalar",
-      "display_name": "Galarian Moltres",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -1606,26 +834,6 @@
       ]
     },
     {
-      "id": 228,
-      "national_dex": 157,
-      "name": "typhlosionhisui",
-      "display_name": "Hisuian Typhlosion",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
       "id": 232,
       "national_dex": 160,
       "name": "feraligatrmega",
@@ -1674,66 +882,6 @@
       ]
     },
     {
-      "id": 268,
-      "national_dex": 194,
-      "name": "wooperpaldea",
-      "display_name": "Paldean Wooper",
-      "form_type": "regional",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment; Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 274,
-      "national_dex": 199,
-      "name": "slowkinggalar",
-      "display_name": "Galarian Slowking",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 276,
-      "national_dex": 201,
-      "name": "unown",
-      "display_name": "Unown",
-      "form_type": "default",
-      "generation": 2,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "moves",
-          "reason": "Unknown — needs investigation"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 284,
       "national_dex": 208,
       "name": "steelixmega",
@@ -1754,26 +902,6 @@
         {
           "field": "encounter_locations",
           "reason": "Mega evolutions inherit species data from base form; PokeAPI does not provide separate flavor text or encounter data for megas"
-        }
-      ]
-    },
-    {
-      "id": 288,
-      "national_dex": 211,
-      "name": "qwilfishhisui",
-      "display_name": "Hisuian Qwilfish",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
         }
       ]
     },
@@ -1802,22 +930,6 @@
       ]
     },
     {
-      "id": 291,
-      "national_dex": 213,
-      "name": "shuckle",
-      "display_name": "Shuckle",
-      "form_type": "default",
-      "generation": 2,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 293,
       "national_dex": 214,
       "name": "heracrossmega",
@@ -1838,58 +950,6 @@
         {
           "field": "encounter_locations",
           "reason": "Mega evolutions inherit species data from base form; PokeAPI does not provide separate flavor text or encounter data for megas"
-        }
-      ]
-    },
-    {
-      "id": 295,
-      "national_dex": 215,
-      "name": "sneaselhisui",
-      "display_name": "Hisuian Sneasel",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 303,
-      "national_dex": 222,
-      "name": "corsolagalar",
-      "display_name": "Galarian Corsola",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 306,
-      "national_dex": 225,
-      "name": "delibird",
-      "display_name": "Delibird",
-      "form_type": "default",
-      "generation": 2,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -1942,86 +1002,6 @@
       ]
     },
     {
-      "id": 318,
-      "national_dex": 235,
-      "name": "smeargle",
-      "display_name": "Smeargle",
-      "form_type": "default",
-      "generation": 2,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 324,
-      "national_dex": 241,
-      "name": "miltank",
-      "display_name": "Miltank",
-      "form_type": "default",
-      "generation": 2,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 326,
-      "national_dex": 243,
-      "name": "raikou",
-      "display_name": "Raikou",
-      "form_type": "default",
-      "generation": 2,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 327,
-      "national_dex": 244,
-      "name": "entei",
-      "display_name": "Entei",
-      "form_type": "default",
-      "generation": 2,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 328,
-      "national_dex": 245,
-      "name": "suicune",
-      "display_name": "Suicune",
-      "form_type": "default",
-      "generation": 2,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 332,
       "national_dex": 248,
       "name": "tyranitarmega",
@@ -2042,38 +1022,6 @@
         {
           "field": "encounter_locations",
           "reason": "Mega evolutions inherit species data from base form; PokeAPI does not provide separate flavor text or encounter data for megas"
-        }
-      ]
-    },
-    {
-      "id": 333,
-      "national_dex": 249,
-      "name": "lugia",
-      "display_name": "Lugia",
-      "form_type": "default",
-      "generation": 2,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 334,
-      "national_dex": 250,
-      "name": "hooh",
-      "display_name": "Ho-Oh",
-      "form_type": "default",
-      "generation": 2,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -2146,38 +1094,6 @@
         {
           "field": "encounter_locations",
           "reason": "Mega evolutions inherit species data from base form; PokeAPI does not provide separate flavor text or encounter data for megas"
-        }
-      ]
-    },
-    {
-      "id": 351,
-      "national_dex": 263,
-      "name": "zigzagoongalar",
-      "display_name": "Galarian Zigzagoon",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 353,
-      "national_dex": 264,
-      "name": "linoonegalar",
-      "display_name": "Galarian Linoone",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
         }
       ]
     },
@@ -2326,70 +1242,6 @@
       ]
     },
     {
-      "id": 406,
-      "national_dex": 311,
-      "name": "plusle",
-      "display_name": "Plusle",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 407,
-      "national_dex": 312,
-      "name": "minun",
-      "display_name": "Minun",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 408,
-      "national_dex": 313,
-      "name": "volbeat",
-      "display_name": "Volbeat",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 409,
-      "national_dex": 314,
-      "name": "illumise",
-      "display_name": "Illumise",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 415,
       "national_dex": 319,
       "name": "sharpedomega",
@@ -2438,38 +1290,6 @@
       ]
     },
     {
-      "id": 421,
-      "national_dex": 324,
-      "name": "torkoal",
-      "display_name": "Torkoal",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 424,
-      "national_dex": 327,
-      "name": "spinda",
-      "display_name": "Spinda",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 432,
       "national_dex": 334,
       "name": "altariamega",
@@ -2494,102 +1314,6 @@
       ]
     },
     {
-      "id": 433,
-      "national_dex": 335,
-      "name": "zangoose",
-      "display_name": "Zangoose",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 434,
-      "national_dex": 336,
-      "name": "seviper",
-      "display_name": "Seviper",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 435,
-      "national_dex": 337,
-      "name": "lunatone",
-      "display_name": "Lunatone",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 436,
-      "national_dex": 338,
-      "name": "solrock",
-      "display_name": "Solrock",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 449,
-      "national_dex": 351,
-      "name": "castform",
-      "display_name": "Castform",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 450,
-      "national_dex": 352,
-      "name": "kecleon",
-      "display_name": "Kecleon",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 453,
       "national_dex": 354,
       "name": "banettemega",
@@ -2610,22 +1334,6 @@
         {
           "field": "encounter_locations",
           "reason": "Mega evolutions inherit species data from base form; PokeAPI does not provide separate flavor text or encounter data for megas"
-        }
-      ]
-    },
-    {
-      "id": 456,
-      "national_dex": 357,
-      "name": "tropius",
-      "display_name": "Tropius",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -2726,38 +1434,6 @@
       ]
     },
     {
-      "id": 472,
-      "national_dex": 369,
-      "name": "relicanth",
-      "display_name": "Relicanth",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 473,
-      "national_dex": 370,
-      "name": "luvdisc",
-      "display_name": "Luvdisc",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 477,
       "national_dex": 373,
       "name": "salamencemega",
@@ -2802,54 +1478,6 @@
         {
           "field": "encounter_locations",
           "reason": "Mega evolutions inherit species data from base form; PokeAPI does not provide separate flavor text or encounter data for megas"
-        }
-      ]
-    },
-    {
-      "id": 482,
-      "national_dex": 377,
-      "name": "regirock",
-      "display_name": "Regirock",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 483,
-      "national_dex": 378,
-      "name": "regice",
-      "display_name": "Regice",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 484,
-      "national_dex": 379,
-      "name": "registeel",
-      "display_name": "Registeel",
-      "form_type": "default",
-      "generation": 3,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -2912,10 +1540,6 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
         }
@@ -2931,10 +1555,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
@@ -2976,10 +1596,6 @@
       "is_mythical": 1,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Legendaries/mythicals typically have no wild encounter data"
         }
@@ -2996,10 +1612,6 @@
       "is_mythical": 1,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Legendaries/mythicals typically have no wild encounter data"
         }
@@ -3015,10 +1627,6 @@
       "is_legendary": 0,
       "is_mythical": 1,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Legendaries/mythicals typically have no wild encounter data"
@@ -3060,16 +1668,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -3084,16 +1684,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -3108,16 +1700,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -3132,32 +1716,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 535,
-      "national_dex": 417,
-      "name": "pachirisu",
-      "display_name": "Pachirisu",
-      "form_type": "default",
-      "generation": 4,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -3182,38 +1742,6 @@
         {
           "field": "encounter_locations",
           "reason": "Mega evolutions inherit species data from base form; PokeAPI does not provide separate flavor text or encounter data for megas"
-        }
-      ]
-    },
-    {
-      "id": 560,
-      "national_dex": 441,
-      "name": "chatot",
-      "display_name": "Chatot",
-      "form_type": "default",
-      "generation": 4,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 561,
-      "national_dex": 442,
-      "name": "spiritomb",
-      "display_name": "Spiritomb",
-      "form_type": "default",
-      "generation": 4,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -3314,22 +1842,6 @@
       ]
     },
     {
-      "id": 578,
-      "national_dex": 455,
-      "name": "carnivine",
-      "display_name": "Carnivine",
-      "form_type": "default",
-      "generation": 4,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 584,
       "national_dex": 460,
       "name": "abomasnowmega",
@@ -3402,22 +1914,6 @@
       ]
     },
     {
-      "id": 605,
-      "national_dex": 479,
-      "name": "rotom",
-      "display_name": "Rotom",
-      "form_type": "default",
-      "generation": 4,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 606,
       "national_dex": 479,
       "name": "rotomheat",
@@ -3428,16 +1924,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -3452,16 +1940,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -3476,16 +1956,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -3500,16 +1972,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -3524,80 +1988,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 611,
-      "national_dex": 480,
-      "name": "uxie",
-      "display_name": "Uxie",
-      "form_type": "default",
-      "generation": 4,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 612,
-      "national_dex": 481,
-      "name": "mesprit",
-      "display_name": "Mesprit",
-      "form_type": "default",
-      "generation": 4,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 613,
-      "national_dex": 482,
-      "name": "azelf",
-      "display_name": "Azelf",
-      "form_type": "default",
-      "generation": 4,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 614,
-      "national_dex": 483,
-      "name": "dialga",
-      "display_name": "Dialga",
-      "form_type": "default",
-      "generation": 4,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -3612,32 +2004,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 616,
-      "national_dex": 484,
-      "name": "palkia",
-      "display_name": "Palkia",
-      "form_type": "default",
-      "generation": 4,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -3652,16 +2020,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -3690,38 +2050,6 @@
       ]
     },
     {
-      "id": 620,
-      "national_dex": 486,
-      "name": "regigigas",
-      "display_name": "Regigigas",
-      "form_type": "default",
-      "generation": 4,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 621,
-      "national_dex": 487,
-      "name": "giratina",
-      "display_name": "Giratina",
-      "form_type": "default",
-      "generation": 4,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 622,
       "national_dex": 487,
       "name": "giratinaorigin",
@@ -3732,32 +2060,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 623,
-      "national_dex": 488,
-      "name": "cresselia",
-      "display_name": "Cresselia",
-      "form_type": "default",
-      "generation": 4,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -3812,10 +2116,6 @@
       "is_mythical": 1,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Legendaries/mythicals typically have no wild encounter data"
         }
@@ -3842,26 +2142,6 @@
         {
           "field": "encounter_locations",
           "reason": "Mega evolutions inherit species data from base form; PokeAPI does not provide separate flavor text or encounter data for megas; Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 642,
-      "national_dex": 503,
-      "name": "samurotthisui",
-      "display_name": "Hisuian Samurott",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
         }
       ]
     },
@@ -3914,38 +2194,6 @@
       ]
     },
     {
-      "id": 679,
-      "national_dex": 538,
-      "name": "throh",
-      "display_name": "Throh",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 680,
-      "national_dex": 539,
-      "name": "sawk",
-      "display_name": "Sawk",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 687,
       "national_dex": 545,
       "name": "scolipedemega",
@@ -3970,26 +2218,6 @@
       ]
     },
     {
-      "id": 692,
-      "national_dex": 549,
-      "name": "lilliganthisui",
-      "display_name": "Hisuian Lilligant",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
       "id": 694,
       "national_dex": 550,
       "name": "basculinbluestriped",
@@ -4000,16 +2228,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -4024,28 +2244,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        }
-      ]
-    },
-    {
-      "id": 700,
-      "national_dex": 554,
-      "name": "darumakagalar",
-      "display_name": "Galarian Darumaka",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
         }
       ]
     },
@@ -4060,72 +2260,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 703,
-      "national_dex": 555,
-      "name": "darmanitangalar",
-      "display_name": "Galarian Darmanitan",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 704,
-      "national_dex": 555,
-      "name": "darmanitangalarzen",
-      "display_name": "Galarian Darmanitan",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 705,
-      "national_dex": 556,
-      "name": "maractus",
-      "display_name": "Maractus",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -4154,38 +2290,6 @@
       ]
     },
     {
-      "id": 711,
-      "national_dex": 561,
-      "name": "sigilyph",
-      "display_name": "Sigilyph",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 713,
-      "national_dex": 562,
-      "name": "yamaskgalar",
-      "display_name": "Galarian Yamask",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
       "id": 721,
       "national_dex": 569,
       "name": "garbodorgmax",
@@ -4206,78 +2310,6 @@
         {
           "field": "encounter_locations",
           "reason": "Gigantamax forms share species data with base; no separate PokeAPI species entry"
-        }
-      ]
-    },
-    {
-      "id": 723,
-      "national_dex": 570,
-      "name": "zoruahisui",
-      "display_name": "Hisuian Zorua",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 725,
-      "national_dex": 571,
-      "name": "zoroarkhisui",
-      "display_name": "Hisuian Zoroark",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 741,
-      "national_dex": 587,
-      "name": "emolga",
-      "display_name": "Emolga",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 748,
-      "national_dex": 594,
-      "name": "alomomola",
-      "display_name": "Alomomola",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -4330,74 +2362,6 @@
       ]
     },
     {
-      "id": 771,
-      "national_dex": 615,
-      "name": "cryogonal",
-      "display_name": "Cryogonal",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 774,
-      "national_dex": 618,
-      "name": "stunfisk",
-      "display_name": "Stunfisk",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 775,
-      "national_dex": 618,
-      "name": "stunfiskgalar",
-      "display_name": "Galarian Stunfisk",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 778,
-      "national_dex": 621,
-      "name": "druddigon",
-      "display_name": "Druddigon",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 781,
       "national_dex": 623,
       "name": "golurkmega",
@@ -4422,138 +2386,6 @@
       ]
     },
     {
-      "id": 784,
-      "national_dex": 626,
-      "name": "bouffalant",
-      "display_name": "Bouffalant",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 787,
-      "national_dex": 628,
-      "name": "braviaryhisui",
-      "display_name": "Hisuian Braviary",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 790,
-      "national_dex": 631,
-      "name": "heatmor",
-      "display_name": "Heatmor",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 791,
-      "national_dex": 632,
-      "name": "durant",
-      "display_name": "Durant",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 797,
-      "national_dex": 638,
-      "name": "cobalion",
-      "display_name": "Cobalion",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 798,
-      "national_dex": 639,
-      "name": "terrakion",
-      "display_name": "Terrakion",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 799,
-      "national_dex": 640,
-      "name": "virizion",
-      "display_name": "Virizion",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 800,
-      "national_dex": 641,
-      "name": "tornadus",
-      "display_name": "Tornadus",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 801,
       "national_dex": 641,
       "name": "tornadustherian",
@@ -4564,32 +2396,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 802,
-      "national_dex": 642,
-      "name": "thundurus",
-      "display_name": "Thundurus",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -4604,64 +2412,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 804,
-      "national_dex": 643,
-      "name": "reshiram",
-      "display_name": "Reshiram",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 805,
-      "national_dex": 644,
-      "name": "zekrom",
-      "display_name": "Zekrom",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 806,
-      "national_dex": 645,
-      "name": "landorus",
-      "display_name": "Landorus",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -4676,32 +2428,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 808,
-      "national_dex": 646,
-      "name": "kyurem",
-      "display_name": "Kyurem",
-      "form_type": "default",
-      "generation": 5,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -4716,16 +2444,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -4740,16 +2460,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -4779,10 +2491,6 @@
       "is_legendary": 0,
       "is_mythical": 1,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Legendaries/mythicals typically have no wild encounter data"
@@ -4815,10 +2523,6 @@
       "is_legendary": 0,
       "is_mythical": 1,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Legendaries/mythicals typically have no wild encounter data"
@@ -4900,16 +2604,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -4924,16 +2620,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -4996,16 +2684,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -5034,22 +2714,6 @@
       ]
     },
     {
-      "id": 850,
-      "national_dex": 676,
-      "name": "furfrou",
-      "display_name": "Furfrou",
-      "form_type": "default",
-      "generation": 6,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 853,
       "national_dex": 678,
       "name": "meowsticf",
@@ -5059,14 +2723,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "moves",
-          "reason": "Cosmetic form — no independent move data expected"
-        },
-        {
-          "field": "pokedex_entries",
-          "reason": "Cosmetic form — no independent data expected"
-        },
         {
           "field": "encounter_locations",
           "reason": "Cosmetic form — no independent data expected"
@@ -5132,16 +2788,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -5242,94 +2890,6 @@
       ]
     },
     {
-      "id": 884,
-      "national_dex": 702,
-      "name": "dedenne",
-      "display_name": "Dedenne",
-      "form_type": "default",
-      "generation": 6,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 885,
-      "national_dex": 703,
-      "name": "carbink",
-      "display_name": "Carbink",
-      "form_type": "default",
-      "generation": 6,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 888,
-      "national_dex": 705,
-      "name": "sliggoohisui",
-      "display_name": "Hisuian Sliggoo",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 890,
-      "national_dex": 706,
-      "name": "goodrahisui",
-      "display_name": "Hisuian Goodra",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 891,
-      "national_dex": 707,
-      "name": "klefki",
-      "display_name": "Klefki",
-      "form_type": "default",
-      "generation": 6,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 895,
       "national_dex": 710,
       "name": "pumpkaboosmall",
@@ -5340,16 +2900,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -5364,16 +2916,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -5388,16 +2932,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -5412,16 +2948,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -5436,16 +2964,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -5460,68 +2980,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 904,
-      "national_dex": 713,
-      "name": "avalugghisui",
-      "display_name": "Hisuian Avalugg",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        }
-      ]
-    },
-    {
-      "id": 907,
-      "national_dex": 716,
-      "name": "xerneas",
-      "display_name": "Xerneas",
-      "form_type": "default",
-      "generation": 6,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 908,
-      "national_dex": 717,
-      "name": "yveltal",
-      "display_name": "Yveltal",
-      "form_type": "default",
-      "generation": 6,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -5535,10 +2995,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
@@ -5555,10 +3011,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
@@ -5656,10 +3108,6 @@
       "is_mythical": 1,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Legendaries/mythicals typically have no wild encounter data"
         }
@@ -5678,26 +3126,6 @@
         {
           "field": "encounter_locations",
           "reason": "Legendaries/mythicals typically have no wild encounter data"
-        }
-      ]
-    },
-    {
-      "id": 921,
-      "national_dex": 724,
-      "name": "decidueyehisui",
-      "display_name": "Hisuian Decidueye",
-      "form_type": "regional",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
-        },
-        {
-          "field": "encounter_locations",
-          "reason": "Regional form — may have separate PokeAPI species entry; data may need enrichment"
         }
       ]
     },
@@ -5726,22 +3154,6 @@
       ]
     },
     {
-      "id": 939,
-      "national_dex": 741,
-      "name": "oricorio",
-      "display_name": "Oricorio",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 940,
       "national_dex": 741,
       "name": "oricoriopompom",
@@ -5752,16 +3164,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -5776,16 +3180,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -5800,16 +3196,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -5823,10 +3211,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
@@ -5844,10 +3228,6 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
         }
@@ -5863,10 +3243,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
@@ -5884,60 +3260,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        }
-      ]
-    },
-    {
-      "id": 969,
-      "national_dex": 764,
-      "name": "comfey",
-      "display_name": "Comfey",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 970,
-      "national_dex": 765,
-      "name": "oranguru",
-      "display_name": "Oranguru",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 971,
-      "national_dex": 766,
-      "name": "passimian",
-      "display_name": "Passimian",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -5966,86 +3290,6 @@
       ]
     },
     {
-      "id": 977,
-      "national_dex": 771,
-      "name": "pyukumuku",
-      "display_name": "Pyukumuku",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 980,
-      "national_dex": 774,
-      "name": "minior",
-      "display_name": "Minior",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 981,
-      "national_dex": 775,
-      "name": "komala",
-      "display_name": "Komala",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 982,
-      "national_dex": 776,
-      "name": "turtonator",
-      "display_name": "Turtonator",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 983,
-      "national_dex": 777,
-      "name": "togedemaru",
-      "display_name": "Togedemaru",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 985,
       "national_dex": 778,
       "name": "mimikyubusted",
@@ -6056,28 +3300,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        }
-      ]
-    },
-    {
-      "id": 986,
-      "national_dex": 779,
-      "name": "bruxish",
-      "display_name": "Bruxish",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -6106,214 +3330,6 @@
       ]
     },
     {
-      "id": 989,
-      "national_dex": 781,
-      "name": "dhelmise",
-      "display_name": "Dhelmise",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 993,
-      "national_dex": 785,
-      "name": "tapukoko",
-      "display_name": "Tapu Koko",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 994,
-      "national_dex": 786,
-      "name": "tapulele",
-      "display_name": "Tapu Lele",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 995,
-      "national_dex": 787,
-      "name": "tapubulu",
-      "display_name": "Tapu Bulu",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 996,
-      "national_dex": 788,
-      "name": "tapufini",
-      "display_name": "Tapu Fini",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1001,
-      "national_dex": 793,
-      "name": "nihilego",
-      "display_name": "Nihilego",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1002,
-      "national_dex": 794,
-      "name": "buzzwole",
-      "display_name": "Buzzwole",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1003,
-      "national_dex": 795,
-      "name": "pheromosa",
-      "display_name": "Pheromosa",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1004,
-      "national_dex": 796,
-      "name": "xurkitree",
-      "display_name": "Xurkitree",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1005,
-      "national_dex": 797,
-      "name": "celesteela",
-      "display_name": "Celesteela",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1006,
-      "national_dex": 798,
-      "name": "kartana",
-      "display_name": "Kartana",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1007,
-      "national_dex": 799,
-      "name": "guzzlord",
-      "display_name": "Guzzlord",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1008,
-      "national_dex": 800,
-      "name": "necrozma",
-      "display_name": "Necrozma",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 1009,
       "national_dex": 800,
       "name": "necrozmaduskmane",
@@ -6323,10 +3339,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
@@ -6344,10 +3356,6 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
         }
@@ -6363,10 +3371,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
@@ -6434,38 +3438,6 @@
         {
           "field": "encounter_locations",
           "reason": "Legendaries/mythicals typically have no wild encounter data"
-        }
-      ]
-    },
-    {
-      "id": 1018,
-      "national_dex": 805,
-      "name": "stakataka",
-      "display_name": "Stakataka",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1019,
-      "national_dex": 806,
-      "name": "blacephalon",
-      "display_name": "Blacephalon",
-      "form_type": "default",
-      "generation": 7,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -6806,22 +3778,6 @@
       ]
     },
     {
-      "id": 1070,
-      "national_dex": 845,
-      "name": "cramorant",
-      "display_name": "Cramorant",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 1075,
       "national_dex": 849,
       "name": "toxtricitylowkey",
@@ -6831,10 +3787,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
@@ -7010,38 +3962,6 @@
       ]
     },
     {
-      "id": 1104,
-      "national_dex": 871,
-      "name": "pincurchin",
-      "display_name": "Pincurchin",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1107,
-      "national_dex": 874,
-      "name": "stonjourner",
-      "display_name": "Stonjourner",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 1109,
       "national_dex": 875,
       "name": "eiscuenoice",
@@ -7052,28 +3972,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        }
-      ]
-    },
-    {
-      "id": 1110,
-      "national_dex": 876,
-      "name": "indeedee",
-      "display_name": "Indeedee",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -7088,20 +3988,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "moves",
-          "reason": "Cosmetic form — no independent move data expected"
-        },
-        {
-          "field": "pokedex_entries",
-          "reason": "Cosmetic form — no independent data expected"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Cosmetic form — no independent data expected"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -7115,10 +4003,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
@@ -7146,70 +4030,6 @@
         {
           "field": "encounter_locations",
           "reason": "Gigantamax forms share species data with base; no separate PokeAPI species entry"
-        }
-      ]
-    },
-    {
-      "id": 1117,
-      "national_dex": 880,
-      "name": "dracozolt",
-      "display_name": "Dracozolt",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1118,
-      "national_dex": 881,
-      "name": "arctozolt",
-      "display_name": "Arctozolt",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1119,
-      "national_dex": 882,
-      "name": "dracovish",
-      "display_name": "Dracovish",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1120,
-      "national_dex": 883,
-      "name": "arctovish",
-      "display_name": "Arctovish",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -7248,10 +4068,6 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
         }
@@ -7268,28 +4084,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        }
-      ]
-    },
-    {
-      "id": 1130,
-      "national_dex": 890,
-      "name": "eternatus",
-      "display_name": "Eternatus",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -7304,16 +4100,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -7327,10 +4115,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
@@ -7402,86 +4186,6 @@
       ]
     },
     {
-      "id": 1138,
-      "national_dex": 894,
-      "name": "regieleki",
-      "display_name": "Regieleki",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1139,
-      "national_dex": 895,
-      "name": "regidrago",
-      "display_name": "Regidrago",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1140,
-      "national_dex": 896,
-      "name": "glastrier",
-      "display_name": "Glastrier",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1141,
-      "national_dex": 897,
-      "name": "spectrier",
-      "display_name": "Spectrier",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1142,
-      "national_dex": 898,
-      "name": "calyrex",
-      "display_name": "Calyrex",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 1143,
       "national_dex": 898,
       "name": "calyrexice",
@@ -7492,16 +4196,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -7516,16 +4212,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -7540,16 +4228,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -7564,32 +4244,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "moves",
-          "reason": "Cosmetic form — no independent move data expected"
-        },
-        {
-          "field": "pokedex_entries",
-          "reason": "Cosmetic form — no independent data expected"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Cosmetic form — no independent data expected"
-        }
-      ]
-    },
-    {
-      "id": 1153,
-      "national_dex": 905,
-      "name": "enamorus",
-      "display_name": "Enamorus",
-      "form_type": "default",
-      "generation": 8,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
         }
       ]
     },
@@ -7604,16 +4260,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -7762,38 +4410,6 @@
       ]
     },
     {
-      "id": 1164,
-      "national_dex": 915,
-      "name": "lechonk",
-      "display_name": "Lechonk",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1165,
-      "national_dex": 916,
-      "name": "oinkologne",
-      "display_name": "Oinkologne",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
       "id": 1166,
       "national_dex": 916,
       "name": "oinkolognef",
@@ -7804,600 +4420,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "moves",
-          "reason": "Cosmetic form — no independent move data expected"
-        },
-        {
-          "field": "pokedex_entries",
-          "reason": "Cosmetic form — no independent data expected"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Cosmetic form — no independent data expected; Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1167,
-      "national_dex": 917,
-      "name": "tarountula",
-      "display_name": "Tarountula",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1168,
-      "national_dex": 918,
-      "name": "spidops",
-      "display_name": "Spidops",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1169,
-      "national_dex": 919,
-      "name": "nymble",
-      "display_name": "Nymble",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1170,
-      "national_dex": 920,
-      "name": "lokix",
-      "display_name": "Lokix",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1171,
-      "national_dex": 921,
-      "name": "pawmi",
-      "display_name": "Pawmi",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1172,
-      "national_dex": 922,
-      "name": "pawmo",
-      "display_name": "Pawmo",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1173,
-      "national_dex": 923,
-      "name": "pawmot",
-      "display_name": "Pawmot",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1174,
-      "national_dex": 924,
-      "name": "tandemaus",
-      "display_name": "Tandemaus",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1175,
-      "national_dex": 925,
-      "name": "maushold",
-      "display_name": "Maushold",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1176,
-      "national_dex": 926,
-      "name": "fidough",
-      "display_name": "Fidough",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1177,
-      "national_dex": 927,
-      "name": "dachsbun",
-      "display_name": "Dachsbun",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1178,
-      "national_dex": 928,
-      "name": "smoliv",
-      "display_name": "Smoliv",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1179,
-      "national_dex": 929,
-      "name": "dolliv",
-      "display_name": "Dolliv",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1180,
-      "national_dex": 930,
-      "name": "arboliva",
-      "display_name": "Arboliva",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1181,
-      "national_dex": 931,
-      "name": "squawkabilly",
-      "display_name": "Squawkabilly",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1182,
-      "national_dex": 932,
-      "name": "nacli",
-      "display_name": "Nacli",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1183,
-      "national_dex": 933,
-      "name": "naclstack",
-      "display_name": "Naclstack",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1184,
-      "national_dex": 934,
-      "name": "garganacl",
-      "display_name": "Garganacl",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1185,
-      "national_dex": 935,
-      "name": "charcadet",
-      "display_name": "Charcadet",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1186,
-      "national_dex": 936,
-      "name": "armarouge",
-      "display_name": "Armarouge",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1187,
-      "national_dex": 937,
-      "name": "ceruledge",
-      "display_name": "Ceruledge",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1188,
-      "national_dex": 938,
-      "name": "tadbulb",
-      "display_name": "Tadbulb",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1189,
-      "national_dex": 939,
-      "name": "bellibolt",
-      "display_name": "Bellibolt",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1190,
-      "national_dex": 940,
-      "name": "wattrel",
-      "display_name": "Wattrel",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1191,
-      "national_dex": 941,
-      "name": "kilowattrel",
-      "display_name": "Kilowattrel",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1192,
-      "national_dex": 942,
-      "name": "maschiff",
-      "display_name": "Maschiff",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1193,
-      "national_dex": 943,
-      "name": "mabosstiff",
-      "display_name": "Mabosstiff",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1194,
-      "national_dex": 944,
-      "name": "shroodle",
-      "display_name": "Shroodle",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1195,
-      "national_dex": 945,
-      "name": "grafaiai",
-      "display_name": "Grafaiai",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1196,
-      "national_dex": 946,
-      "name": "bramblin",
-      "display_name": "Bramblin",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1197,
-      "national_dex": 947,
-      "name": "brambleghast",
-      "display_name": "Brambleghast",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1198,
-      "national_dex": 948,
-      "name": "toedscool",
-      "display_name": "Toedscool",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1199,
-      "national_dex": 949,
-      "name": "toedscruel",
-      "display_name": "Toedscruel",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1200,
-      "national_dex": 950,
-      "name": "klawf",
-      "display_name": "Klawf",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1201,
-      "national_dex": 951,
-      "name": "capsakid",
-      "display_name": "Capsakid",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1202,
-      "national_dex": 952,
-      "name": "scovillain",
-      "display_name": "Scovillain",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
         }
       ]
     },
@@ -8426,202 +4450,6 @@
       ]
     },
     {
-      "id": 1204,
-      "national_dex": 953,
-      "name": "rellor",
-      "display_name": "Rellor",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1205,
-      "national_dex": 954,
-      "name": "rabsca",
-      "display_name": "Rabsca",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1206,
-      "national_dex": 955,
-      "name": "flittle",
-      "display_name": "Flittle",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1207,
-      "national_dex": 956,
-      "name": "espathra",
-      "display_name": "Espathra",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1208,
-      "national_dex": 957,
-      "name": "tinkatink",
-      "display_name": "Tinkatink",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1209,
-      "national_dex": 958,
-      "name": "tinkatuff",
-      "display_name": "Tinkatuff",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1210,
-      "national_dex": 959,
-      "name": "tinkaton",
-      "display_name": "Tinkaton",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1211,
-      "national_dex": 960,
-      "name": "wiglett",
-      "display_name": "Wiglett",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1212,
-      "national_dex": 961,
-      "name": "wugtrio",
-      "display_name": "Wugtrio",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1213,
-      "national_dex": 962,
-      "name": "bombirdier",
-      "display_name": "Bombirdier",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1214,
-      "national_dex": 963,
-      "name": "finizen",
-      "display_name": "Finizen",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1215,
-      "national_dex": 964,
-      "name": "palafin",
-      "display_name": "Palafin",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
       "id": 1216,
       "national_dex": 964,
       "name": "palafinhero",
@@ -8632,116 +4460,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1217,
-      "national_dex": 965,
-      "name": "varoom",
-      "display_name": "Varoom",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1218,
-      "national_dex": 966,
-      "name": "revavroom",
-      "display_name": "Revavroom",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1219,
-      "national_dex": 967,
-      "name": "cyclizar",
-      "display_name": "Cyclizar",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1220,
-      "national_dex": 968,
-      "name": "orthworm",
-      "display_name": "Orthworm",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1221,
-      "national_dex": 969,
-      "name": "glimmet",
-      "display_name": "Glimmet",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1222,
-      "national_dex": 970,
-      "name": "glimmora",
-      "display_name": "Glimmora",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
         }
       ]
     },
@@ -8770,146 +4490,6 @@
       ]
     },
     {
-      "id": 1224,
-      "national_dex": 971,
-      "name": "greavard",
-      "display_name": "Greavard",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1225,
-      "national_dex": 972,
-      "name": "houndstone",
-      "display_name": "Houndstone",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1226,
-      "national_dex": 973,
-      "name": "flamigo",
-      "display_name": "Flamigo",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1227,
-      "national_dex": 974,
-      "name": "cetoddle",
-      "display_name": "Cetoddle",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1228,
-      "national_dex": 975,
-      "name": "cetitan",
-      "display_name": "Cetitan",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1229,
-      "national_dex": 976,
-      "name": "veluza",
-      "display_name": "Veluza",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1230,
-      "national_dex": 977,
-      "name": "dondozo",
-      "display_name": "Dondozo",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1231,
-      "national_dex": 978,
-      "name": "tatsugiri",
-      "display_name": "Tatsugiri",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
       "id": 1232,
       "national_dex": 978,
       "name": "tatsugiridroopy",
@@ -8920,16 +4500,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -8944,16 +4516,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -9030,374 +4594,6 @@
       ]
     },
     {
-      "id": 1237,
-      "national_dex": 979,
-      "name": "annihilape",
-      "display_name": "Annihilape",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1238,
-      "national_dex": 980,
-      "name": "clodsire",
-      "display_name": "Clodsire",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1239,
-      "national_dex": 981,
-      "name": "farigiraf",
-      "display_name": "Farigiraf",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1240,
-      "national_dex": 982,
-      "name": "dudunsparce",
-      "display_name": "Dudunsparce",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1241,
-      "national_dex": 983,
-      "name": "kingambit",
-      "display_name": "Kingambit",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1242,
-      "national_dex": 984,
-      "name": "greattusk",
-      "display_name": "Great Tusk",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1243,
-      "national_dex": 985,
-      "name": "screamtail",
-      "display_name": "Scream Tail",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1244,
-      "national_dex": 986,
-      "name": "brutebonnet",
-      "display_name": "Brute Bonnet",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1245,
-      "national_dex": 987,
-      "name": "fluttermane",
-      "display_name": "Flutter Mane",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1246,
-      "national_dex": 988,
-      "name": "slitherwing",
-      "display_name": "Slither Wing",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1247,
-      "national_dex": 989,
-      "name": "sandyshocks",
-      "display_name": "Sandy Shocks",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1248,
-      "national_dex": 990,
-      "name": "irontreads",
-      "display_name": "Iron Treads",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1249,
-      "national_dex": 991,
-      "name": "ironbundle",
-      "display_name": "Iron Bundle",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1250,
-      "national_dex": 992,
-      "name": "ironhands",
-      "display_name": "Iron Hands",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1251,
-      "national_dex": 993,
-      "name": "ironjugulis",
-      "display_name": "Iron Jugulis",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1252,
-      "national_dex": 994,
-      "name": "ironmoth",
-      "display_name": "Iron Moth",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1253,
-      "national_dex": 995,
-      "name": "ironthorns",
-      "display_name": "Iron Thorns",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1254,
-      "national_dex": 996,
-      "name": "frigibax",
-      "display_name": "Frigibax",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1255,
-      "national_dex": 997,
-      "name": "arctibax",
-      "display_name": "Arctibax",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1256,
-      "national_dex": 998,
-      "name": "baxcalibur",
-      "display_name": "Baxcalibur",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
       "id": 1257,
       "national_dex": 998,
       "name": "baxcaliburmega",
@@ -9422,22 +4618,6 @@
       ]
     },
     {
-      "id": 1258,
-      "national_dex": 999,
-      "name": "gimmighoul",
-      "display_name": "Gimmighoul",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
       "id": 1259,
       "national_dex": 999,
       "name": "gimmighoulroaming",
@@ -9448,16 +4628,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -9466,330 +4638,6 @@
       "national_dex": 1000,
       "name": "gholdengo",
       "display_name": "Gholdengo",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1261,
-      "national_dex": 1001,
-      "name": "wochien",
-      "display_name": "Wo-Chien",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1262,
-      "national_dex": 1002,
-      "name": "chienpao",
-      "display_name": "Chien-Pao",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1263,
-      "national_dex": 1003,
-      "name": "tinglu",
-      "display_name": "Ting-Lu",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1264,
-      "national_dex": 1004,
-      "name": "chiyu",
-      "display_name": "Chi-Yu",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1265,
-      "national_dex": 1005,
-      "name": "roaringmoon",
-      "display_name": "Roaring Moon",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1266,
-      "national_dex": 1006,
-      "name": "ironvaliant",
-      "display_name": "Iron Valiant",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1267,
-      "national_dex": 1007,
-      "name": "koraidon",
-      "display_name": "Koraidon",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1268,
-      "national_dex": 1008,
-      "name": "miraidon",
-      "display_name": "Miraidon",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1269,
-      "national_dex": 1009,
-      "name": "walkingwake",
-      "display_name": "Walking Wake",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1270,
-      "national_dex": 1010,
-      "name": "ironleaves",
-      "display_name": "Iron Leaves",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1271,
-      "national_dex": 1011,
-      "name": "dipplin",
-      "display_name": "Dipplin",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1272,
-      "national_dex": 1012,
-      "name": "poltchageist",
-      "display_name": "Poltchageist",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1273,
-      "national_dex": 1013,
-      "name": "sinistcha",
-      "display_name": "Sinistcha",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        }
-      ]
-    },
-    {
-      "id": 1274,
-      "national_dex": 1014,
-      "name": "okidogi",
-      "display_name": "Okidogi",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1275,
-      "national_dex": 1015,
-      "name": "munkidori",
-      "display_name": "Munkidori",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1276,
-      "national_dex": 1016,
-      "name": "fezandipiti",
-      "display_name": "Fezandipiti",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1277,
-      "national_dex": 1017,
-      "name": "ogerpon",
-      "display_name": "Ogerpon",
       "form_type": "default",
       "generation": 9,
       "is_legendary": 0,
@@ -9812,10 +4660,6 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
         }
@@ -9831,10 +4675,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
@@ -9852,10 +4692,6 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
         }
@@ -9871,10 +4707,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
@@ -9892,10 +4724,6 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
         }
@@ -9912,10 +4740,6 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
         }
@@ -9931,10 +4755,6 @@
       "is_legendary": 0,
       "is_mythical": 0,
       "missing": [
-        {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
         {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
@@ -9974,106 +4794,6 @@
       ]
     },
     {
-      "id": 1287,
-      "national_dex": 1020,
-      "name": "gougingfire",
-      "display_name": "Gouging Fire",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1288,
-      "national_dex": 1021,
-      "name": "ragingbolt",
-      "display_name": "Raging Bolt",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1289,
-      "national_dex": 1022,
-      "name": "ironboulder",
-      "display_name": "Iron Boulder",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1290,
-      "national_dex": 1023,
-      "name": "ironcrown",
-      "display_name": "Iron Crown",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
-      "id": 1291,
-      "national_dex": 1024,
-      "name": "terapagos",
-      "display_name": "Terapagos",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 0,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Unknown — needs investigation"
-        }
-      ]
-    },
-    {
       "id": 1292,
       "national_dex": 1024,
       "name": "terapagosterastal",
@@ -10084,16 +4804,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
         }
       ]
     },
@@ -10108,32 +4820,8 @@
       "is_mythical": 0,
       "missing": [
         {
-          "field": "pokedex_entries",
-          "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries"
-        },
-        {
           "field": "encounter_locations",
           "reason": "Alternate form — PokeAPI species data is on base form; this form may lack independent entries; Gen 9 encounter data not yet in PokeAPI"
-        },
-        {
-          "field": "evolution_chain",
-          "reason": "Non-default forms do not have independent evolution chain entries; evolution is tracked on the base form"
-        }
-      ]
-    },
-    {
-      "id": 1294,
-      "national_dex": 1025,
-      "name": "pecharunt",
-      "display_name": "Pecharunt",
-      "form_type": "default",
-      "generation": 9,
-      "is_legendary": 0,
-      "is_mythical": 1,
-      "missing": [
-        {
-          "field": "encounter_locations",
-          "reason": "Gen 9 encounter data not yet in PokeAPI; Legendaries/mythicals typically have no wild encounter data"
         }
       ]
     }

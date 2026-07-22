@@ -11,7 +11,7 @@ import { usePokemonSpeciesData } from '@/hooks/queries/usePokemonSpeciesData';
 import { usePokemonAbilities } from '@/hooks/queries/usePokemonAbilities';
 import { useRelatedForms } from '@/hooks/queries/useRelatedForms';
 import { useFormVariants } from '@/hooks/queries/useFormVariants';
-import { prefetchShinyArtwork, isImageCached, getShinyHomeRenderUrl } from '@/services/prefetch/artworkPrefetchService';
+import { prefetchShinyArtwork, isImageCached, getShinyHomeRenderUrl, getHomeRenderUrl } from '@/services/prefetch/artworkPrefetchService';
 import { EmptyState } from '@/components/common/EmptyState';
 import { TypeBadge } from '@/components/common/TypeBadge';
 import { PokemonHero } from '@/components/pokemon/PokemonHero';
@@ -134,7 +134,13 @@ export default function PokemonDetailScreen() {
   useEffect(() => {
     if (!belowFoldReady || !pokemon?.pokeApiId) return;
 
-    const shinyUrl = getShinyHomeRenderUrl(pokemon.pokeApiId);
+    const shinyUrl = getShinyHomeRenderUrl(pokemon.pokeApiId, pokemon.id);
+
+    // Local assets (require() returns a number) are always available — no cache check needed
+    if (typeof shinyUrl === 'number') {
+      setShinyReady(true);
+      return;
+    }
 
     // Check if already cached, otherwise start prefetch
     isImageCached(shinyUrl).then((isCached) => {
@@ -242,9 +248,9 @@ export default function PokemonDetailScreen() {
           primaryType={pokemon.primaryType}
           secondaryType={pokemon.secondaryType ?? null}
           accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
-          artworkUrl={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pokemon.pokeApiId}.png`}
-          shinyArtworkUrl={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/${pokemon.pokeApiId}.png`}
-          glowArtworkUrl={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pokemon.pokeApiId}.png`}
+          artworkUrl={getHomeRenderUrl(pokemon.pokeApiId, pokemon.id)}
+          shinyArtworkUrl={getShinyHomeRenderUrl(pokemon.pokeApiId, pokemon.id)}
+          glowArtworkUrl={getHomeRenderUrl(pokemon.pokeApiId, pokemon.id)}
           scrollAnimatedValue={scrollOffset}
           shinyReady={shinyReady}
           cardSurfaceColor={cardSurfaceColor}

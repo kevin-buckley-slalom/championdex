@@ -27,10 +27,16 @@ export function useRelatedForms(pokemonId: number) {
         [currentPokemon.national_dex]
       );
 
+      const SPRITE_URL_OVERRIDES = new Map<number, string>([
+        [527, 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/412-sandy.png'],
+        [528, 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/412-trash.png'],
+      ]);
+
       return results.map((r): RelatedForm => {
         // Use sprite_url if available, otherwise construct from pokeapi_id (falls back to national_dex for base forms)
         const formId = r.pokeapi_id > 0 ? r.pokeapi_id : r.national_dex;
-        const spriteUrl = r.sprite_url ||
+        const spriteUrl = SPRITE_URL_OVERRIDES.get(r.id) ??
+          r.sprite_url ??
           `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${formId}.png`;
 
         return {
