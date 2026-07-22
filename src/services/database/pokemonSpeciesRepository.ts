@@ -40,12 +40,14 @@ export interface PokemonSpeciesData {
 export async function getPokemonSpeciesData(pokemonId: number): Promise<PokemonSpeciesData | null> {
   const db = await getDatabase();
 
-  // Get base species data from pokemon table
   const pokemon = await db.getFirstAsync<{
     gender_rate: number;
     species_classification: string | null;
+    form_type: string;
+    name: string;
+    national_dex: number;
   }>(
-    `SELECT gender_rate, species_classification FROM pokemon WHERE id = ?`,
+    `SELECT gender_rate, species_classification, form_type, name, national_dex FROM pokemon WHERE id = ?`,
     [pokemonId]
   );
 
@@ -53,16 +55,31 @@ export async function getPokemonSpeciesData(pokemonId: number): Promise<PokemonS
     return null;
   }
 
-  // Get flavor texts
+  const BATTLE_ONLY_NAMES = new Set(['mimikyubusted', 'eiscuenoice', 'morpekohangry']);
+  const isBattleOnly =
+    pokemon.form_type === 'mega' ||
+    pokemon.form_type === 'gigantamax' ||
+    BATTLE_ONLY_NAMES.has(pokemon.name);
+
+  let queryId = pokemonId;
+  if (isBattleOnly) {
+    const defaultForm = await db.getFirstAsync<{ id: number }>(
+      `SELECT id FROM pokemon WHERE national_dex = ? AND form_type = 'default' ORDER BY id LIMIT 1`,
+      [pokemon.national_dex]
+    );
+    if (defaultForm) {
+      queryId = defaultForm.id;
+    }
+  }
+
   const flavorTexts = await db.getAllAsync<any>(
     `SELECT id, pokemon_id, game_version, flavor_text FROM pokemon_flavor_text WHERE pokemon_id = ? ORDER BY game_version`,
-    [pokemonId]
+    [queryId]
   );
 
-  // Get evolutions
   const evolutions = await db.getAllAsync<any>(
     `SELECT id, pokemon_id, evolves_to_id, method, condition_value FROM pokemon_evolutions WHERE pokemon_id = ?`,
-    [pokemonId]
+    [queryId]
   );
 
   return {
@@ -145,7 +162,7 @@ export async function getEvolutionChain(pokemonId: number): Promise<EvolutionNod
     const predecessor = await db.getFirstAsync<{ pokemon_id: number }>(
       `SELECT pokemon_id FROM pokemon_evolutions
        WHERE evolves_to_id = ? AND pokemon_id IN (
-         SELECT id FROM pokemon WHERE form_type = 'default'
+         SELECT id FROM pokemon WHERE form_type IN ('default', 'cosmetic', 'alternate', 'regional')
        )
        LIMIT 1`,
       [id]
@@ -160,7 +177,7 @@ export async function getEvolutionChain(pokemonId: number): Promise<EvolutionNod
 
     const pokemon = await db.getFirstAsync<any>(
       `SELECT id, national_dex, display_name, primary_type, pokeapi_id FROM pokemon
-       WHERE id = ? AND form_type = 'default'`,
+       WHERE id = ? AND form_type IN ('default', 'cosmetic', 'alternate', 'regional')`,
       [id]
     );
 
@@ -169,7 +186,7 @@ export async function getEvolutionChain(pokemonId: number): Promise<EvolutionNod
     const evolutions = await db.getAllAsync<any>(
       `SELECT pe.method, pe.condition_value, pe.evolves_to_id, p.id, p.national_dex, p.display_name, p.primary_type, p.pokeapi_id
        FROM pokemon_evolutions pe
-       JOIN pokemon p ON p.id = pe.evolves_to_id AND p.form_type = 'default'
+       JOIN pokemon p ON p.id = pe.evolves_to_id AND p.form_type IN ('default', 'cosmetic', 'alternate', 'regional')
        WHERE pe.pokemon_id = ?`,
       [id]
     );

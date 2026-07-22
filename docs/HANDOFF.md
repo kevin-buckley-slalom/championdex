@@ -1,5 +1,5 @@
 # ChampionDex — Session Handoff Notes
-**Updated:** 2026-07-21 | DB v1.18.0. Form display names fully corrected. Android fresh install fixed (withSQLiteFsync plugin registered in app.json). Ogerpon PokeAPI IDs fixed. 279 unit tests passing. Not yet device-verified.
+**Updated:** 2026-07-22 | DB v1.28.0 committed. Phase 5 data gap remediation complete and device-verified. Remaining deferred items: Burmy Sandy/Trash sprites (no PokeAPI sprites exist — manual source needed), Z-A mega move data (~5 forms, blocked until PokeAPI updates), regional encounter locations for Hisuian/Paldean forms (PokeAPI returns empty — correct empty state shown).
 
 ---
 
@@ -105,8 +105,8 @@ app/_layout.tsx → initializeDatabase()  [blocks render, single promise guard p
 - Orphan index errors are caught early and trigger automatic recovery
 
 **Version constants:**
-- `DATA_VERSION = '1.18.0'` — form display names corrected, Ogerpon IDs fixed, Maushold/Dudunsparce excluded
-- `BUNDLED_DATA_VERSION = '1.18.0'` — tracks bundled DB installation; triggers version-check overwrite on mismatch
+- `DATA_VERSION = '1.28.0'` — Phase 5 complete; all regional/alternate/female form Pokédex entries seeded; evolution condition_values filled; encounter duplicate constraint added
+- `BUNDLED_DATA_VERSION = '1.28.0'` — tracks bundled DB installation; triggers version-check overwrite on mismatch
 - `ENRICH_VERSION = '1.2.0'` — independent; only bump if PokeAPI data needs re-fetch
 
 **Critical constraint:** ALL network calls must happen BEFORE `withTransactionAsync`.
@@ -383,21 +383,9 @@ As of 2026-07-17, ChampionDex uses a custom Expo config plugin (`plugins/withSQL
 - Android SDK and emulator via Android Studio
 - The plugin is registered in `app.json` and runs automatically on dev builds
 
-### TODO: Patch DB Script Before Next Data Update
+### DB Patching Protocol (current)
 
-The `scripts/generateBundledDb.js` script re-fetches all Pokémon data from PokeAPI even when updating a single field (e.g. height or a move pool). For the next maintenance update, create a targeted patch script (`scripts/patchDb.js`) that:
-- Takes a JSON file specifying which Pokémon/forms need updates and what fields changed (target rows, column names, new values)
-- Queries only those specific PokeAPI endpoints (avoid full 1025-Pokémon re-fetch)
-- Applies surgical SQL UPDATEs to only affected rows
-- Optionally bumps `DATA_VERSION` if the patch should trigger device-side replacement
-- Can be run before bundling — doesn't require full-DB regeneration
-
-Benefits:
-- Reduces update time from ~3–5 minutes (full generator) to <30 seconds for targeted changes (height column fix, move pool update, encounter data backfill, etc.)
-- Keeps `generateBundledDb.js` reserved for fresh builds or schema changes only
-- Allows parallel work on different data fields without code conflicts
-
-Example patch invocation: `node scripts/patchDb.js --target championdex.db --patch height-fix-gen9.json`
+`scripts/patchBundledDb.js` is the established tool for all data fixes. It contains all Phase 2–5 patches and is safe to re-run (all inserts use INSERT OR IGNORE or INSERT OR REPLACE where appropriate; encounter inserts have a UNIQUE constraint). For schema changes only: use `generateBundledDb.js` (full rebuild, ~5 min) — always ask user before running.
 
 ### KNOWN DEVIATIONS from spec
 - **StatChart**: implemented as animated bar chart, not hexagon/radar SVG. Spec updated in section 10.1.
@@ -489,17 +477,68 @@ node scripts/findMisclassifiedForms.js    ← forms classified as 'default' that
 ```
 **The overseer runs these scripts directly via Bash. The user is not QA. Workflow before any handoff: (1) specialist writes fix, (2) overseer runs all four scripts and checks output, (3) voltagent-qa-sec:code-reviewer reviews the code, (4) only then hand off to user for device confirmation. "Looks correct" is not evidence — script output is.**
 
+## DB Patching Protocol (replaces full generateBundledDb.js rebuild for data-gap tasks)
+
+For all data-gap remediation tasks (Phase 2–4), use `scripts/patchBundledDb.js` to modify `assets/db/championdex.db` **in place** rather than running the full 5-minute generate script. The generate script is reserved for schema changes and fresh builds only.
+
+**Workflow for each patch task:**
+1. Run `node scripts/patchBundledDb.js` (applies only the pending additive inserts)
+2. Bump `DATA_VERSION` in `src/services/database/seedDatabase.ts` and `BUNDLED_DATA_VERSION` in `src/services/database/initializeDatabase.ts`
+3. Run SQL acceptance criteria and `node scripts/auditPokemonData.js` — report results
+4. **Do NOT commit `assets/db/championdex.db` to git until the user explicitly approves the data**
+5. User confirms data on device → user gives explicit approval → then commit the DB
+
+**git status note:** After patching, `assets/db/championdex.db` will appear as modified in `git status`. This is expected and correct — it stays unstaged until user approval. Never stage or commit it proactively.
+
 ---
 
 ## Key File Locations
+```
+docs/
+  DATA_GAP_REMEDIATION_SPEC.md        — v1.9 — full audit findings, gap classifications, implementation briefs
+  IMPLEMENTATION_PLAN.md              — current — Phases 1–4 + all follow-up bugs complete; Phase 5 deferred
+
+scripts/
+  auditPokemonData.js                 — runs against assets/db/championdex.db; outputs scripts/output/pokemon_data_audit.json
+  output/pokemon_data_audit.json      — last audit run: 592/1294 forms with issues (2026-07-21)
+```
+
+### Data Gap Remediation Status (2026-07-22)
+
+Phase 5 complete. All Pokédex entries, evolution chains, and encounter data gaps addressed. See `docs/PHASE_5_DATA_GAP_SPEC.md` for full detail. DB v1.28.0 device-verified.
+
+
+**Current status (2026-07-22):**
+- Phase 5 data gap remediation complete and device-verified
+- `assets/db/championdex.db` at v1.28.0 — **awaiting commit approval**
+- `DATA_VERSION` and `BUNDLED_DATA_VERSION` at `'1.28.0'`
+
+**What was completed in Phase 5 (DB v1.27.x → v1.28.0):**
+- Pokédex entries: all 58 regional forms ✅, all 76 alternate forms ✅, all 6 cosmetic female forms ✅ (female-specific text for Meowstic, Indeedee, Basculegion, Oinkologne)
+- Evolution chain display: regional forms now included in chain (form_type filter expanded to include 'regional')
+- Evolution chain layout: symmetric branch sub-chains render side-by-side (Goomy/Wurmple); Eevee's 8 evolutions render as 2 rows of 4
+- Evolution data fixes: Galarian Meowth→Perrserker and Galarian Mr. Mime→Mr. Rime chain pollution removed; condition_values for Galarian Mr. Mime (Lv. 42) and Mime Jr. (mimic) corrected
+- Evolution condition_values: 26 rows filled (magnetic-field level-ups, item evolutions, 1000-steps, use-move method corrections)
+- Encounter location duplicates: 3,852 duplicate rows removed; UNIQUE constraint added to pokemon_encounter_locations table
+- Generation filter: 11 missing game version slugs added to GAME_GENERATION_MAP (Crown Tundra, Isle of Armor DLC → Gen VIII; Teal Mask, Indigo Disk DLC → Gen IX; Japan originals → Gen I) — "Other" bucket now unreachable
+
+**Remaining deferred items:**
+- Burmy Sandy/Trash sprites — no PokeAPI home sprites exist; shows Plant-form fallback
+- Z-A mega move data — ~5 forms blocked until PokeAPI updates
+- Regional encounter locations — Hisuian/Paldean forms return empty from PokeAPI; correct empty state shown
+- Evolution chain: Galarian Darmanitan Zen mode battle-form row still needs insertion (pokemon_evolutions id=703→704)
+- Audit script false positive fix — single-stage Pokémon still flagged by auditPokemonData.js
+
+---
+
 ```
 app/
   _layout.tsx                         — root layout, QueryClient, DB init, backdrop preload, prefetch trigger
 
 src/
   services/database/
-    initializeDatabase.ts             — schema + migrations + one-time pruning migration
-    seedDatabase.ts                   — DATA_VERSION 1.10.0 / ENRICH_VERSION 1.2.0; 2-phase seed
+    initializeDatabase.ts             — schema + migrations; BUNDLED_DATA_VERSION 1.28.0
+    seedDatabase.ts                   — DATA_VERSION 1.28.0 / ENRICH_VERSION 1.2.0; 2-phase seed
   components/pokemon/
     PokemonHero.tsx                   — parallax hero, shiny toggle, VitalInfoBorder, particle burst
     InfoStrip.tsx                     — 4-column info row (height/weight/gen/gender), legendary/mythical badge
@@ -508,7 +547,7 @@ src/
     TypeEffectivenessTable.tsx        — tabbed defense/offense chart, 4-tier severity colors, stagger animation
     EvolutionChain.tsx                — evolution chain renderer; formatMethod handles all 16 triggers
     FlavorTextSection.tsx             — game version chip selector + flavor text card
-    EncounterLocationsSection.tsx     — game version chips (newest-first) + location list; GAME_VERSION_ORDER covers all PokeAPI slugs
+    EncounterLocationsSection.tsx     — game version chips (newest-first) + location list; GAME_GENERATION_MAP covers all PokeAPI slugs incl. DLC and Japan versions; UNIQUE constraint on pokemon_encounter_locations prevents duplicate rows
     RelatedFormsSection.tsx / CosmeticAlternatesSection.tsx / TypeVariantsSection.tsx
   components/pokemon/
     BackdropParticleLayer.tsx         — ambient particle layer; PARTICLE_CONFIGS map gates per-backdrop; grass complete, others pending

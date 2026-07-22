@@ -90,6 +90,8 @@ export function useFormVariants(nationalDex: number): {
         1013, // Sinistcha-Masterpiece
         854,  // Sinistea-Antique
         855,  // Polteageist-Antique
+        // Unown letter forms
+        201,
       ]);
 
       // Type variant dex nums: forms that change the Pokemon's type
@@ -141,6 +143,23 @@ export function useFormVariants(nationalDex: number): {
             spriteUrl,
             typePrimary: species.types[0]?.toLowerCase() ?? 'normal',
             typeSecondary: species.types[1]?.toLowerCase(),
+          });
+        }
+      }
+
+      if (nationalDex === 201) {
+        const UNOWN_FORMS = [
+          'A','B','C','D','E','F','G','H','I','J','K','L','M',
+          'N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+          '!','?',
+        ];
+        const UNOWN_SLUGS: Record<string, string> = { '!': 'exclamation', '?': 'question' };
+        for (const letter of UNOWN_FORMS) {
+          const slug = UNOWN_SLUGS[letter] ?? letter.toLowerCase();
+          cosmeticAlternates.push({
+            id: `unown${letter.toLowerCase() === '!' ? 'exclamation' : letter.toLowerCase() === '?' ? 'question' : letter.toLowerCase()}`,
+            name: letter,
+            spriteUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/201-${slug}.png`,
           });
         }
       }

@@ -16,10 +16,13 @@ import { PokemonFlavorText } from '@/services/database/pokemonSpeciesRepository'
 interface FlavorTextSectionProps {
   flavorTexts: PokemonFlavorText[];
   accentColor: string;
+  pokemonName?: string;
+  isLoading?: boolean;
 }
 
 const GAME_GENERATION_MAP: Record<string, string> = {
   'scarlet': 'Generation IX', 'violet': 'Generation IX',
+  'legends-za': 'Generation IX',
   'sword': 'Generation VIII', 'shield': 'Generation VIII',
   'brilliant-diamond': 'Generation VIII', 'shining-pearl': 'Generation VIII',
   'legends-arceus': 'Generation VIII',
@@ -39,8 +42,28 @@ const GAME_GENERATION_MAP: Record<string, string> = {
   'red': 'Generation I', 'blue': 'Generation I', 'yellow': 'Generation I',
 };
 
+const GAME_VERSION_DISPLAY_OVERRIDES: Record<string, string> = {
+  'legends-arceus': 'Legends: Arceus',
+  'legends-za': 'Legends: Z-A',
+  'lets-go-pikachu': "Let's Go Pikachu",
+  'lets-go-eevee': "Let's Go Eevee",
+  'brilliant-diamond': 'Brilliant Diamond',
+  'shining-pearl': 'Shining Pearl',
+  'omega-ruby': 'Omega Ruby',
+  'alpha-sapphire': 'Alpha Sapphire',
+  'ultra-sun': 'Ultra Sun',
+  'ultra-moon': 'Ultra Moon',
+  'black-2': 'Black 2',
+  'white-2': 'White 2',
+  'heartgold': 'HeartGold',
+  'soulsilver': 'SoulSilver',
+  'firered': 'FireRed',
+  'leafgreen': 'LeafGreen',
+};
+
 function formatGameVersion(gameVersion: string): string {
   if (gameVersion === 'default') return 'Pokédex Entry';
+  if (GAME_VERSION_DISPLAY_OVERRIDES[gameVersion]) return GAME_VERSION_DISPLAY_OVERRIDES[gameVersion];
   return gameVersion
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
@@ -58,6 +81,8 @@ type ModalItem =
 export function FlavorTextSection({
   flavorTexts,
   accentColor,
+  pokemonName,
+  isLoading = false,
 }: FlavorTextSectionProps) {
   // De-duplicate by gameVersion, keeping first occurrence
   const uniqueVersions = useMemo(() => {
@@ -128,11 +153,15 @@ export function FlavorTextSection({
     return result;
   }, [uniqueVersions]);
 
-  if (uniqueVersions.length === 0) {
+  if (uniqueVersions.length === 0 && !isLoading) {
     return (
       <View style={styles.container}>
         <Text style={styles.sectionHeader}>POKÉDEX ENTRIES</Text>
-        <Text style={styles.emptyMessage}>No Pokédex entries available</Text>
+        <Text style={styles.emptyMessage}>
+          {pokemonName
+            ? `Pokédex entries for ${pokemonName} are not yet available.`
+            : 'Pokédex entries are not yet available.'}
+        </Text>
       </View>
     );
   }

@@ -68,3 +68,22 @@ export function useEncounterGameVersions(pokemonId: number) {
     enabled: !!pokemonId,
   });
 }
+
+export function useDefaultFormId(nationalDex: number, formType: string) {
+  return useQuery({
+    queryKey: ['pokemon', 'default-form-id', nationalDex],
+    queryFn: async (): Promise<number | null> => {
+      const db = await getDatabase();
+      const row = await db.getFirstAsync<{ id: number }>(
+        `SELECT id FROM pokemon WHERE national_dex = ? AND form_type = 'default' ORDER BY id LIMIT 1`,
+        [nationalDex]
+      );
+      return row?.id ?? null;
+    },
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    enabled: formType !== 'default' && nationalDex > 0,
+  });
+}

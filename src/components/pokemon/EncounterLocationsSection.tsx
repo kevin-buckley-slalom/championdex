@@ -13,7 +13,9 @@ import {
 } from 'react-native';
 import { spacing, fontSize, borderRadius } from '@/constants/spacing';
 import { colors } from '@/constants/colors';
-import { useEncounterLocations, useEncounterGameVersions } from '@/hooks/queries/useEncounterLocations';
+import { useEncounterLocations, useEncounterGameVersions, useDefaultFormId } from '@/hooks/queries/useEncounterLocations';
+import { formatSlug } from '@/utils/pokemonUtils';
+import type { ObtainMethod } from '@/utils/pokemonObtainMethod';
 
 // Canonical game release order — newest first for default selection
 const GAME_VERSION_ORDER: Record<string, number> = {
@@ -50,7 +52,11 @@ const GAME_VERSION_ORDER: Record<string, number> = {
 
 const GAME_GENERATION_MAP: Record<string, string> = {
   'scarlet': 'Generation IX', 'violet': 'Generation IX',
+  'the-teal-mask-scarlet': 'Generation IX', 'the-teal-mask-violet': 'Generation IX',
+  'the-indigo-disk-scarlet': 'Generation IX', 'the-indigo-disk-violet': 'Generation IX',
   'sword': 'Generation VIII', 'shield': 'Generation VIII',
+  'the-isle-of-armor-sword': 'Generation VIII', 'the-isle-of-armor-shield': 'Generation VIII',
+  'the-crown-tundra-sword': 'Generation VIII', 'the-crown-tundra-shield': 'Generation VIII',
   'brilliant-diamond': 'Generation VIII', 'shining-pearl': 'Generation VIII',
   'legends-arceus': 'Generation VIII',
   'sun': 'Generation VII', 'moon': 'Generation VII',
@@ -67,6 +73,7 @@ const GAME_GENERATION_MAP: Record<string, string> = {
   'colosseum': 'Generation III', 'xd': 'Generation III',
   'gold': 'Generation II', 'silver': 'Generation II', 'crystal': 'Generation II',
   'red': 'Generation I', 'blue': 'Generation I', 'yellow': 'Generation I',
+  'red-japan': 'Generation I', 'blue-japan': 'Generation I', 'green-japan': 'Generation I',
 };
 
 const GENERATION_ORDER: Record<string, number> = {
@@ -84,6 +91,21 @@ const GENERATION_ORDER: Record<string, number> = {
 
 const SHEET_HEIGHT = Dimensions.get('window').height * 0.7;
 
+function getEmptyStateMessage(name: string, method?: ObtainMethod): string {
+  switch (method) {
+    case 'evolution-only':
+      return `${name} cannot be caught in the wild. It can only be obtained via evolution.`;
+    case 'fossil':
+      return `${name} cannot be caught in the wild. It can only be obtained by restoring a fossil.`;
+    case 'mythical':
+      return `${name} cannot be caught in the wild. It can only be obtained via a Mystery Gift event.`;
+    case 'gen9-unknown':
+      return `${name} encounter data is not yet available.`;
+    default:
+      return `${name} cannot be caught in the wild.`;
+  }
+}
+
 function sortVersions(versions: string[]): string[] {
   return [...versions].sort((a, b) => {
     const diff = (GAME_VERSION_ORDER[b] ?? 0) - (GAME_VERSION_ORDER[a] ?? 0);
@@ -92,17 +114,44 @@ function sortVersions(versions: string[]): string[] {
   });
 }
 
+const VERSION_DISPLAY_OVERRIDES: Record<string, string> = {
+  'legends-arceus': 'Legends: Arceus',
+  'legends-za': 'Legends: Z-A',
+  'lets-go-pikachu': "Let's Go Pikachu",
+  'lets-go-eevee': "Let's Go Eevee",
+  'brilliant-diamond': 'Brilliant Diamond',
+  'shining-pearl': 'Shining Pearl',
+  'omega-ruby': 'Omega Ruby',
+  'alpha-sapphire': 'Alpha Sapphire',
+  'ultra-sun': 'Ultra Sun',
+  'ultra-moon': 'Ultra Moon',
+  'black-2': 'Black 2',
+  'white-2': 'White 2',
+  'heartgold': 'HeartGold',
+  'soulsilver': 'SoulSilver',
+  'firered': 'FireRed',
+  'leafgreen': 'LeafGreen',
+};
+
 function formatVersionName(slug: string): string {
+  if (VERSION_DISPLAY_OVERRIDES[slug]) return VERSION_DISPLAY_OVERRIDES[slug];
   return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
 interface Props {
   pokemonId: number;
   pokemonName: string;
+  obtainMethod?: ObtainMethod;
+  formType?: string;
+  nationalDex?: number;
 }
 
-export function EncounterLocationsSection({ pokemonId, pokemonName }: Props) {
-  const { data: versions = [] } = useEncounterGameVersions(pokemonId);
+export function EncounterLocationsSection({ pokemonId, pokemonName, obtainMethod, formType = 'default', nationalDex = 0 }: Props) {
+  const isNonDefault = formType !== 'default';
+  const { data: defaultFormId } = useDefaultFormId(nationalDex, formType);
+  const resolvedId = isNonDefault ? (defaultFormId ?? null) : pokemonId;
+
+  const { data: versions = [] } = useEncounterGameVersions(resolvedId ?? 0);
   const sortedVersions = sortVersions(versions);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -111,16 +160,16 @@ export function EncounterLocationsSection({ pokemonId, pokemonName }: Props) {
   // Reset selection when the pokemon changes
   useEffect(() => {
     setSelectedVersion(null);
-  }, [pokemonId]);
+  }, [resolvedId]);
 
   // Set default to newest version once versions load (or after reset)
   useEffect(() => {
     if (sortedVersions.length > 0 && (!selectedVersion || !sortedVersions.includes(selectedVersion))) {
       setSelectedVersion(sortedVersions[0]);
     }
-  }, [sortedVersions.length, pokemonId]);
+  }, [sortedVersions.length, resolvedId]);
 
-  const { data: encounters = [], isLoading } = useEncounterLocations(pokemonId, selectedVersion);
+  const { data: encounters = [], isLoading } = useEncounterLocations(resolvedId ?? 0, selectedVersion);
 
   const grouped = encounters.reduce<Record<string, typeof encounters>>((acc, enc) => {
     if (!acc[enc.locationName]) acc[enc.locationName] = [];
@@ -206,13 +255,12 @@ export function EncounterLocationsSection({ pokemonId, pokemonName }: Props) {
     );
   };
 
-  if (versions.length === 0 && !isLoading) {
+  if (versions.length === 0 && !isLoading && !(isNonDefault && resolvedId === null)) {
+    const message = getEmptyStateMessage(pokemonName, obtainMethod);
     return (
       <View style={styles.container}>
         <Text style={styles.sectionHeader}>LOCATION ENCOUNTERS</Text>
-        <Text style={styles.noVersionsEmptyState}>
-          {pokemonName} cannot be caught in the wild. It is obtained via event, gift, or trade.
-        </Text>
+        <Text style={styles.noVersionsEmptyState}>{message}</Text>
       </View>
     );
   }
@@ -250,10 +298,10 @@ export function EncounterLocationsSection({ pokemonId, pokemonName }: Props) {
           ) : (
             Object.entries(grouped).map(([locationName, rows]) => (
               <View key={locationName} style={styles.locationCard}>
-                <Text style={styles.locationName}>{locationName}</Text>
+                <Text style={styles.locationName}>{formatSlug(locationName)}</Text>
                 {rows.map((enc, idx) => (
                   <Text key={idx} style={styles.encounterRow}>
-                    {enc.encounterMethod} · {enc.encounterChance}%
+                    {formatSlug(enc.encounterMethod)} · {enc.encounterChance}%
                     {enc.minLevel !== null && enc.maxLevel !== null
                       ? ` · Lv. ${enc.minLevel}–${enc.maxLevel}`
                       : enc.minLevel !== null

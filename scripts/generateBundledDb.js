@@ -392,6 +392,22 @@ async function main() {
   });
   insertItems();
 
+  // ── Mega Stones (filtered by isNonstandard, must be explicit) ─────────────
+  console.log('[GenerateBundledDb] Seeding mega stone items...');
+  const megaStoneStmt = db.prepare(`
+    INSERT OR IGNORE INTO items (id, name, display_name, category, description, short_description, cost)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+  const insertMegaStones = db.transaction(() => {
+    for (const item of Dex.items.all()) {
+      if (!item.megaStone) continue;
+      if (item.isNonstandard === 'CAP') continue;
+      if (item.num <= 0) continue;
+      megaStoneStmt.run(item.num, item.id, item.name, 'mega-stone', item.desc || '', item.shortDesc || '', null);
+    }
+  });
+  insertMegaStones();
+
   // ── Moves ─────────────────────────────────────────────────────────────────
   console.log('[GenerateBundledDb] Seeding moves...');
   const moveStmt = db.prepare(`
@@ -402,7 +418,7 @@ async function main() {
   `);
   const insertMoves = db.transaction(() => {
     for (const move of Dex.moves.all()) {
-      if (move.isNonstandard || move.num <= 0) continue;
+      if ((move.isNonstandard && move.isNonstandard !== 'Past') || move.num <= 0 || move.realMove) continue;
       const accuracy = move.accuracy === true ? 100 : (typeof move.accuracy === 'number' ? move.accuracy : null);
       const power = move.basePower > 0 ? move.basePower : null;
       moveStmt.run(move.num, move.id, move.name, move.type, move.category, power, accuracy,

@@ -30,6 +30,7 @@ import { InfoStrip } from '@/components/pokemon/InfoStrip';
 import { AbilitiesSection } from '@/components/pokemon/AbilitiesSection';
 import { toMetricHeight, toImperialHeight, toMetricWeight, toImperialWeight } from '@/utils/unitConversions';
 import { formatGenderRatioString } from '@/utils/pokemonUtils';
+import { getObtainMethod } from '@/utils/pokemonObtainMethod';
 
 /**
  * Maps Pokémon type to ambient background color, opacity, and gradient style
@@ -124,7 +125,7 @@ export default function PokemonDetailScreen() {
   }, []);
 
   // All queries fire when belowFoldReady — they run async on native thread, don't block JS
-  const { data: speciesData } = usePokemonSpeciesData(pokemonId);
+  const { data: speciesData, isLoading: speciesLoading } = usePokemonSpeciesData(pokemonId);
   const { data: abilities } = usePokemonAbilities(pokemonId);
   const { data: relatedForms } = useRelatedForms(belowFoldReady ? pokemonId : 0);
   const { cosmeticAlternates, typeVariants } = useFormVariants(belowFoldReady ? (pokemon?.nationalDex ?? 0) : 0);
@@ -376,6 +377,8 @@ export default function PokemonDetailScreen() {
                 <FlavorTextSection
                   flavorTexts={speciesData?.flavorTexts ?? []}
                   accentColor={typeColors[pokemon.primaryType.toLowerCase()] ?? colors.primary}
+                  pokemonName={pokemon.displayName}
+                  isLoading={speciesLoading}
                 />
               </View>
 
@@ -384,12 +387,20 @@ export default function PokemonDetailScreen() {
                 <EncounterLocationsSection
                   pokemonId={pokemonId}
                   pokemonName={pokemon.displayName}
+                  obtainMethod={getObtainMethod(pokemon.nationalDex, pokemon.isMythical, pokemon.generation)}
+                  formType={pokemon.formType}
+                  nationalDex={pokemon.nationalDex}
                 />
               </View>
 
               {/* Moveset Section */}
               <View style={styles.section}>
-                <MovesetSection pokemonId={pokemonId} pokemonName={pokemon.displayName} />
+                <MovesetSection
+                  pokemonId={pokemonId}
+                  pokemonName={pokemon.displayName}
+                  formType={pokemon.formType}
+                  nationalDex={pokemon.nationalDex}
+                />
               </View>
             </>
           ) : (

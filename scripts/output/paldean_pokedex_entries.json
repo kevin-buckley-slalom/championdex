@@ -1,0 +1,12 @@
+[
+  { "pokemon_id": 303, "game_version": "sword", "flavor_text": "Watch your step when wandering areas oceans once covered. What looks like a stone could be this Pokémon, and it will curse you if you kick it." },
+  { "pokemon_id": 303, "game_version": "shield", "flavor_text": "Sudden climate change wiped out this ancient kind of Corsola. This Pokémon absorbs others' life-force through its branches." },
+  { "pokemon_id": 184, "game_version": "scarlet", "flavor_text": "This Pokémon has a muscular body and excels at close-quarters combat. It uses its short horns to strike the opponent's weak spots." },
+  { "pokemon_id": 184, "game_version": "violet", "flavor_text": "This kind of Tauros, known as the Combat Breed, is distinguished by its thick, powerful muscles and its fierce disposition." },
+  { "pokemon_id": 185, "game_version": "scarlet", "flavor_text": "When heated by fire energy, its horns can get hotter than 1,800 degrees Fahrenheit. Those gored by them will suffer both wounds and burns." },
+  { "pokemon_id": 185, "game_version": "violet", "flavor_text": "People call this kind of Tauros the Blaze Breed due to the hot air it snorts from its nostrils. Its three tails are intertwined." },
+  { "pokemon_id": 186, "game_version": "scarlet", "flavor_text": "This Pokémon blasts water from holes on the tips of its horns—the high-pressure jets pierce right through Tauros's enemies." },
+  { "pokemon_id": 186, "game_version": "violet", "flavor_text": "It swims by jetting water from its horns. The most notable characteristic of the Aqua Breed is its high body fat, which allows it to float easily." },
+  { "pokemon_id": 268, "game_version": "scarlet", "flavor_text": "After losing a territorial struggle, Wooper began living on land. The Pokémon changed over time, developing a poisonous film to protect its body." },
+  { "pokemon_id": 268, "game_version": "violet", "flavor_text": "It's dangerous for Wooper to travel alone. They line up in groups of three or four and help each other as they walk around the wetlands." }
+]

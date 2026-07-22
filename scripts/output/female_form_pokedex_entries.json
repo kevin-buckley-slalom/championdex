@@ -1,0 +1,16 @@
+[
+  { "pokemon_id": 853, "game_version": "sword", "flavor_text": "Females are a bit more selfish and aggressive than males. If they don't get what they want, they will torment you with their psychic abilities." },
+  { "pokemon_id": 853, "game_version": "shield", "flavor_text": "If it doesn't hold back when it unleashes its psychic power, it can tear apart a tanker. Its unfriendliness is part of its charm." },
+  { "pokemon_id": 853, "game_version": "scarlet", "flavor_text": "Female Meowstic are more aggressive than males. Their expression remains blank even while they're wielding immense psychic power." },
+  { "pokemon_id": 853, "game_version": "violet", "flavor_text": "When they sense danger, they exert their psychic power at its maximum output. They have no regard for their opponents." },
+  { "pokemon_id": 853, "game_version": "legends-za", "flavor_text": "Females are a bit more selfish and aggressive than males. If they don't get what they want, they will torment you with their psychic abilities." },
+  { "pokemon_id": 1111, "game_version": "sword", "flavor_text": "These intelligent Pokémon touch horns with each other to share information between them." },
+  { "pokemon_id": 1111, "game_version": "shield", "flavor_text": "They diligently serve people and Pokémon so they can gather feelings of gratitude. The females are particularly good at babysitting." },
+  { "pokemon_id": 1111, "game_version": "scarlet", "flavor_text": "It dislikes conflict. If a fight occurs in its territory, it uses psychic power to throw things at the combatants..." },
+  { "pokemon_id": 1111, "game_version": "violet", "flavor_text": "In search of happy feelings—such as joy and gratitude—Indeedee bustles around, taking diligent care of people and other Pokémon." },
+  { "pokemon_id": 1111, "game_version": "legends-za", "flavor_text": "These Pokémon are highly intelligent. They touch horns with their fellow Indeedee to share information with one another." },
+  { "pokemon_id": 1150, "game_version": "scarlet", "flavor_text": "The souls of its comrades cloak its body and propel it effortlessly through even raging rapids." },
+  { "pokemon_id": 1150, "game_version": "violet", "flavor_text": "It can afflict a target with terrifying illusions that are under its control. The deeper the sadness in its friends' souls, the paler Basculegion becomes." },
+  { "pokemon_id": 1166, "game_version": "scarlet", "flavor_text": "This Pokémon sends a flowerlike scent wafting about. Well-developed muscles in its legs allow it to leap more than 16 feet with no trouble at all." },
+  { "pokemon_id": 1166, "game_version": "violet", "flavor_text": "This is a meticulous Pokémon that likes to keep things tidy. It shrouds itself in a floral aroma that soothes the Pokémon around it." }
+]

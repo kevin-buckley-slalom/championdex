@@ -5,6 +5,7 @@ import Svg, { Ellipse, Path } from 'react-native-svg';
 import { colors } from '@/constants/colors';
 import { spacing, fontSize } from '@/constants/spacing';
 import { useEvolutionChain } from '@/hooks/queries/useEvolutionChain';
+import { formatSlug } from '@/utils/pokemonUtils';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EvolutionNode, EvolutionStep } from '@/services/database/pokemonSpeciesRepository';
 
@@ -232,83 +233,132 @@ const BranchConnector = React.memo<BranchConnectorProps>(({
   onPokemonPress,
 }) => {
   const CONNECTOR_HEIGHT = 24;
+  const MAX_PER_ROW = 4;
 
-  // Always render all direct children in a single row (no stacking based on children count)
+  // Keep branchCount and slotWidth for sub-chain rendering (lines ~286+)
   const branchCount = branches.length;
   const slotWidth = containerWidth / branchCount;
 
-  const connectorPath = buildBranchConnectorPath(
-    containerWidth,
-    branchCount,
-    CONNECTOR_HEIGHT,
-    parentCenterX ?? containerWidth / 2
-  );
+  // Chunk branches into rows of max 4
+  const rows: EvolutionStep[][] = [];
+  for (let i = 0; i < branches.length; i += MAX_PER_ROW) {
+    rows.push(branches.slice(i, i + MAX_PER_ROW));
+  }
 
   const strokeWidth = branchDepth > 0 ? 1 : 1.5;
   const strokeOpacity = branchDepth > 0 ? 0.35 : 0.5;
 
   return (
     <View style={styles.branchConnectorContainer}>
-      {/* SVG connector lines from parent to children row */}
-      <Svg width={containerWidth} height={CONNECTOR_HEIGHT}>
-        <Path
-          d={connectorPath}
-          stroke="#4D3E3E"
-          strokeWidth={strokeWidth}
-          strokeOpacity={strokeOpacity}
-          fill="none"
-        />
-      </Svg>
-
-      {/* Single row of all direct children — always just the disc, no recursion */}
-      <View style={styles.branchRow}>
-        {branches.map((step) => (
-          <View
-            key={step.pokemon.pokemonId}
-            style={[styles.branchChildWrapper, { width: slotWidth }]}
-          >
-            <Text style={styles.branchConditionLabel}>
-              {formatMethod(step.method, step.conditionValue)}
-            </Text>
-            <PokemonNode
-              pokemon={step.pokemon}
-              currentPokemonId={currentPokemonId}
-              accentColor={accentColor}
-              discSize={branchDiscSize}
-              onPress={() => onPokemonPress(step.pokemon.pokemonId)}
-            />
-          </View>
-        ))}
-      </View>
-
-      {/* For each non-leaf branch, render its sub-chain below its slot */}
-      {branches.map((step, slotIndex) => {
-        if (step.pokemon.evolvesTo.length === 0) return null;
-
-        // Offset the sub-chain to align under the correct slot
-        const slotOffsetX = slotIndex * slotWidth;
+      {/* Render each row of branches (max 4 per row) */}
+      {rows.map((row, rowIndex) => {
+        const rowSlotWidth = containerWidth / row.length;
+        const isFirstRow = rowIndex === 0;
+        const connectorPath = buildBranchConnectorPath(
+          containerWidth,
+          row.length,
+          CONNECTOR_HEIGHT,
+          parentCenterX ?? containerWidth / 2
+        );
 
         return (
-          <View
-            key={`subchain-${step.pokemon.pokemonId}`}
-            style={{ width: containerWidth, alignItems: 'flex-start' }}
-          >
-            <View style={{ marginLeft: slotOffsetX, width: slotWidth }}>
-              <BranchConnector
-                branches={step.pokemon.evolvesTo}
-                currentPokemonId={currentPokemonId}
-                accentColor={accentColor}
-                branchDiscSize={branchDiscSize}
-                arrowWidth={arrowWidth}
-                containerWidth={slotWidth}
-                parentCenterX={slotWidth / 2}
-                branchDepth={branchDepth + 1}
-                onPokemonPress={onPokemonPress}
+          <View key={`row-${rowIndex}`}>
+            {/* SVG connector lines from parent to this row */}
+            <Svg width={containerWidth} height={CONNECTOR_HEIGHT}>
+              <Path
+                d={connectorPath}
+                stroke="#4D3E3E"
+                strokeWidth={strokeWidth}
+                strokeOpacity={strokeOpacity}
+                fill="none"
               />
+            </Svg>
+
+            {/* Row of children (max 4 per row) */}
+            <View style={styles.branchRow}>
+              {row.map((step) => (
+                <View
+                  key={step.pokemon.pokemonId}
+                  style={[styles.branchChildWrapper, { width: rowSlotWidth }]}
+                >
+                  <Text style={styles.branchConditionLabel}>
+                    {formatMethod(step.method, step.conditionValue)}
+                  </Text>
+                  <PokemonNode
+                    pokemon={step.pokemon}
+                    currentPokemonId={currentPokemonId}
+                    accentColor={accentColor}
+                    discSize={branchDiscSize}
+                    onPress={() => onPokemonPress(step.pokemon.pokemonId)}
+                  />
+                </View>
+              ))}
             </View>
           </View>
         );
       })}
+
+      {/* For each non-leaf branch, render its sub-chain below its slot */}
+      {(() => {
+        // Compute which branches have children
+        const nonLeafBranches = branches.filter(step => step.pokemon.evolvesTo.length > 0);
+        const allBranchesHaveChildren = nonLeafBranches.length === branches.length && branches.length > 1;
+
+        if (allBranchesHaveChildren) {
+          // Symmetric case: render all sub-chains in a single row
+          return (
+            <View style={{ flexDirection: 'row', width: containerWidth }}>
+              {branches.map((step, slotIndex) => (
+                <View
+                  key={`subchain-${step.pokemon.pokemonId}`}
+                  style={{ width: slotWidth }}
+                >
+                  <BranchConnector
+                    branches={step.pokemon.evolvesTo}
+                    currentPokemonId={currentPokemonId}
+                    accentColor={accentColor}
+                    branchDiscSize={branchDiscSize}
+                    arrowWidth={arrowWidth}
+                    containerWidth={slotWidth}
+                    parentCenterX={slotWidth / 2}
+                    branchDepth={branchDepth + 1}
+                    onPokemonPress={onPokemonPress}
+                  />
+                </View>
+              ))}
+            </View>
+          );
+        }
+
+        // Asymmetric case: keep current stacked behavior
+        return branches.map((step, slotIndex) => {
+          if (step.pokemon.evolvesTo.length === 0) return null;
+
+          // Offset the sub-chain to align under the correct slot
+          const slotOffsetX = slotIndex * slotWidth;
+
+          return (
+            <View
+              key={`subchain-${step.pokemon.pokemonId}`}
+              style={{ width: containerWidth, alignItems: 'flex-start' }}
+            >
+              <View style={{ marginLeft: slotOffsetX, width: slotWidth }}>
+                <BranchConnector
+                  branches={step.pokemon.evolvesTo}
+                  currentPokemonId={currentPokemonId}
+                  accentColor={accentColor}
+                  branchDiscSize={branchDiscSize}
+                  arrowWidth={arrowWidth}
+                  containerWidth={slotWidth}
+                  parentCenterX={slotWidth / 2}
+                  branchDepth={branchDepth + 1}
+                  onPokemonPress={onPokemonPress}
+                />
+              </View>
+            </View>
+          );
+        });
+      })()}
     </View>
   );
 });
@@ -472,7 +522,7 @@ function buildBranchConnectorPath(
 
 function formatMethod(method: string, conditionValue: string | null): string {
   if (method === 'level-up') return conditionValue ? `Lv. ${conditionValue}` : 'Level up';
-  if (method === 'use-item') return conditionValue ? conditionValue : 'Item';
+  if (method === 'use-item') return conditionValue ? formatSlug(conditionValue) : 'Item';
   if (method === 'trade') return 'Trade';
   if (method === 'shed') return 'Shed skin';
   if (conditionValue === 'friendship') return 'Friendship';
@@ -482,13 +532,13 @@ function formatMethod(method: string, conditionValue: string | null): string {
   if (method === 'three-critical-hits') return '3 Critical Hits';
   if (method === 'take-damage') return 'Take 49+ Damage, Dusty Bowl Arch';
   if (method === 'other' && conditionValue) return `Lv. ${conditionValue} (1% three-member)`;
-  if (method === 'agile-style-move') return conditionValue ? `Agile Style: ${conditionValue}` : 'Agile Style Move';
+  if (method === 'agile-style-move') return conditionValue ? `Agile Style: ${formatSlug(conditionValue)}` : 'Agile Style Move';
   if (method === 'strong-style-move') return conditionValue ? `Lv. 20 w/ ${conditionValue}` : 'Strong Style Move';
   if (method === 'recoil-damage') return '294 Recoil Damage + Lv. Up';
-  if (method === 'use-move') return conditionValue ? `Use ${conditionValue} ×20` : 'Use Move ×20';
+  if (method === 'use-move') return conditionValue ? `Use ${formatSlug(conditionValue)} ×20` : 'Use Move ×20';
   if (method === 'three-defeated-bisharp') return "Defeat 3 Leader's Crest Bisharp";
   if (method === 'gimmighoul-coins') return '999 Coins + Lv. Up';
-  return conditionValue ?? 'Evolution';
+  return conditionValue ? formatSlug(conditionValue) : 'Evolution';
 }
 
 const styles = StyleSheet.create({

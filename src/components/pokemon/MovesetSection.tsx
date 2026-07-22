@@ -17,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { colors } from '@/constants/colors';
 import { spacing, fontSize, borderRadius } from '@/constants/spacing';
 import { useMovesetForPokemon, useMovesetVersions, Move } from '@/hooks/queries/useMovesetForPokemon';
+import { useDefaultFormId } from '@/hooks/queries/useEncounterLocations';
 import { TypeBadge } from '@/components/common/TypeBadge';
 
 const CATEGORY_ICONS: Record<string, any> = {
@@ -106,9 +107,24 @@ const GENERATION_ORDER: Record<string, number> = {
 interface MovesetSectionProps {
   pokemonId: number;
   pokemonName: string;
+  formType?: string;
+  nationalDex?: number;
 }
 
+const VERSION_GROUP_DISPLAY_OVERRIDES: Record<string, string> = {
+  'legends-arceus': 'Legends: Arceus',
+  'legends-za': 'Legends: Z-A',
+  'lets-go-pikachu-lets-go-eevee': "Let's Go Pikachu / Let's Go Eevee",
+  'brilliant-diamond-shining-pearl': 'Brilliant Diamond / Shining Pearl',
+  'omega-ruby-alpha-sapphire': 'Omega Ruby / Alpha Sapphire',
+  'ultra-sun-ultra-moon': 'Ultra Sun / Ultra Moon',
+  'black-2-white-2': 'Black 2 / White 2',
+  'heartgold-soulsilver': 'HeartGold / SoulSilver',
+  'firered-leafgreen': 'FireRed / LeafGreen',
+};
+
 function formatVersionGroupName(slug: string): string {
+  if (VERSION_GROUP_DISPLAY_OVERRIDES[slug]) return VERSION_GROUP_DISPLAY_OVERRIDES[slug];
   return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
@@ -250,10 +266,15 @@ type SectionExpandedState = {
   special: boolean;
 };
 
-export function MovesetSection({ pokemonId, pokemonName }: MovesetSectionProps) {
+export function MovesetSection({ pokemonId, pokemonName, formType, nationalDex }: MovesetSectionProps) {
   const router = useRouter();
-  const { versions } = useMovesetVersions(pokemonId);
-  const { moves, isLoading } = useMovesetForPokemon(pokemonId);
+
+  const isNonDefault = formType === 'mega' || formType === 'gigantamax';
+  const defaultFormQuery = useDefaultFormId(nationalDex ?? 0, formType ?? 'default');
+  const resolvedId = isNonDefault && defaultFormQuery.data != null ? defaultFormQuery.data : pokemonId;
+
+  const { versions } = useMovesetVersions(resolvedId);
+  const { moves, isLoading } = useMovesetForPokemon(resolvedId);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVersion, setSelectedVersion] = useState<string>('');

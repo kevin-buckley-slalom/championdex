@@ -42,6 +42,13 @@ export function formatGenderRatioString(genderRate: number): string {
   return 'Unknown';
 }
 
+export function formatSlug(slug: string): string {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 /**
  * Parses PokeAPI gender rate scale to percentage values.
  * PokeAPI scale: -1 = genderless, 0 = 100% male, 8 = 100% female

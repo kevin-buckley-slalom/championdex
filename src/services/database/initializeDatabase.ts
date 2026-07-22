@@ -2,7 +2,7 @@ import * as SQLite from 'expo-sqlite';
 import { seedDatabase } from './seedDatabase';
 import { copyBundledDbIfNeeded, overwriteBundledDb } from './bundledDbService';
 
-const BUNDLED_DATA_VERSION = '1.18.0';
+const BUNDLED_DATA_VERSION = '1.28.0';
 
 async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
 
